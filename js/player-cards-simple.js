@@ -1,6 +1,227 @@
 // Import Firebase GameService
 import { GameService } from './gameService.js';
 
+// Socket.IO integration
+let socketManager = null;
+let isSocketConnected = false;
+
+// Initialize Socket.IO connection
+async function initializeSocket() {
+  try {
+    console.log('🔌 Initializing Socket.IO connection...');
+    
+    // Load socket manager if not already loaded
+    if (typeof SocketManager === 'undefined') {
+      const script = document.createElement('script');
+      script.src = 'js/socket-manager.js';
+      document.head.appendChild(script);
+      
+      // Wait for script to load
+      await new Promise((resolve) => {
+        script.onload = resolve;
+      });
+    }
+    
+    socketManager = window.socketManager;
+    
+    // Setup event listeners
+    setupSocketEventListeners();
+    
+    // Connect to server
+    await socketManager.connect();
+    isSocketConnected = true;
+    
+    console.log('✅ Socket.IO connected successfully');
+    
+    // Join game
+    const gameData = {
+      gameId: gameId || 'default-game',
+      playerParam: playerParam,
+      playerName: playerName,
+      abilities: getCurrentAbilities(),
+      isHost: false
+    };
+    
+    socketManager.joinGame(gameData);
+    
+  } catch (error) {
+    console.error('❌ Failed to initialize Socket.IO:', error);
+    isSocketConnected = false;
+    // Continue without Socket.IO (fallback to localStorage)
+  }
+}
+
+// Setup Socket.IO event listeners
+function setupSocketEventListeners() {
+  if (!socketManager) return;
+  
+  // Connection events
+  socketManager.on('onConnect', () => {
+    console.log('🔌 Socket connected');
+    isSocketConnected = true;
+  });
+  
+  socketManager.on('onDisconnect', () => {
+    console.log('🔌 Socket disconnected');
+    isSocketConnected = false;
+  });
+  
+  // Game events
+  socketManager.on('onGameJoined', (data) => {
+    console.log('🎮 Joined game:', data);
+  });
+  
+  socketManager.on('onPlayerJoined', (data) => {
+    console.log('👤 Player joined:', data);
+  });
+  
+  socketManager.on('onPlayerLeft', (data) => {
+    console.log('👋 Player left:', data);
+  });
+  
+  // Ability request events
+  socketManager.on('onAbilityRequested', (data) => {
+    console.log('⚡ Ability requested:', data);
+    // Update UI to show request status
+    updateAbilityRequestStatus(data);
+  });
+  
+  socketManager.on('onAbilityRequestApproved', (data) => {
+    console.log('✅ Ability request approved:', data);
+    // Handle approved request
+    handleAbilityRequestApproved(data);
+  });
+  
+  socketManager.on('onAbilityRequestRejected', (data) => {
+    console.log('❌ Ability request rejected:', data);
+    // Handle rejected request
+    handleAbilityRequestRejected(data);
+  });
+  
+  // Game state events
+  socketManager.on('onGameState', (data) => {
+    console.log('🎯 Game state updated:', data);
+    // Update game state
+    updateGameState(data);
+  });
+  
+  socketManager.on('onPlayerAbilitiesUpdated', (data) => {
+    console.log('🔮 Player abilities updated:', data);
+    // Update abilities display
+    updateAbilitiesDisplay(data);
+  });
+  
+  // Error events
+  socketManager.on('onError', (data) => {
+    console.error('🚨 Socket error:', data);
+    showError(data.message || 'Socket connection error');
+  });
+}
+
+// Get current abilities from localStorage
+function getCurrentAbilities() {
+  try {
+    const stored = localStorage.getItem(`${playerParam}Abilities`);
+    return stored ? JSON.parse(stored) : [];
+  } catch (error) {
+    console.error('Error getting current abilities:', error);
+    return [];
+  }
+}
+
+// Update ability request status in UI
+function updateAbilityRequestStatus(data) {
+  // This will be implemented based on your UI needs
+  console.log('Updating ability request status:', data);
+}
+
+// Handle approved ability request
+function handleAbilityRequestApproved(data) {
+  // Mark ability as used
+  markAbilityAsUsed(data.abilityText);
+  
+  // Show success message
+  showSuccessMessage(`تم قبول طلب القدرة: ${data.abilityText}`);
+  
+  // Navigate to player page if needed
+  setTimeout(() => {
+    navigateToPlayerPage();
+  }, 1000);
+}
+
+// Handle rejected ability request
+function handleAbilityRequestRejected(data) {
+  // Show rejection message
+  showErrorMessage(`تم رفض طلب القدرة: ${data.abilityText}`);
+}
+
+// Update game state
+function updateGameState(data) {
+  // Update game state based on server data
+  console.log('Updating game state:', data);
+}
+
+// Update abilities display
+function updateAbilitiesDisplay(data) {
+  if (data.playerParam === playerParam) {
+    // Update local abilities
+    localStorage.setItem(`${playerParam}Abilities`, JSON.stringify(data.abilities));
+    // Re-render abilities
+    loadPlayerAbilities();
+  }
+}
+
+// Mark ability as used
+function markAbilityAsUsed(abilityText) {
+  const abilities = getCurrentAbilities();
+  const usedAbilities = JSON.parse(localStorage.getItem(`${playerParam}UsedAbilities`) || '[]');
+  
+  if (!usedAbilities.includes(abilityText)) {
+    usedAbilities.push(abilityText);
+    localStorage.setItem(`${playerParam}UsedAbilities`, JSON.stringify(usedAbilities));
+  }
+  
+  // Re-render abilities to show updated status
+  loadPlayerAbilities();
+}
+
+// Show success message
+function showSuccessMessage(message) {
+  if (abilityStatus) {
+    abilityStatus.textContent = message;
+    abilityStatus.style.color = '#10b981';
+    abilityStatus.style.display = 'block';
+    
+    setTimeout(() => {
+      abilityStatus.style.display = 'none';
+    }, 3000);
+  }
+}
+
+// Show error message
+function showErrorMessage(message) {
+  if (abilityStatus) {
+    abilityStatus.textContent = message;
+    abilityStatus.style.color = '#ef4444';
+    abilityStatus.style.display = 'block';
+    
+    setTimeout(() => {
+      abilityStatus.style.display = 'none';
+    }, 3000);
+  }
+}
+
+// Show error message
+function showError(message) {
+  console.error('Error:', message);
+  showErrorMessage(message);
+}
+
+// Navigate to player page
+function navigateToPlayerPage() {
+  const playerViewUrl = `player-view.html?gameId=${gameId}&player=${player}`;
+  window.location.href = playerViewUrl;
+}
 
 // ========== Extract Parameters ==========
 const params = new URLSearchParams(window.location.search);
@@ -171,7 +392,20 @@ function renderBadges(container, abilities, { clickable = false, onClick } = {})
           e.preventDefault();
           e.stopPropagation();
           console.log('Ability clicked:', ab.text);
-          onClick(ab.text);
+          
+          // Use Socket.IO if connected, otherwise fallback to localStorage
+          if (isSocketConnected && socketManager) {
+            try {
+              socketManager.requestAbility(ab.text);
+              console.log('✅ Ability request sent via Socket.IO');
+            } catch (error) {
+              console.error('❌ Socket.IO request failed, using fallback:', error);
+              onClick(ab.text);
+            }
+          } else {
+            console.log('📱 Using localStorage fallback');
+            onClick(ab.text);
+          }
         };
         
         // Add multiple event listeners for maximum compatibility
@@ -2037,23 +2271,27 @@ async function comprehensiveInitialization() {
     await waitForElements();
     console.log('✅ Essential elements are available');
     
-    // Step 3: Initialize abilities with multiple attempts
+    // Step 3: Initialize Socket.IO connection
+    await initializeSocket();
+    console.log('✅ Socket.IO initialized');
+    
+    // Step 4: Initialize abilities with multiple attempts
     await initializeAbilitiesWithRetry();
     console.log('✅ Abilities initialized');
     
-    // Step 4: Load game data with fallback
+    // Step 5: Load game data with fallback
     await loadGameDataWithFallback();
     console.log('✅ Game data loaded');
     
-    // Step 5: Initialize card manager
+    // Step 6: Initialize card manager
     await initializeCardManagerWithRetry();
     console.log('✅ Card manager initialized');
     
-    // Step 6: Force render all components
+    // Step 7: Force render all components
     await forceRenderAllComponents();
     console.log('✅ All components rendered');
     
-    // Step 7: Start monitoring systems
+    // Step 8: Start monitoring systems
     startAllMonitoringSystems();
     console.log('✅ Monitoring systems started');
     
