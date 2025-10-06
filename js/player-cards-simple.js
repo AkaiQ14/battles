@@ -166,12 +166,17 @@ function renderBadges(container, abilities, { clickable = false, onClick } = {})
         el.disabled = true; 
         el.setAttribute("aria-disabled", "true"); 
       } else if (onClick) { 
-        el.onclick = (e) => {
+        // Enhanced click handler with multiple event types
+        const handleClick = (e) => {
           e.preventDefault();
           e.stopPropagation();
           console.log('Ability clicked:', ab.text);
           onClick(ab.text);
         };
+        
+        // Add multiple event listeners for maximum compatibility
+        el.onclick = handleClick;
+        el.addEventListener('click', handleClick);
         
         // Add touch events for mobile
         el.addEventListener('touchstart', (e) => {
@@ -184,7 +189,7 @@ function renderBadges(container, abilities, { clickable = false, onClick } = {})
           e.preventDefault();
           el.style.transform = 'scale(1)';
           el.style.opacity = '1';
-          onClick(ab.text);
+          handleClick(e);
         }, { passive: false });
         
         el.addEventListener('touchcancel', (e) => {
@@ -208,6 +213,26 @@ function renderBadges(container, abilities, { clickable = false, onClick } = {})
           el.style.transform = 'scale(1)';
           el.style.opacity = '1';
         });
+        
+        // Add pointer events for modern browsers
+        el.addEventListener('pointerdown', (e) => {
+          el.style.transform = 'scale(0.95)';
+          el.style.opacity = '0.8';
+        });
+        
+        el.addEventListener('pointerup', (e) => {
+          el.style.transform = 'scale(1)';
+          el.style.opacity = '1';
+          handleClick(e);
+        });
+        
+        // Verify button is clickable
+        setTimeout(() => {
+          if (el.onclick === null && !el.hasAttribute('onclick')) {
+            console.warn('Button lost click handler, re-adding...');
+            el.onclick = handleClick;
+          }
+        }, 100);
       }
     }
     
@@ -215,6 +240,22 @@ function renderBadges(container, abilities, { clickable = false, onClick } = {})
   });
   
   console.log('Badges rendered successfully');
+  
+  // Verify buttons are working
+  setTimeout(() => {
+    const buttons = container.querySelectorAll('button');
+    buttons.forEach(btn => {
+      if (!btn.onclick && !btn.hasAttribute('onclick')) {
+        console.warn('Button without click handler detected, fixing...');
+        btn.onclick = () => {
+          console.log('Fallback click handler triggered');
+          if (onClick) {
+            onClick(btn.textContent);
+          }
+        };
+      }
+    });
+  }, 200);
 }
 
 function hideOpponentPanel() {
@@ -1983,5 +2024,345 @@ window.clearOldGameData = clearOldGameData;
 window.clearUsedAbilities = clearUsedAbilities;
 window.openBattleView = openBattleView;
 
-// Initialize abilities when page loads
-initializeAbilities();
+// Comprehensive initialization system
+async function comprehensiveInitialization() {
+  console.log('🚀 Starting comprehensive initialization...');
+  
+  try {
+    // Step 1: Wait for DOM to be ready
+    await ensureDOMReady();
+    console.log('✅ DOM is ready');
+    
+    // Step 2: Wait for essential elements to be available
+    await waitForElements();
+    console.log('✅ Essential elements are available');
+    
+    // Step 3: Initialize abilities with multiple attempts
+    await initializeAbilitiesWithRetry();
+    console.log('✅ Abilities initialized');
+    
+    // Step 4: Load game data with fallback
+    await loadGameDataWithFallback();
+    console.log('✅ Game data loaded');
+    
+    // Step 5: Initialize card manager
+    await initializeCardManagerWithRetry();
+    console.log('✅ Card manager initialized');
+    
+    // Step 6: Force render all components
+    await forceRenderAllComponents();
+    console.log('✅ All components rendered');
+    
+    // Step 7: Start monitoring systems
+    startAllMonitoringSystems();
+    console.log('✅ Monitoring systems started');
+    
+    console.log('🎉 Comprehensive initialization completed successfully!');
+    
+  } catch (error) {
+    console.error('❌ Error in comprehensive initialization:', error);
+    
+    // Fallback initialization
+    console.log('🔄 Starting fallback initialization...');
+    await fallbackInitialization();
+  }
+}
+
+// Wait for essential elements to be available
+function waitForElements() {
+  return new Promise((resolve) => {
+    const checkElements = () => {
+      const elements = [
+        document.getElementById('playerAbilities'),
+        document.getElementById('abilityStatus'),
+        document.getElementById('cardGrid'),
+        document.getElementById('instruction')
+      ];
+      
+      const allAvailable = elements.every(el => el !== null);
+      
+      if (allAvailable) {
+        resolve();
+      } else {
+        console.log('⏳ Waiting for essential elements...');
+        setTimeout(checkElements, 100);
+      }
+    };
+    
+    checkElements();
+  });
+}
+
+// Initialize abilities with retry mechanism
+async function initializeAbilitiesWithRetry() {
+  const maxRetries = 5;
+  let retryCount = 0;
+  
+  while (retryCount < maxRetries) {
+    try {
+      console.log(`🔄 Attempting to initialize abilities (attempt ${retryCount + 1})...`);
+      
+      // Clear and reload abilities
+      if (abilitiesWrap) {
+        abilitiesWrap.innerHTML = '';
+      }
+      
+      // Load abilities
+      loadPlayerAbilities();
+      
+      // Wait a bit and check if abilities were loaded
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
+      if (abilitiesWrap && abilitiesWrap.children.length > 0) {
+        console.log('✅ Abilities loaded successfully');
+        return;
+      }
+      
+      retryCount++;
+      console.log(`⚠️ Abilities not loaded, retrying... (${retryCount}/${maxRetries})`);
+      
+    } catch (error) {
+      console.error(`❌ Error in attempt ${retryCount + 1}:`, error);
+      retryCount++;
+    }
+  }
+  
+  // If all retries failed, use default abilities
+  console.log('🔄 Using default abilities as fallback');
+  myAbilities = [
+    { text: "قدرة الهجوم السريع", used: false },
+    { text: "قدرة الدفاع القوي", used: false },
+    { text: "قدرة الشفاء", used: false },
+    { text: "قدرة التخفي", used: false },
+    { text: "قدرة القوة الخارقة", used: false }
+  ];
+  
+  if (abilitiesWrap) {
+    renderBadges(abilitiesWrap, myAbilities, { clickable: true, onClick: requestUseAbility });
+  }
+}
+
+// Load game data with fallback
+async function loadGameDataWithFallback() {
+  try {
+    console.log('🔄 Loading game data...');
+    
+    // Try Firebase first
+    if (gameId) {
+      try {
+        await loadGameData();
+        console.log('✅ Game data loaded from Firebase');
+        return;
+      } catch (error) {
+        console.warn('⚠️ Firebase failed, trying localStorage:', error);
+      }
+    }
+    
+    // Fallback to localStorage
+    loadPlayerCards();
+    console.log('✅ Game data loaded from localStorage');
+    
+  } catch (error) {
+    console.error('❌ Error loading game data:', error);
+    
+    // Ultimate fallback
+    console.log('🔄 Using ultimate fallback for game data');
+    if (instruction) {
+      instruction.textContent = `اللاعب ${playerName} رتب بطاقاتك`;
+    }
+  }
+}
+
+// Initialize card manager with retry
+async function initializeCardManagerWithRetry() {
+  const maxRetries = 3;
+  let retryCount = 0;
+  
+  while (retryCount < maxRetries) {
+    try {
+      if (typeof window.cardManager !== 'undefined') {
+        cardManager = window.cardManager;
+        console.log('✅ Card manager initialized');
+        return;
+      }
+      
+      retryCount++;
+      console.log(`⏳ Waiting for card manager... (${retryCount}/${maxRetries})`);
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+    } catch (error) {
+      console.error(`❌ Error initializing card manager:`, error);
+      retryCount++;
+    }
+  }
+  
+  console.log('⚠️ Card manager not available, continuing without it');
+}
+
+// Force render all components
+async function forceRenderAllComponents() {
+  console.log('🔄 Force rendering all components...');
+  
+  // Force render abilities multiple times
+  for (let i = 0; i < 3; i++) {
+    if (abilitiesWrap && myAbilities.length > 0) {
+      renderBadges(abilitiesWrap, myAbilities, { clickable: true, onClick: requestUseAbility });
+    }
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+  
+  // Force render cards if available
+  if (picks.length > 0 && grid) {
+    renderCards(picks, submittedOrder);
+  }
+  
+  console.log('✅ All components force rendered');
+}
+
+// Start all monitoring systems
+function startAllMonitoringSystems() {
+  console.log('🔄 Starting monitoring systems...');
+  
+  // Start ability monitoring
+  setInterval(() => {
+    loadPlayerAbilities();
+    checkAbilityRequests();
+  }, 2000);
+  
+  // Start battle status monitoring
+  startBattleStatusMonitoring();
+  
+  // Start storage monitoring
+  window.addEventListener('storage', function(e) {
+    if (e.key === 'abilityRequests') {
+      checkAbilityRequests();
+    } else if (e.key && e.key.includes('Abilities')) {
+      loadPlayerAbilities();
+    }
+  });
+  
+  console.log('✅ All monitoring systems started');
+}
+
+// Fallback initialization
+async function fallbackInitialization() {
+  console.log('🔄 Starting fallback initialization...');
+  
+  try {
+    // Basic DOM check
+    if (!abilitiesWrap || !abilityStatus) {
+      console.error('❌ Essential elements not found');
+      return;
+    }
+    
+    // Set default abilities
+    myAbilities = [
+      { text: "قدرة الهجوم السريع", used: false },
+      { text: "قدرة الدفاع القوي", used: false },
+      { text: "قدرة الشفاء", used: false },
+      { text: "قدرة التخفي", used: false },
+      { text: "قدرة القوة الخارقة", used: false }
+    ];
+    
+    // Render abilities
+    renderBadges(abilitiesWrap, myAbilities, { clickable: true, onClick: requestUseAbility });
+    
+    // Set status
+    if (abilityStatus) {
+      abilityStatus.textContent = "اضغط على القدرة لطلب استخدامها. سيتم إشعار المستضيف.";
+    }
+    
+    // Set instruction
+    if (instruction) {
+      instruction.textContent = `اللاعب ${playerName} رتب بطاقاتك`;
+    }
+    
+    console.log('✅ Fallback initialization completed');
+    
+  } catch (error) {
+    console.error('❌ Error in fallback initialization:', error);
+  }
+}
+
+// Additional initialization for copied links
+function initializeForCopiedLink() {
+  console.log('🔗 Initializing for copied link...');
+  
+  // Check if this is a fresh page load (no existing data)
+  const hasExistingData = localStorage.getItem('gameSetupProgress') || 
+                          localStorage.getItem('gameState') || 
+                          localStorage.getItem(`${playerParam}Abilities`);
+  
+  if (!hasExistingData) {
+    console.log('🆕 Fresh page load detected, setting up default data...');
+    
+    // Set up default game data
+    const defaultGameSetup = {
+      rounds: 11,
+      [playerParam]: {
+        name: playerName,
+        abilities: [
+          "قدرة الهجوم السريع",
+          "قدرة الدفاع القوي", 
+          "قدرة الشفاء",
+          "قدرة التخفي",
+          "قدرة القوة الخارقة"
+        ],
+        cards: [],
+        arrangementCompleted: false
+      }
+    };
+    
+    localStorage.setItem('gameSetupProgress', JSON.stringify(defaultGameSetup));
+    
+    // Set up default abilities
+    const defaultAbilities = [
+      "قدرة الهجوم السريع",
+      "قدرة الدفاع القوي",
+      "قدرة الشفاء", 
+      "قدرة التخفي",
+      "قدرة القوة الخارقة"
+    ];
+    
+    localStorage.setItem(`${playerParam}Abilities`, JSON.stringify(defaultAbilities));
+    
+    // Set current game ID
+    if (gameId) {
+      localStorage.setItem('currentGameId', gameId);
+    }
+    
+    console.log('✅ Default data set up for fresh page load');
+  }
+  
+  // Force immediate initialization
+  setTimeout(() => {
+    comprehensiveInitialization();
+  }, 100);
+}
+
+// Multiple initialization triggers to ensure it works
+document.addEventListener('DOMContentLoaded', initializeForCopiedLink);
+window.addEventListener('load', initializeForCopiedLink);
+
+// Also initialize immediately if DOM is already ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeForCopiedLink);
+} else {
+  initializeForCopiedLink();
+}
+
+// Backup initialization after a delay
+setTimeout(() => {
+  if (!abilitiesWrap || abilitiesWrap.children.length === 0) {
+    console.log('🔄 Backup initialization triggered...');
+    initializeForCopiedLink();
+  }
+}, 2000);
+
+// Final backup initialization
+setTimeout(() => {
+  if (!abilitiesWrap || abilitiesWrap.children.length === 0) {
+    console.log('🔄 Final backup initialization triggered...');
+    fallbackInitialization();
+  }
+}, 5000);
