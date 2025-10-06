@@ -43,6 +43,50 @@ if (!abilityStatus) {
   console.error('abilityStatus element not found');
 }
 
+// Ensure DOM is ready before initializing
+function ensureDOMReady() {
+  return new Promise((resolve) => {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', resolve);
+    } else {
+      resolve();
+    }
+  });
+}
+
+// Initialize abilities after DOM is ready
+async function initializeAbilities() {
+  await ensureDOMReady();
+  
+  // Wait a bit more to ensure all elements are rendered
+  setTimeout(() => {
+    console.log('Initializing abilities...');
+    loadPlayerAbilities();
+    
+    // Force render abilities multiple times to ensure they work
+    setTimeout(() => {
+      if (abilitiesWrap && abilitiesWrap.children.length === 0) {
+        console.log('Force rendering abilities...');
+        loadPlayerAbilities();
+      }
+    }, 200);
+    
+    setTimeout(() => {
+      if (abilitiesWrap && abilitiesWrap.children.length === 0) {
+        console.log('Second force render...');
+        loadPlayerAbilities();
+      }
+    }, 500);
+    
+    setTimeout(() => {
+      if (abilitiesWrap && abilitiesWrap.children.length === 0) {
+        console.log('Third force render...');
+        loadPlayerAbilities();
+      }
+    }, 1000);
+  }, 100);
+}
+
 let picks = [];
 let submittedOrder = null;
 let opponentName = "الخصم";
@@ -93,24 +137,80 @@ function renderBadges(container, abilities, { clickable = false, onClick } = {})
     const isUsed = !!ab.used;
     const el = document.createElement(clickable ? "button" : "span");
     el.textContent = ab.text;
-    el.className =
-      "px-3 py-1 rounded-lg font-bold border " +
-      (clickable
+    
+    // Use custom CSS instead of Tailwind classes for better mobile compatibility
+    el.style.cssText = `
+      padding: 8px 12px;
+      margin: 4px;
+      border-radius: 8px;
+      font-weight: bold;
+      font-family: "Cairo", sans-serif;
+      font-size: 14px;
+      border: 2px solid;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-block;
+      text-align: center;
+      min-height: 44px;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      ${clickable
         ? (isUsed
-            ? "bg-gray-500/60 text-black/60 border-gray-600 cursor-not-allowed"
-            : "bg-yellow-400 hover:bg-yellow-300 text-black border-yellow-500")
-        : "bg-gray-400/70 text-black border-gray-500");
+            ? "background-color: #6b7280; color: #9ca3af; border-color: #4b5563; cursor: not-allowed; opacity: 0.6;"
+            : "background-color: #fbbf24; color: #1f2937; border-color: #f59e0b;")
+        : "background-color: #9ca3af; color: #1f2937; border-color: #6b7280;"}
+    `;
+    
     if (clickable) {
       if (isUsed) { 
         el.disabled = true; 
         el.setAttribute("aria-disabled", "true"); 
       } else if (onClick) { 
-        el.onclick = () => {
+        el.onclick = (e) => {
+          e.preventDefault();
+          e.stopPropagation();
           console.log('Ability clicked:', ab.text);
           onClick(ab.text);
-        }; 
+        };
+        
+        // Add touch events for mobile
+        el.addEventListener('touchstart', (e) => {
+          e.preventDefault();
+          el.style.transform = 'scale(0.95)';
+          el.style.opacity = '0.8';
+        }, { passive: false });
+        
+        el.addEventListener('touchend', (e) => {
+          e.preventDefault();
+          el.style.transform = 'scale(1)';
+          el.style.opacity = '1';
+          onClick(ab.text);
+        }, { passive: false });
+        
+        el.addEventListener('touchcancel', (e) => {
+          e.preventDefault();
+          el.style.transform = 'scale(1)';
+          el.style.opacity = '1';
+        }, { passive: false });
+        
+        // Add mouse events for desktop
+        el.addEventListener('mousedown', (e) => {
+          el.style.transform = 'scale(0.95)';
+          el.style.opacity = '0.8';
+        });
+        
+        el.addEventListener('mouseup', (e) => {
+          el.style.transform = 'scale(1)';
+          el.style.opacity = '1';
+        });
+        
+        el.addEventListener('mouseleave', (e) => {
+          el.style.transform = 'scale(1)';
+          el.style.opacity = '1';
+        });
       }
     }
+    
     container.appendChild(el);
   });
   
@@ -590,23 +690,38 @@ function loadPlayerAbilities() {
       
       console.log(`Loaded ${myAbilities.length} abilities, ${myAbilities.filter(a => a.used).length} used`);
       
-      // Force immediate UI update
+      // Force immediate UI update with multiple attempts
       if (abilitiesWrap) {
         abilitiesWrap.innerHTML = ''; // Clear first
         renderBadges(abilitiesWrap, myAbilities, { clickable: true, onClick: requestUseAbility });
+        
+        // Multiple attempts to ensure buttons are rendered
+        setTimeout(() => {
+          if (abilitiesWrap && abilitiesWrap.children.length === 0) {
+            console.log('Re-rendering abilities after delay...');
+            renderBadges(abilitiesWrap, myAbilities, { clickable: true, onClick: requestUseAbility });
+          }
+        }, 100);
+        
+        setTimeout(() => {
+          if (abilitiesWrap && abilitiesWrap.children.length === 0) {
+            console.log('Second attempt to render abilities...');
+            renderBadges(abilitiesWrap, myAbilities, { clickable: true, onClick: requestUseAbility });
+          }
+        }, 300);
+        
+        setTimeout(() => {
+          if (abilitiesWrap && abilitiesWrap.children.length === 0) {
+            console.log('Third attempt to render abilities...');
+            renderBadges(abilitiesWrap, myAbilities, { clickable: true, onClick: requestUseAbility });
+          }
+        }, 500);
       }
+      
       if (abilityStatus) {
         abilityStatus.textContent = "اضغط على القدرة لطلب استخدامها.";
       }
       console.log('Loaded abilities:', myAbilities);
-      
-      // Force a small delay to ensure DOM is updated
-      setTimeout(() => {
-        if (abilitiesWrap && abilitiesWrap.children.length === 0) {
-          console.log('Re-rendering abilities after delay...');
-          renderBadges(abilitiesWrap, myAbilities, { clickable: true, onClick: requestUseAbility });
-        }
-      }, 100);
       
       // Check for any pending requests immediately after loading
       setTimeout(checkAbilityRequests, 100);
@@ -1867,3 +1982,6 @@ window.submitPicks = submitPicks;
 window.clearOldGameData = clearOldGameData;
 window.clearUsedAbilities = clearUsedAbilities;
 window.openBattleView = openBattleView;
+
+// Initialize abilities when page loads
+initializeAbilities();
