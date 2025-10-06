@@ -43,50 +43,6 @@ if (!abilityStatus) {
   console.error('abilityStatus element not found');
 }
 
-// Ensure DOM is ready before initializing
-function ensureDOMReady() {
-  return new Promise((resolve) => {
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', resolve);
-    } else {
-      resolve();
-    }
-  });
-}
-
-// Initialize abilities after DOM is ready
-async function initializeAbilities() {
-  await ensureDOMReady();
-  
-  // Wait a bit more to ensure all elements are rendered
-  setTimeout(() => {
-    console.log('Initializing abilities...');
-    loadPlayerAbilities();
-    
-    // Force render abilities multiple times to ensure they work
-    setTimeout(() => {
-      if (abilitiesWrap && abilitiesWrap.children.length === 0) {
-        console.log('Force rendering abilities...');
-        loadPlayerAbilities();
-      }
-    }, 200);
-    
-    setTimeout(() => {
-      if (abilitiesWrap && abilitiesWrap.children.length === 0) {
-        console.log('Second force render...');
-        loadPlayerAbilities();
-      }
-    }, 500);
-    
-    setTimeout(() => {
-      if (abilitiesWrap && abilitiesWrap.children.length === 0) {
-        console.log('Third force render...');
-        loadPlayerAbilities();
-      }
-    }, 1000);
-  }, 100);
-}
-
 let picks = [];
 let submittedOrder = null;
 let opponentName = "الخصم";
@@ -138,124 +94,114 @@ function renderBadges(container, abilities, { clickable = false, onClick } = {})
     const el = document.createElement(clickable ? "button" : "span");
     el.textContent = ab.text;
     
-    // Use custom CSS instead of Tailwind classes for better mobile compatibility
-    el.style.cssText = `
-      padding: 8px 12px;
-      margin: 4px;
-      border-radius: 8px;
-      font-weight: bold;
-      font-family: "Cairo", sans-serif;
-      font-size: 14px;
-      border: 2px solid;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      display: inline-block;
-      text-align: center;
-      min-height: 44px;
-      touch-action: manipulation;
-      -webkit-tap-highlight-color: transparent;
-      ${clickable
+    // Enhanced styling for mobile devices
+    const isMobile = window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    el.className =
+      "px-3 py-1 rounded-lg font-bold border " +
+      (clickable
         ? (isUsed
-            ? "background-color: #6b7280; color: #9ca3af; border-color: #4b5563; cursor: not-allowed; opacity: 0.6;"
-            : "background-color: #fbbf24; color: #1f2937; border-color: #f59e0b;")
-        : "background-color: #9ca3af; color: #1f2937; border-color: #6b7280;"}
-    `;
+            ? "bg-gray-500/60 text-black/60 border-gray-600 cursor-not-allowed"
+            : "bg-yellow-400 hover:bg-yellow-300 text-black border-yellow-500")
+        : "bg-gray-400/70 text-black border-gray-500") +
+      (isMobile ? " text-sm min-h-[44px] touch-manipulation" : "");
+    
+    // Add mobile-specific styles
+    if (isMobile && clickable && !isUsed) {
+      el.style.cssText += `
+        -webkit-tap-highlight-color: transparent;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      `;
+    }
     
     if (clickable) {
       if (isUsed) { 
         el.disabled = true; 
         el.setAttribute("aria-disabled", "true"); 
       } else if (onClick) { 
-        // Enhanced click handler with multiple event types
-        const handleClick = (e) => {
+        // Enhanced event handling for mobile devices
+        el.onclick = (e) => {
           e.preventDefault();
           e.stopPropagation();
           console.log('Ability clicked:', ab.text);
           onClick(ab.text);
         };
         
-        // Add multiple event listeners for maximum compatibility
-        el.onclick = handleClick;
-        el.addEventListener('click', handleClick);
+        // Add touch events for better mobile support
+        let touchStarted = false;
         
-        // Add touch events for mobile
         el.addEventListener('touchstart', (e) => {
           e.preventDefault();
-          el.style.transform = 'scale(0.95)';
-          el.style.opacity = '0.8';
+          touchStarted = true;
+          console.log('Ability touch start:', ab.text);
+          
+          if (isMobile) {
+            el.style.transform = 'scale(0.95)';
+            el.style.backgroundColor = '#fbbf24';
+          }
         }, { passive: false });
         
         el.addEventListener('touchend', (e) => {
           e.preventDefault();
-          el.style.transform = 'scale(1)';
-          el.style.opacity = '1';
-          handleClick(e);
+          e.stopPropagation();
+          
+          if (touchStarted) {
+            console.log('Ability touch end:', ab.text);
+            
+            if (isMobile) {
+              el.style.transform = 'scale(1)';
+              el.style.backgroundColor = '';
+            }
+            
+            // Execute the ability request
+            setTimeout(() => {
+              console.log('Ability clicked:', ab.text);
+              onClick(ab.text);
+            }, 100);
+          }
+          
+          touchStarted = false;
         }, { passive: false });
         
-        el.addEventListener('touchcancel', (e) => {
+        // Prevent context menu on long press
+        el.addEventListener('contextmenu', (e) => {
           e.preventDefault();
-          el.style.transform = 'scale(1)';
-          el.style.opacity = '1';
-        }, { passive: false });
+        });
         
-        // Add mouse events for desktop
+        // Add mouse events for desktop compatibility
         el.addEventListener('mousedown', (e) => {
-          el.style.transform = 'scale(0.95)';
-          el.style.opacity = '0.8';
+          if (!isMobile) {
+            el.style.transform = 'scale(0.95)';
+            el.style.backgroundColor = '#fbbf24';
+          }
         });
         
         el.addEventListener('mouseup', (e) => {
-          el.style.transform = 'scale(1)';
-          el.style.opacity = '1';
+          if (!isMobile) {
+            el.style.transform = 'scale(1)';
+            el.style.backgroundColor = '';
+          }
         });
         
         el.addEventListener('mouseleave', (e) => {
-          el.style.transform = 'scale(1)';
-          el.style.opacity = '1';
-        });
-        
-        // Add pointer events for modern browsers
-        el.addEventListener('pointerdown', (e) => {
-          el.style.transform = 'scale(0.95)';
-          el.style.opacity = '0.8';
-        });
-        
-        el.addEventListener('pointerup', (e) => {
-          el.style.transform = 'scale(1)';
-          el.style.opacity = '1';
-          handleClick(e);
-        });
-        
-        // Verify button is clickable
-        setTimeout(() => {
-          if (el.onclick === null && !el.hasAttribute('onclick')) {
-            console.warn('Button lost click handler, re-adding...');
-            el.onclick = handleClick;
+          if (!isMobile) {
+            el.style.transform = 'scale(1)';
+            el.style.backgroundColor = '';
           }
-        }, 100);
+        });
       }
     }
-    
     container.appendChild(el);
   });
   
   console.log('Badges rendered successfully');
-  
-  // Verify buttons are working
-  setTimeout(() => {
-    const buttons = container.querySelectorAll('button');
-    buttons.forEach(btn => {
-      if (!btn.onclick && !btn.hasAttribute('onclick')) {
-        console.warn('Button without click handler detected, fixing...');
-        btn.onclick = () => {
-          console.log('Fallback click handler triggered');
-          if (onClick) {
-            onClick(btn.textContent);
-          }
-        };
-      }
-    });
-  }, 200);
 }
 
 function hideOpponentPanel() {
@@ -611,13 +557,24 @@ if (socket) {
 
 function requestUseAbility(abilityText) {
   console.log('Requesting ability:', abilityText);
+  
+  // Enhanced mobile feedback
+  const isMobile = window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  
   if (abilityStatus) {
     abilityStatus.textContent = "تم إرسال طلب استخدام القدرة…";
+    if (isMobile) {
+      abilityStatus.style.color = '#10B981';
+      abilityStatus.style.fontWeight = 'bold';
+    }
   }
+  
   const requestId = `${playerName}:${Date.now()}`;
   tempUsed.add(abilityText);
   pendingRequests.set(requestId, abilityText);
   myAbilities = (myAbilities || []).map(a => a.text === abilityText ? { ...a, used: true } : a);
+  
+  // Immediate UI update
   if (abilitiesWrap) {
     renderBadges(abilitiesWrap, myAbilities, { clickable: true, onClick: requestUseAbility });
   }
@@ -647,8 +604,30 @@ function requestUseAbility(abilityText) {
     }));
     
     console.log('Ability request sent to host via localStorage:', request);
+    
+    // Enhanced mobile feedback
+    if (isMobile) {
+      // Show visual feedback
+      const abilityButton = Array.from(abilitiesWrap.children).find(btn => btn.textContent === abilityText);
+      if (abilityButton) {
+        abilityButton.style.backgroundColor = '#10B981';
+        abilityButton.style.color = 'white';
+        abilityButton.style.transform = 'scale(1.05)';
+        
+        setTimeout(() => {
+          abilityButton.style.transform = 'scale(1)';
+        }, 200);
+      }
+      
+      // Show toast notification for mobile
+      showMobileToast('تم إرسال طلب القدرة للمضيف', 'success');
+    }
+    
   } catch (e) {
     console.error('Error saving ability request:', e);
+    if (isMobile) {
+      showMobileToast('خطأ في إرسال الطلب', 'error');
+    }
   }
   
   // Also try socket if available
@@ -731,38 +710,23 @@ function loadPlayerAbilities() {
       
       console.log(`Loaded ${myAbilities.length} abilities, ${myAbilities.filter(a => a.used).length} used`);
       
-      // Force immediate UI update with multiple attempts
+      // Force immediate UI update
       if (abilitiesWrap) {
         abilitiesWrap.innerHTML = ''; // Clear first
         renderBadges(abilitiesWrap, myAbilities, { clickable: true, onClick: requestUseAbility });
-        
-        // Multiple attempts to ensure buttons are rendered
-        setTimeout(() => {
-          if (abilitiesWrap && abilitiesWrap.children.length === 0) {
-            console.log('Re-rendering abilities after delay...');
-            renderBadges(abilitiesWrap, myAbilities, { clickable: true, onClick: requestUseAbility });
-          }
-        }, 100);
-        
-        setTimeout(() => {
-          if (abilitiesWrap && abilitiesWrap.children.length === 0) {
-            console.log('Second attempt to render abilities...');
-            renderBadges(abilitiesWrap, myAbilities, { clickable: true, onClick: requestUseAbility });
-          }
-        }, 300);
-        
-        setTimeout(() => {
-          if (abilitiesWrap && abilitiesWrap.children.length === 0) {
-            console.log('Third attempt to render abilities...');
-            renderBadges(abilitiesWrap, myAbilities, { clickable: true, onClick: requestUseAbility });
-          }
-        }, 500);
       }
-      
       if (abilityStatus) {
         abilityStatus.textContent = "اضغط على القدرة لطلب استخدامها.";
       }
       console.log('Loaded abilities:', myAbilities);
+      
+      // Force a small delay to ensure DOM is updated
+      setTimeout(() => {
+        if (abilitiesWrap && abilitiesWrap.children.length === 0) {
+          console.log('Re-rendering abilities after delay...');
+          renderBadges(abilitiesWrap, myAbilities, { clickable: true, onClick: requestUseAbility });
+        }
+      }, 100);
       
       // Check for any pending requests immediately after loading
       setTimeout(checkAbilityRequests, 100);
@@ -1726,26 +1690,16 @@ function openBattleView() {
     
     console.log(`Opening battle view for player ${playerNumber}: ${playerViewUrl}`);
     
-    // Check if device is mobile
-    const isMobile = window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    // Open in new tab (not a separate window)
+    const newWindow = window.open(playerViewUrl, '_blank');
     
-    if (isMobile) {
-      // For mobile devices, redirect in same window
-      if (confirm('هل تريد الانتقال إلى صفحة عرض المعركة؟')) {
-        window.location.href = playerViewUrl;
-      }
-    } else {
-      // For desktop, open in new tab
-      const newWindow = window.open(playerViewUrl, '_blank');
-      
-      if (!newWindow) {
-        alert('تم منع النافذة المنبثقة. يرجى السماح بالنوافذ المنبثقة لهذا الموقع.');
-        return;
-      }
-      
-      // Focus the new window
-      newWindow.focus();
+    if (!newWindow) {
+      alert('تم منع النافذة المنبثقة. يرجى السماح بالنوافذ المنبثقة لهذا الموقع.');
+      return;
     }
+    
+    // Focus the new window
+    newWindow.focus();
     
     // Show success message
     showToast('تم فتح صفحة عرض التحدي بنجاح!', 'success');
@@ -2018,351 +1972,81 @@ function showToast(message, type = 'info') {
   }
 }
 
+// Show mobile toast notification
+function showMobileToast(message, type = 'info') {
+  try {
+    // Remove existing mobile toast
+    const existingToast = document.querySelector('.mobile-toast');
+    if (existingToast) {
+      existingToast.remove();
+    }
+    
+    // Create new mobile toast
+    const toast = document.createElement('div');
+    toast.className = 'mobile-toast';
+    toast.textContent = message;
+    toast.style.cssText = `
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.95);
+      color: white;
+      padding: 20px 30px;
+      border-radius: 12px;
+      border: 3px solid #10B981;
+      font-family: "Cairo", sans-serif;
+      font-weight: 700;
+      font-size: 18px;
+      z-index: 10000;
+      opacity: 0;
+      transition: all 0.3s ease;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      max-width: 90%;
+      word-wrap: break-word;
+    `;
+    
+    // Add type-specific styling
+    if (type === 'success') {
+      toast.style.borderColor = '#10B981';
+      toast.style.backgroundColor = 'rgba(16, 185, 129, 0.1)';
+    } else if (type === 'error') {
+      toast.style.borderColor = '#EF4444';
+      toast.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
+    } else if (type === 'warning') {
+      toast.style.borderColor = '#F59E0B';
+      toast.style.backgroundColor = 'rgba(245, 158, 11, 0.1)';
+    }
+    
+    document.body.appendChild(toast);
+    
+    // Show toast with animation
+    setTimeout(() => {
+      toast.style.opacity = '1';
+      toast.style.transform = 'translate(-50%, -50%) scale(1.05)';
+    }, 100);
+    
+    // Hide toast after 2 seconds
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translate(-50%, -50%) scale(0.95)';
+      setTimeout(() => {
+        if (toast.parentNode) {
+          toast.parentNode.removeChild(toast);
+        }
+      }, 300);
+    }, 2000);
+    
+  } catch (error) {
+    console.error('Error showing mobile toast:', error);
+  }
+}
+
 // Make functions available globally
 window.submitPicks = submitPicks;
 window.clearOldGameData = clearOldGameData;
 window.clearUsedAbilities = clearUsedAbilities;
 window.openBattleView = openBattleView;
 
-// Comprehensive initialization system
-async function comprehensiveInitialization() {
-  console.log('🚀 Starting comprehensive initialization...');
-  
-  try {
-    // Step 1: Wait for DOM to be ready
-    await ensureDOMReady();
-    console.log('✅ DOM is ready');
-    
-    // Step 2: Wait for essential elements to be available
-    await waitForElements();
-    console.log('✅ Essential elements are available');
-    
-    // Step 3: Initialize abilities with multiple attempts
-    await initializeAbilitiesWithRetry();
-    console.log('✅ Abilities initialized');
-    
-    // Step 4: Load game data with fallback
-    await loadGameDataWithFallback();
-    console.log('✅ Game data loaded');
-    
-    // Step 5: Initialize card manager
-    await initializeCardManagerWithRetry();
-    console.log('✅ Card manager initialized');
-    
-    // Step 6: Force render all components
-    await forceRenderAllComponents();
-    console.log('✅ All components rendered');
-    
-    // Step 7: Start monitoring systems
-    startAllMonitoringSystems();
-    console.log('✅ Monitoring systems started');
-    
-    console.log('🎉 Comprehensive initialization completed successfully!');
-    
-  } catch (error) {
-    console.error('❌ Error in comprehensive initialization:', error);
-    
-    // Fallback initialization
-    console.log('🔄 Starting fallback initialization...');
-    await fallbackInitialization();
-  }
-}
 
-// Wait for essential elements to be available
-function waitForElements() {
-  return new Promise((resolve) => {
-    const checkElements = () => {
-      const elements = [
-        document.getElementById('playerAbilities'),
-        document.getElementById('abilityStatus'),
-        document.getElementById('cardGrid'),
-        document.getElementById('instruction')
-      ];
-      
-      const allAvailable = elements.every(el => el !== null);
-      
-      if (allAvailable) {
-        resolve();
-      } else {
-        console.log('⏳ Waiting for essential elements...');
-        setTimeout(checkElements, 100);
-      }
-    };
-    
-    checkElements();
-  });
-}
-
-// Initialize abilities with retry mechanism
-async function initializeAbilitiesWithRetry() {
-  const maxRetries = 5;
-  let retryCount = 0;
-  
-  while (retryCount < maxRetries) {
-    try {
-      console.log(`🔄 Attempting to initialize abilities (attempt ${retryCount + 1})...`);
-      
-      // Clear and reload abilities
-      if (abilitiesWrap) {
-        abilitiesWrap.innerHTML = '';
-      }
-      
-      // Load abilities
-      loadPlayerAbilities();
-      
-      // Wait a bit and check if abilities were loaded
-      await new Promise(resolve => setTimeout(resolve, 200));
-      
-      if (abilitiesWrap && abilitiesWrap.children.length > 0) {
-        console.log('✅ Abilities loaded successfully');
-        return;
-      }
-      
-      retryCount++;
-      console.log(`⚠️ Abilities not loaded, retrying... (${retryCount}/${maxRetries})`);
-      
-    } catch (error) {
-      console.error(`❌ Error in attempt ${retryCount + 1}:`, error);
-      retryCount++;
-    }
-  }
-  
-  // If all retries failed, use default abilities
-  console.log('🔄 Using default abilities as fallback');
-  myAbilities = [
-    { text: "قدرة الهجوم السريع", used: false },
-    { text: "قدرة الدفاع القوي", used: false },
-    { text: "قدرة الشفاء", used: false },
-    { text: "قدرة التخفي", used: false },
-    { text: "قدرة القوة الخارقة", used: false }
-  ];
-  
-  if (abilitiesWrap) {
-    renderBadges(abilitiesWrap, myAbilities, { clickable: true, onClick: requestUseAbility });
-  }
-}
-
-// Load game data with fallback
-async function loadGameDataWithFallback() {
-  try {
-    console.log('🔄 Loading game data...');
-    
-    // Try Firebase first
-    if (gameId) {
-      try {
-        await loadGameData();
-        console.log('✅ Game data loaded from Firebase');
-        return;
-      } catch (error) {
-        console.warn('⚠️ Firebase failed, trying localStorage:', error);
-      }
-    }
-    
-    // Fallback to localStorage
-    loadPlayerCards();
-    console.log('✅ Game data loaded from localStorage');
-    
-  } catch (error) {
-    console.error('❌ Error loading game data:', error);
-    
-    // Ultimate fallback
-    console.log('🔄 Using ultimate fallback for game data');
-    if (instruction) {
-      instruction.textContent = `اللاعب ${playerName} رتب بطاقاتك`;
-    }
-  }
-}
-
-// Initialize card manager with retry
-async function initializeCardManagerWithRetry() {
-  const maxRetries = 3;
-  let retryCount = 0;
-  
-  while (retryCount < maxRetries) {
-    try {
-      if (typeof window.cardManager !== 'undefined') {
-        cardManager = window.cardManager;
-        console.log('✅ Card manager initialized');
-        return;
-      }
-      
-      retryCount++;
-      console.log(`⏳ Waiting for card manager... (${retryCount}/${maxRetries})`);
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-    } catch (error) {
-      console.error(`❌ Error initializing card manager:`, error);
-      retryCount++;
-    }
-  }
-  
-  console.log('⚠️ Card manager not available, continuing without it');
-}
-
-// Force render all components
-async function forceRenderAllComponents() {
-  console.log('🔄 Force rendering all components...');
-  
-  // Force render abilities multiple times
-  for (let i = 0; i < 3; i++) {
-    if (abilitiesWrap && myAbilities.length > 0) {
-      renderBadges(abilitiesWrap, myAbilities, { clickable: true, onClick: requestUseAbility });
-    }
-    await new Promise(resolve => setTimeout(resolve, 100));
-  }
-  
-  // Force render cards if available
-  if (picks.length > 0 && grid) {
-    renderCards(picks, submittedOrder);
-  }
-  
-  console.log('✅ All components force rendered');
-}
-
-// Start all monitoring systems
-function startAllMonitoringSystems() {
-  console.log('🔄 Starting monitoring systems...');
-  
-  // Start ability monitoring
-  setInterval(() => {
-    loadPlayerAbilities();
-    checkAbilityRequests();
-  }, 2000);
-  
-  // Start battle status monitoring
-  startBattleStatusMonitoring();
-  
-  // Start storage monitoring
-  window.addEventListener('storage', function(e) {
-    if (e.key === 'abilityRequests') {
-      checkAbilityRequests();
-    } else if (e.key && e.key.includes('Abilities')) {
-      loadPlayerAbilities();
-    }
-  });
-  
-  console.log('✅ All monitoring systems started');
-}
-
-// Fallback initialization
-async function fallbackInitialization() {
-  console.log('🔄 Starting fallback initialization...');
-  
-  try {
-    // Basic DOM check
-    if (!abilitiesWrap || !abilityStatus) {
-      console.error('❌ Essential elements not found');
-      return;
-    }
-    
-    // Set default abilities
-    myAbilities = [
-      { text: "قدرة الهجوم السريع", used: false },
-      { text: "قدرة الدفاع القوي", used: false },
-      { text: "قدرة الشفاء", used: false },
-      { text: "قدرة التخفي", used: false },
-      { text: "قدرة القوة الخارقة", used: false }
-    ];
-    
-    // Render abilities
-    renderBadges(abilitiesWrap, myAbilities, { clickable: true, onClick: requestUseAbility });
-    
-    // Set status
-    if (abilityStatus) {
-      abilityStatus.textContent = "اضغط على القدرة لطلب استخدامها. سيتم إشعار المستضيف.";
-    }
-    
-    // Set instruction
-    if (instruction) {
-      instruction.textContent = `اللاعب ${playerName} رتب بطاقاتك`;
-    }
-    
-    console.log('✅ Fallback initialization completed');
-    
-  } catch (error) {
-    console.error('❌ Error in fallback initialization:', error);
-  }
-}
-
-// Additional initialization for copied links
-function initializeForCopiedLink() {
-  console.log('🔗 Initializing for copied link...');
-  
-  // Check if this is a fresh page load (no existing data)
-  const hasExistingData = localStorage.getItem('gameSetupProgress') || 
-                          localStorage.getItem('gameState') || 
-                          localStorage.getItem(`${playerParam}Abilities`);
-  
-  if (!hasExistingData) {
-    console.log('🆕 Fresh page load detected, setting up default data...');
-    
-    // Set up default game data
-    const defaultGameSetup = {
-      rounds: 11,
-      [playerParam]: {
-        name: playerName,
-        abilities: [
-          "قدرة الهجوم السريع",
-          "قدرة الدفاع القوي", 
-          "قدرة الشفاء",
-          "قدرة التخفي",
-          "قدرة القوة الخارقة"
-        ],
-        cards: [],
-        arrangementCompleted: false
-      }
-    };
-    
-    localStorage.setItem('gameSetupProgress', JSON.stringify(defaultGameSetup));
-    
-    // Set up default abilities
-    const defaultAbilities = [
-      "قدرة الهجوم السريع",
-      "قدرة الدفاع القوي",
-      "قدرة الشفاء", 
-      "قدرة التخفي",
-      "قدرة القوة الخارقة"
-    ];
-    
-    localStorage.setItem(`${playerParam}Abilities`, JSON.stringify(defaultAbilities));
-    
-    // Set current game ID
-    if (gameId) {
-      localStorage.setItem('currentGameId', gameId);
-    }
-    
-    console.log('✅ Default data set up for fresh page load');
-  }
-  
-  // Force immediate initialization
-  setTimeout(() => {
-    comprehensiveInitialization();
-  }, 100);
-}
-
-// Multiple initialization triggers to ensure it works
-document.addEventListener('DOMContentLoaded', initializeForCopiedLink);
-window.addEventListener('load', initializeForCopiedLink);
-
-// Also initialize immediately if DOM is already ready
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initializeForCopiedLink);
-} else {
-  initializeForCopiedLink();
-}
-
-// Backup initialization after a delay
-setTimeout(() => {
-  if (!abilitiesWrap || abilitiesWrap.children.length === 0) {
-    console.log('🔄 Backup initialization triggered...');
-    initializeForCopiedLink();
-  }
-}, 2000);
-
-// Final backup initialization
-setTimeout(() => {
-  if (!abilitiesWrap || abilitiesWrap.children.length === 0) {
-    console.log('🔄 Final backup initialization triggered...');
-    fallbackInitialization();
-  }
-}, 5000);
