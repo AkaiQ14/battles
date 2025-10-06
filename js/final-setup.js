@@ -674,40 +674,24 @@ function openPlayerViewPages() {
     
     console.log('Opening player view pages:', { player1Url, player2Url });
     
-    // Check if device is mobile
-    const isMobile = window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  // Open both in new tabs
+  const player1Window = window.open(player1Url, '_blank');
+  const player2Window = window.open(player2Url, '_blank');
     
-    if (isMobile) {
-      // For mobile devices, show options to open pages
-      const choice = confirm('هل تريد فتح صفحة اللاعب الأول؟');
-      if (choice) {
-        window.location.href = player1Url;
-      } else {
-        const choice2 = confirm('هل تريد فتح صفحة اللاعب الثاني؟');
-        if (choice2) {
-          window.location.href = player2Url;
-        }
-      }
-    } else {
-      // For desktop, open both in new tabs
-      const player1Window = window.open(player1Url, '_blank');
-      const player2Window = window.open(player2Url, '_blank');
-      
-      // Check if windows were opened successfully
-      if (!player1Window || player1Window.closed) {
-        console.warn('Player 1 window was blocked or closed');
-        alert('تم منع نافذة اللاعب الأول. يرجى السماح بالنوافذ المنبثقة لهذا الموقع.');
-      }
-      
-      if (!player2Window || player2Window.closed) {
-        console.warn('Player 2 window was blocked or closed');
-        alert('تم منع نافذة اللاعب الثاني. يرجى السماح بالنوافذ المنبثقة لهذا الموقع.');
-      }
-      
-      // Store window references for monitoring
-      window.player1Window = player1Window;
-      window.player2Window = player2Window;
+    // Check if windows were opened successfully
+    if (!player1Window || player1Window.closed) {
+      console.warn('Player 1 window was blocked or closed');
+      alert('تم منع نافذة اللاعب الأول. يرجى السماح بالنوافذ المنبثقة لهذا الموقع.');
     }
+    
+    if (!player2Window || player2Window.closed) {
+      console.warn('Player 2 window was blocked or closed');
+      alert('تم منع نافذة اللاعب الثاني. يرجى السماح بالنوافذ المنبثقة لهذا الموقع.');
+    }
+    
+    // Store window references for monitoring
+    window.player1Window = player1Window;
+    window.player2Window = player2Window;
     
     // Show success message
     showToast('تم فتح صفحات اللاعبين بنجاح!', 'success');

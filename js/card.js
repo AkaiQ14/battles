@@ -2940,33 +2940,23 @@ function openPlayerCardsForArrangement(playerParam, playerName) {
     
     console.log(`Opening player cards for ${playerParam}: ${playerCardsUrl}`);
     
-    // Check if device is mobile
-    const isMobile = window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    // Open in new window/tab
+    const newWindow = window.open(playerCardsUrl, `player-cards-${playerParam}`, 
+      'width=800,height=600,scrollbars=yes,resizable=yes');
     
-    if (isMobile) {
-      // For mobile devices, redirect in same window
-      if (confirm(`هل تريد الانتقال إلى صفحة ترتيب البطاقات لـ ${playerName}؟`)) {
-        window.location.href = playerCardsUrl;
-      }
-    } else {
-      // For desktop, open in new window
-      const newWindow = window.open(playerCardsUrl, `player-cards-${playerParam}`, 
-        'width=800,height=600,scrollbars=yes,resizable=yes');
-      
-      if (!newWindow) {
-        alert('تم منع النافذة المنبثقة. يرجى السماح بالنوافذ المنبثقة لهذا الموقع.');
-        return;
-      }
-      
-      // Focus the new window
-      newWindow.focus();
-      
-      // Store the window reference for monitoring
-      window.playerCardsWindow = newWindow;
-      
-      // Start monitoring for arrangement completion
-      startMonitoringArrangement(playerParam, playerName);
+    if (!newWindow) {
+      alert('تم منع النافذة المنبثقة. يرجى السماح بالنوافذ المنبثقة لهذا الموقع.');
+      return;
     }
+    
+    // Focus the new window
+    newWindow.focus();
+    
+    // Store the window reference for monitoring
+    window.playerCardsWindow = newWindow;
+    
+    // Start monitoring for arrangement completion
+    startMonitoringArrangement(playerParam, playerName);
     
   } catch (error) {
     console.error('Error opening player cards:', error);
@@ -3430,31 +3420,21 @@ function navigateToPlayerPage(playerParam, playerName) {
     
     console.log(`Navigating to player page for ${playerName}: ${playerViewUrl}`);
     
-    // Check if device is mobile
-    const isMobile = window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    // Open player view page in new tab
+    const newWindow = window.open(playerViewUrl, `player-view-${playerParam}`, 
+      'width=1200,height=800,scrollbars=yes,resizable=yes');
     
-    if (isMobile) {
-      // For mobile devices, redirect in same window or show option
+    if (!newWindow) {
+      console.warn('تم منع النافذة المنبثقة. يرجى السماح بالنوافذ المنبثقة لهذا الموقع.');
+      // Fallback: try to redirect current window
       if (confirm(`تم قبول طلب القدرة من ${playerName}. هل تريد الانتقال إلى صفحة اللاعب؟`)) {
         window.location.href = playerViewUrl;
       }
-    } else {
-      // For desktop, open in new window
-      const newWindow = window.open(playerViewUrl, `player-view-${playerParam}`, 
-        'width=1200,height=800,scrollbars=yes,resizable=yes');
-      
-      if (!newWindow) {
-        console.warn('تم منع النافذة المنبثقة. يرجى السماح بالنوافذ المنبثقة لهذا الموقع.');
-        // Fallback: try to redirect current window
-        if (confirm(`تم قبول طلب القدرة من ${playerName}. هل تريد الانتقال إلى صفحة اللاعب؟`)) {
-          window.location.href = playerViewUrl;
-        }
-        return;
-      }
-      
-      // Focus the new window
-      newWindow.focus();
+      return;
     }
+    
+    // Focus the new window
+    newWindow.focus();
     
     // Show success message
     showToast(`تم فتح صفحة اللاعب ${playerName} بنجاح!`, 'success');

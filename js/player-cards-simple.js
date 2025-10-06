@@ -87,15 +87,18 @@ function renderBadges(container, abilities, { clickable = false, onClick } = {})
   
   container.innerHTML = "";
   const list = Array.isArray(abilities) ? abilities : [];
-  console.log('Rendering badges:', { list, clickable });
+  console.log('Rendering badges:', { list, clickable, container: container.id || 'no-id' });
   
-  list.forEach(ab => {
+  // Debug mobile detection
+  const isMobile = window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  console.log('Mobile detection:', { isMobile, width: window.innerWidth, userAgent: navigator.userAgent.substring(0, 50) });
+  
+  list.forEach((ab, index) => {
     const isUsed = !!ab.used;
     const el = document.createElement(clickable ? "button" : "span");
     el.textContent = ab.text;
     
-    // Enhanced styling for mobile devices
-    const isMobile = window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    console.log(`Creating ability ${index}:`, { text: ab.text, isUsed, clickable });
     
     el.className =
       "px-3 py-1 rounded-lg font-bold border " +
@@ -126,75 +129,62 @@ function renderBadges(container, abilities, { clickable = false, onClick } = {})
         el.disabled = true; 
         el.setAttribute("aria-disabled", "true"); 
       } else if (onClick) { 
-        // Enhanced event handling for mobile devices
-        el.onclick = (e) => {
+        // Simple and effective event handling for all devices
+        const handleClick = (e) => {
           e.preventDefault();
           e.stopPropagation();
-          console.log('Ability clicked:', ab.text);
+          console.log('Ability clicked:', ab.text, 'Event type:', e.type);
           onClick(ab.text);
         };
         
-        // Add touch events for better mobile support
-        let touchStarted = false;
+        // Use multiple event approaches for maximum compatibility
+        el.onclick = handleClick;
+        el.addEventListener('click', handleClick);
         
-        el.addEventListener('touchstart', (e) => {
-          e.preventDefault();
-          touchStarted = true;
-          console.log('Ability touch start:', ab.text);
+        console.log('Event handlers attached to ability:', ab.text);
+        
+        // Add touch events specifically for mobile
+        if (isMobile) {
+          console.log('Adding mobile touch events for:', ab.text);
           
-          if (isMobile) {
+          // Use a simple approach for mobile
+          el.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Mobile touch end:', ab.text);
+            handleClick(e);
+          }, { passive: false });
+          
+          // Visual feedback for mobile
+          el.addEventListener('touchstart', (e) => {
+            e.preventDefault();
             el.style.transform = 'scale(0.95)';
             el.style.backgroundColor = '#fbbf24';
-          }
-        }, { passive: false });
-        
-        el.addEventListener('touchend', (e) => {
-          e.preventDefault();
-          e.stopPropagation();
+            console.log('Mobile touch start:', ab.text);
+          }, { passive: false });
           
-          if (touchStarted) {
-            console.log('Ability touch end:', ab.text);
-            
-            if (isMobile) {
+          // Reset visual feedback
+          el.addEventListener('touchend', (e) => {
+            setTimeout(() => {
               el.style.transform = 'scale(1)';
               el.style.backgroundColor = '';
-            }
-            
-            // Execute the ability request
-            setTimeout(() => {
-              console.log('Ability clicked:', ab.text);
-              onClick(ab.text);
-            }, 100);
-          }
+            }, 150);
+          }, { passive: false });
           
-          touchStarted = false;
-        }, { passive: false });
+        } else {
+          // Desktop hover effects
+          el.addEventListener('mouseenter', () => {
+            el.style.transform = 'scale(1.05)';
+          });
+          
+          el.addEventListener('mouseleave', () => {
+            el.style.transform = 'scale(1)';
+          });
+        }
         
-        // Prevent context menu on long press
+        // Prevent context menu
         el.addEventListener('contextmenu', (e) => {
           e.preventDefault();
-        });
-        
-        // Add mouse events for desktop compatibility
-        el.addEventListener('mousedown', (e) => {
-          if (!isMobile) {
-            el.style.transform = 'scale(0.95)';
-            el.style.backgroundColor = '#fbbf24';
-          }
-        });
-        
-        el.addEventListener('mouseup', (e) => {
-          if (!isMobile) {
-            el.style.transform = 'scale(1)';
-            el.style.backgroundColor = '';
-          }
-        });
-        
-        el.addEventListener('mouseleave', (e) => {
-          if (!isMobile) {
-            el.style.transform = 'scale(1)';
-            el.style.backgroundColor = '';
-          }
         });
       }
     }
@@ -202,6 +192,22 @@ function renderBadges(container, abilities, { clickable = false, onClick } = {})
   });
   
   console.log('Badges rendered successfully');
+  
+  // Add global click handler as fallback for mobile
+  if (isMobile && clickable) {
+    console.log('Adding global mobile click handler');
+    container.addEventListener('click', (e) => {
+      const target = e.target;
+      if (target && target.textContent && !target.disabled) {
+        console.log('Global click handler triggered:', target.textContent);
+        const abilityText = target.textContent;
+        if (onClick && list.some(ab => ab.text === abilityText && !ab.used)) {
+          console.log('Calling onClick from global handler:', abilityText);
+          onClick(abilityText);
+        }
+      }
+    });
+  }
 }
 
 function hideOpponentPanel() {
@@ -293,6 +299,7 @@ async function loadGameData() {
     
     // الاستماع للتغييرات في الوقت الفعلي
     GameService.listenToGame(gameId, (updatedData) => {
+      console.log('Firebase data updated:', updatedData);
       updateGameData(updatedData);
     });
     
@@ -350,6 +357,26 @@ function updateGameData(gameData) {
       submittedOrder = null;
       renderCards(picks, null);
       loadOpponentAbilities();
+    }
+  }
+  
+  // تحديث قدرات الخصم من Firebase
+  const opponentKey = playerParam === 'player1' ? 'player2' : 'player1';
+  const opponentData = gameData[opponentKey];
+  if (opponentData && opponentData.abilities) {
+    console.log('Updating opponent abilities from Firebase:', opponentData.abilities);
+    const opponentAbilities = normalizeAbilityList(opponentData.abilities);
+    
+    if (oppWrap) {
+      oppWrap.innerHTML = '';
+      renderBadges(oppWrap, opponentAbilities, { clickable: false });
+      console.log('Rendered updated opponent abilities from Firebase');
+    }
+    
+    // Show opponent panel if not submitted
+    if (oppPanel && !submittedOrder) {
+      oppPanel.classList.remove("hidden");
+      console.log('Showing opponent panel with updated abilities');
     }
   }
   
@@ -556,10 +583,15 @@ if (socket) {
 }
 
 function requestUseAbility(abilityText) {
-  console.log('Requesting ability:', abilityText);
+  console.log('=== REQUEST USE ABILITY CALLED ===');
+  console.log('Ability text:', abilityText);
+  console.log('Player name:', playerName);
+  console.log('Player param:', playerParam);
+  console.log('Game ID:', gameID);
   
   // Enhanced mobile feedback
   const isMobile = window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  console.log('Is mobile:', isMobile);
   
   if (abilityStatus) {
     abilityStatus.textContent = "تم إرسال طلب استخدام القدرة…";
@@ -591,9 +623,12 @@ function requestUseAbility(abilityText) {
   
   // Save request to localStorage for host to see
   try {
+    console.log('Saving request to localStorage...');
     const requests = JSON.parse(localStorage.getItem('abilityRequests') || '[]');
+    console.log('Existing requests:', requests);
     requests.push(request);
     localStorage.setItem('abilityRequests', JSON.stringify(requests));
+    console.log('Request saved to localStorage:', request);
     
     // Trigger storage event for host page
     window.dispatchEvent(new StorageEvent('storage', {
@@ -603,6 +638,7 @@ function requestUseAbility(abilityText) {
       storageArea: localStorage
     }));
     
+    console.log('Storage event dispatched');
     console.log('Ability request sent to host via localStorage:', request);
     
     // Enhanced mobile feedback
@@ -812,9 +848,12 @@ function loadOpponentAbilities() {
   const opponentAbilitiesKey = `${opponentParam}Abilities`;
   const savedAbilities = localStorage.getItem(opponentAbilitiesKey);
   
+  console.log('Loading opponent abilities:', { opponentParam, opponentAbilitiesKey, savedAbilities });
+  
   if (savedAbilities) {
     try {
       const abilities = JSON.parse(savedAbilities);
+      console.log('Parsed opponent abilities:', abilities);
       
       // Only check for used abilities if we're in the middle of a game
       const currentRound = parseInt(localStorage.getItem('currentRound') || '0');
@@ -840,17 +879,92 @@ function loadOpponentAbilities() {
       if (oppWrap) {
         oppWrap.innerHTML = ''; // Clear first
         renderBadges(oppWrap, opponentAbilities, { clickable: false });
+        console.log('Rendered opponent abilities in UI');
       }
       
       // Show opponent panel if not submitted
       if (oppPanel && !submittedOrder) {
         oppPanel.classList.remove("hidden");
+        console.log('Showing opponent panel');
       }
       
       console.log('Loaded opponent abilities:', opponentAbilities);
     } catch (e) {
       console.error('Error loading opponent abilities:', e);
     }
+  } else {
+    // Try to load from gameSetupProgress as fallback
+    console.log('No opponent abilities found in localStorage, trying gameSetupProgress...');
+    const gameSetup = localStorage.getItem('gameSetupProgress');
+    if (gameSetup) {
+      try {
+        const setupData = JSON.parse(gameSetup);
+        const opponentKey = opponentParam === 'player1' ? 'player1' : 'player2';
+        const opponentData = setupData[opponentKey];
+        
+        if (opponentData && opponentData.abilities) {
+          console.log('Found opponent abilities in gameSetupProgress:', opponentData.abilities);
+          const opponentAbilities = normalizeAbilityList(opponentData.abilities);
+          
+          if (oppWrap) {
+            oppWrap.innerHTML = '';
+            renderBadges(oppWrap, opponentAbilities, { clickable: false });
+            console.log('Rendered opponent abilities from gameSetupProgress');
+          }
+          
+          // Show opponent panel if not submitted
+          if (oppPanel && !submittedOrder) {
+            oppPanel.classList.remove("hidden");
+            console.log('Showing opponent panel from gameSetupProgress');
+          }
+          
+          return;
+        }
+      } catch (e) {
+        console.error('Error parsing gameSetupProgress for opponent abilities:', e);
+      }
+    }
+    
+    // Try to load from Firebase if gameId is available
+    if (gameId && typeof GameService !== 'undefined') {
+      console.log('Trying to load opponent abilities from Firebase...');
+      try {
+        GameService.getGame(gameId).then(gameData => {
+          const opponentKey = opponentParam === 'player1' ? 'player1' : 'player2';
+          const opponentData = gameData[opponentKey];
+          
+          if (opponentData && opponentData.abilities) {
+            console.log('Found opponent abilities in Firebase:', opponentData.abilities);
+            const opponentAbilities = normalizeAbilityList(opponentData.abilities);
+            
+            if (oppWrap) {
+              oppWrap.innerHTML = '';
+              renderBadges(oppWrap, opponentAbilities, { clickable: false });
+              console.log('Rendered opponent abilities from Firebase');
+            }
+            
+            // Show opponent panel if not submitted
+            if (oppPanel && !submittedOrder) {
+              oppPanel.classList.remove("hidden");
+              console.log('Showing opponent panel from Firebase');
+            }
+            
+            return;
+          }
+        }).catch(e => {
+          console.error('Error loading opponent abilities from Firebase:', e);
+        });
+      } catch (e) {
+        console.error('Error accessing Firebase:', e);
+      }
+    }
+    
+    // If no abilities found, show empty state
+    if (oppWrap) {
+      oppWrap.innerHTML = '<p class="text-gray-500 text-sm">لا توجد قدرات للخصم</p>';
+    }
+    
+    console.log('No opponent abilities found');
   }
 }
 
@@ -860,12 +974,61 @@ setTimeout(() => {
   loadOpponentAbilities();
 }, 100);
 
+// Add mobile-specific initialization
+if (isMobile) {
+  console.log('Mobile device detected, adding mobile-specific handlers');
+  
+  // Add a global touch handler for abilities
+  document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+      const abilitiesContainer = document.getElementById('playerAbilities');
+      if (abilitiesContainer) {
+        console.log('Adding mobile touch handler to abilities container');
+        
+        abilitiesContainer.addEventListener('touchstart', (e) => {
+          const target = e.target;
+          if (target && target.textContent && !target.disabled && target.classList.contains('bg-yellow-400')) {
+            console.log('Mobile touch start on ability:', target.textContent);
+            target.style.transform = 'scale(0.95)';
+            target.style.backgroundColor = '#fbbf24';
+          }
+        }, { passive: false });
+        
+        abilitiesContainer.addEventListener('touchend', (e) => {
+          const target = e.target;
+          if (target && target.textContent && !target.disabled && target.classList.contains('bg-yellow-400')) {
+            console.log('Mobile touch end on ability:', target.textContent);
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Reset visual feedback
+            target.style.transform = 'scale(1)';
+            target.style.backgroundColor = '';
+            
+            // Call the ability function
+            if (typeof requestUseAbility === 'function') {
+              console.log('Calling requestUseAbility from mobile handler:', target.textContent);
+              requestUseAbility(target.textContent);
+            }
+          }
+        }, { passive: false });
+      }
+    }, 1000);
+  });
+}
+
 // Check for ability updates every 2 seconds
 setInterval(() => {
   loadPlayerAbilities();
   loadOpponentAbilities();
   checkAbilityRequests();
 }, 2000);
+
+// Force reload opponent abilities every 5 seconds to ensure latest data
+setInterval(() => {
+  console.log('Force reloading opponent abilities...');
+  loadOpponentAbilities();
+}, 5000);
 
 // Simple storage change listener like order.js
 window.addEventListener('storage', function(e) {
@@ -876,6 +1039,10 @@ window.addEventListener('storage', function(e) {
   }
   if (e.key === 'abilityRequests') {
     checkAbilityRequests();
+  }
+  if (e.key === 'gameSetupProgress') {
+    console.log('Game setup progress changed, reloading opponent abilities');
+    loadOpponentAbilities();
   }
 });
 
