@@ -324,16 +324,7 @@ let voiceSystem = {
     console.log('🎵 Testing all legendary voice mappings...');
     
     const testCards = [
-      'images/aizen.webm', 'images/Akai.webm', 'images/AllForOneCard.webm',
-      'images/AyanokojiCard.webm', 'images/Asta.webm', 'images/ErenCard.webm',
-      'images/Fubuki.webm', 'images/Gogeta.webm', 'images/GojoCard.webm',
-      'images/Goku UI.webm', 'images/Hawks.webm', 'images/joker.webm',
-      'images/killua.webm', 'images/law.webm', 'images/LuffyGear5Card.webm',
-      'images/madara.webm', 'images/MeruemCard.webm', 'images/NietroCard.webm',
-      'images/obito.webm', 'images/SakamotoCard.webm', 'images/shikamaru.webm',
-      'images/ShanksCard.webm', 'images/SilverCard.webm', 'images/UmibozoCard.webm',
-      'images/Vegetto.webm', 'images/whitebeard.webm', 'images/zoro.webm',
-      'images/Zenitsu.webm', 'images/Hashirama.webm', 'images/Neiji.webm'
+      // All card data has been removed - ready for new cards
     ];
     
     testCards.forEach(cardPath => {
@@ -821,12 +812,12 @@ function loadPlayerPicks() {
   
   // Ensure picks has valid data for both players
   if (!picks[player1] || !Array.isArray(picks[player1]) || picks[player1].length === 0) {
-    picks[player1] = ["images/ShanksCard.webm", "images/Akai.webm", "images/madara.webm", "images/Nana-card.png", "images/Vengeance.png"];
-    console.log('Using fallback cards for player1:', picks[player1]);
+    picks[player1] = []; // All card data has been removed - ready for new cards
+    console.log('Using empty cards for player1:', picks[player1]);
   }
   if (!picks[player2] || !Array.isArray(picks[player2]) || picks[player2].length === 0) {
-    picks[player2] = ["images/Akai.webm", "images/ShanksCard.webm", "images/Crocodile.png", "images/MeiMei-card.png", "images/Elizabeth.png"];
-    console.log('Using fallback cards for player2:', picks[player2]);
+    picks[player2] = []; // All card data has been removed - ready for new cards
+    console.log('Using empty cards for player2:', picks[player2]);
   }
   
   return picks;
@@ -2940,33 +2931,23 @@ function openPlayerCardsForArrangement(playerParam, playerName) {
     
     console.log(`Opening player cards for ${playerParam}: ${playerCardsUrl}`);
     
-    // Check if device is mobile
-    const isMobile = window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    // Open in new window/tab
+    const newWindow = window.open(playerCardsUrl, `player-cards-${playerParam}`, 
+      'width=800,height=600,scrollbars=yes,resizable=yes');
     
-    if (isMobile) {
-      // For mobile devices, redirect in same window
-      if (confirm(`هل تريد الانتقال إلى صفحة ترتيب البطاقات لـ ${playerName}؟`)) {
-        window.location.href = playerCardsUrl;
-      }
-    } else {
-      // For desktop, open in new window
-      const newWindow = window.open(playerCardsUrl, `player-cards-${playerParam}`, 
-        'width=800,height=600,scrollbars=yes,resizable=yes');
-      
-      if (!newWindow) {
-        alert('تم منع النافذة المنبثقة. يرجى السماح بالنوافذ المنبثقة لهذا الموقع.');
-        return;
-      }
-      
-      // Focus the new window
-      newWindow.focus();
-      
-      // Store the window reference for monitoring
-      window.playerCardsWindow = newWindow;
-      
-      // Start monitoring for arrangement completion
-      startMonitoringArrangement(playerParam, playerName);
+    if (!newWindow) {
+      alert('تم منع النافذة المنبثقة. يرجى السماح بالنوافذ المنبثقة لهذا الموقع.');
+      return;
     }
+    
+    // Focus the new window
+    newWindow.focus();
+    
+    // Store the window reference for monitoring
+    window.playerCardsWindow = newWindow;
+    
+    // Start monitoring for arrangement completion
+    startMonitoringArrangement(playerParam, playerName);
     
   } catch (error) {
     console.error('Error opening player cards:', error);
@@ -3430,31 +3411,21 @@ function navigateToPlayerPage(playerParam, playerName) {
     
     console.log(`Navigating to player page for ${playerName}: ${playerViewUrl}`);
     
-    // Check if device is mobile
-    const isMobile = window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    // Open player view page in new tab
+    const newWindow = window.open(playerViewUrl, `player-view-${playerParam}`, 
+      'width=1200,height=800,scrollbars=yes,resizable=yes');
     
-    if (isMobile) {
-      // For mobile devices, redirect in same window or show option
+    if (!newWindow) {
+      console.warn('تم منع النافذة المنبثقة. يرجى السماح بالنوافذ المنبثقة لهذا الموقع.');
+      // Fallback: try to redirect current window
       if (confirm(`تم قبول طلب القدرة من ${playerName}. هل تريد الانتقال إلى صفحة اللاعب؟`)) {
         window.location.href = playerViewUrl;
       }
-    } else {
-      // For desktop, open in new window
-      const newWindow = window.open(playerViewUrl, `player-view-${playerParam}`, 
-        'width=1200,height=800,scrollbars=yes,resizable=yes');
-      
-      if (!newWindow) {
-        console.warn('تم منع النافذة المنبثقة. يرجى السماح بالنوافذ المنبثقة لهذا الموقع.');
-        // Fallback: try to redirect current window
-        if (confirm(`تم قبول طلب القدرة من ${playerName}. هل تريد الانتقال إلى صفحة اللاعب؟`)) {
-          window.location.href = playerViewUrl;
-        }
-        return;
-      }
-      
-      // Focus the new window
-      newWindow.focus();
+      return;
     }
+    
+    // Focus the new window
+    newWindow.focus();
     
     // Show success message
     showToast(`تم فتح صفحة اللاعب ${playerName} بنجاح!`, 'success');

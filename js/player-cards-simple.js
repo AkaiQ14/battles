@@ -1570,26 +1570,16 @@ function openBattleView() {
     
     console.log(`Opening battle view for player ${playerNumber}: ${playerViewUrl}`);
     
-    // Check if device is mobile
-    const isMobile = window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    // Open in new tab (not a separate window)
+    const newWindow = window.open(playerViewUrl, '_blank');
     
-    if (isMobile) {
-      // For mobile devices, redirect in same window
-      if (confirm('هل تريد الانتقال إلى صفحة عرض المعركة؟')) {
-        window.location.href = playerViewUrl;
-      }
-    } else {
-      // For desktop, open in new tab
-      const newWindow = window.open(playerViewUrl, '_blank');
-      
-      if (!newWindow) {
-        alert('تم منع النافذة المنبثقة. يرجى السماح بالنوافذ المنبثقة لهذا الموقع.');
-        return;
-      }
-      
-      // Focus the new window
-      newWindow.focus();
+    if (!newWindow) {
+      alert('تم منع النافذة المنبثقة. يرجى السماح بالنوافذ المنبثقة لهذا الموقع.');
+      return;
     }
+    
+    // Focus the new window
+    newWindow.focus();
     
     // Show success message
     showToast('تم فتح صفحة عرض التحدي بنجاح!', 'success');
@@ -1867,3 +1857,5 @@ window.submitPicks = submitPicks;
 window.clearOldGameData = clearOldGameData;
 window.clearUsedAbilities = clearUsedAbilities;
 window.openBattleView = openBattleView;
+
+

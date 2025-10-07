@@ -242,30 +242,6 @@
       transform: none;
     }
     
-    /* Enhanced touch feedback for mobile */
-    @media (max-width: 768px) {
-      .card-wrapper {
-        touch-action: manipulation;
-        -webkit-tap-highlight-color: transparent;
-      }
-      
-      .card-wrapper:active {
-        transform: scale(0.95);
-        transition: transform 0.1s ease;
-      }
-      
-      button {
-        touch-action: manipulation;
-        -webkit-tap-highlight-color: transparent;
-        min-height: 44px; /* Apple's recommended minimum touch target */
-      }
-      
-      button:active {
-        transform: scale(0.95);
-        transition: transform 0.1s ease;
-      }
-    }
-    
     /* Drag feedback */
     .dragging {
       transform: none !important;
