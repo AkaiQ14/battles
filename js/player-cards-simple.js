@@ -87,127 +87,34 @@ function renderBadges(container, abilities, { clickable = false, onClick } = {})
   
   container.innerHTML = "";
   const list = Array.isArray(abilities) ? abilities : [];
-  console.log('Rendering badges:', { list, clickable, container: container.id || 'no-id' });
+  console.log('Rendering badges:', { list, clickable });
   
-  // Debug mobile detection
-  const isMobile = window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-  console.log('Mobile detection:', { isMobile, width: window.innerWidth, userAgent: navigator.userAgent.substring(0, 50) });
-  
-  list.forEach((ab, index) => {
+  list.forEach(ab => {
     const isUsed = !!ab.used;
     const el = document.createElement(clickable ? "button" : "span");
     el.textContent = ab.text;
-    
-    console.log(`Creating ability ${index}:`, { text: ab.text, isUsed, clickable });
-    
     el.className =
       "px-3 py-1 rounded-lg font-bold border " +
       (clickable
         ? (isUsed
             ? "bg-gray-500/60 text-black/60 border-gray-600 cursor-not-allowed"
             : "bg-yellow-400 hover:bg-yellow-300 text-black border-yellow-500")
-        : "bg-gray-400/70 text-black border-gray-500") +
-      (isMobile ? " text-sm min-h-[44px] touch-manipulation" : "");
-    
-    // Add mobile-specific styles
-    if (isMobile && clickable && !isUsed) {
-      el.style.cssText += `
-        -webkit-tap-highlight-color: transparent;
-        -webkit-touch-callout: none;
-        -webkit-user-select: none;
-        -khtml-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        user-select: none;
-        cursor: pointer;
-        transition: all 0.2s ease;
-      `;
-    }
-    
+        : "bg-gray-400/70 text-black border-gray-500");
     if (clickable) {
       if (isUsed) { 
         el.disabled = true; 
         el.setAttribute("aria-disabled", "true"); 
       } else if (onClick) { 
-        // Simple and effective event handling for all devices
-        const handleClick = (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          console.log('Ability clicked:', ab.text, 'Event type:', e.type);
+        el.onclick = () => {
+          console.log('Ability clicked:', ab.text);
           onClick(ab.text);
-        };
-        
-        // Use multiple event approaches for maximum compatibility
-        el.onclick = handleClick;
-        el.addEventListener('click', handleClick);
-        
-        console.log('Event handlers attached to ability:', ab.text);
-        
-        // Add touch events specifically for mobile
-        if (isMobile) {
-          console.log('Adding mobile touch events for:', ab.text);
-          
-          // Use a simple approach for mobile
-          el.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('Mobile touch end:', ab.text);
-            handleClick(e);
-          }, { passive: false });
-          
-          // Visual feedback for mobile
-          el.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            el.style.transform = 'scale(0.95)';
-            el.style.backgroundColor = '#fbbf24';
-            console.log('Mobile touch start:', ab.text);
-          }, { passive: false });
-          
-          // Reset visual feedback
-          el.addEventListener('touchend', (e) => {
-            setTimeout(() => {
-              el.style.transform = 'scale(1)';
-              el.style.backgroundColor = '';
-            }, 150);
-          }, { passive: false });
-          
-        } else {
-          // Desktop hover effects
-          el.addEventListener('mouseenter', () => {
-            el.style.transform = 'scale(1.05)';
-          });
-          
-          el.addEventListener('mouseleave', () => {
-            el.style.transform = 'scale(1)';
-          });
-        }
-        
-        // Prevent context menu
-        el.addEventListener('contextmenu', (e) => {
-          e.preventDefault();
-        });
+        }; 
       }
     }
     container.appendChild(el);
   });
   
   console.log('Badges rendered successfully');
-  
-  // Add global click handler as fallback for mobile
-  if (isMobile && clickable) {
-    console.log('Adding global mobile click handler');
-    container.addEventListener('click', (e) => {
-      const target = e.target;
-      if (target && target.textContent && !target.disabled) {
-        console.log('Global click handler triggered:', target.textContent);
-        const abilityText = target.textContent;
-        if (onClick && list.some(ab => ab.text === abilityText && !ab.used)) {
-          console.log('Calling onClick from global handler:', abilityText);
-          onClick(abilityText);
-        }
-      }
-    });
-  }
 }
 
 function hideOpponentPanel() {
@@ -299,7 +206,6 @@ async function loadGameData() {
     
     // الاستماع للتغييرات في الوقت الفعلي
     GameService.listenToGame(gameId, (updatedData) => {
-      console.log('Firebase data updated:', updatedData);
       updateGameData(updatedData);
     });
     
@@ -357,26 +263,6 @@ function updateGameData(gameData) {
       submittedOrder = null;
       renderCards(picks, null);
       loadOpponentAbilities();
-    }
-  }
-  
-  // تحديث قدرات الخصم من Firebase
-  const opponentKey = playerParam === 'player1' ? 'player2' : 'player1';
-  const opponentData = gameData[opponentKey];
-  if (opponentData && opponentData.abilities) {
-    console.log('Updating opponent abilities from Firebase:', opponentData.abilities);
-    const opponentAbilities = normalizeAbilityList(opponentData.abilities);
-    
-    if (oppWrap) {
-      oppWrap.innerHTML = '';
-      renderBadges(oppWrap, opponentAbilities, { clickable: false });
-      console.log('Rendered updated opponent abilities from Firebase');
-    }
-    
-    // Show opponent panel if not submitted
-    if (oppPanel && !submittedOrder) {
-      oppPanel.classList.remove("hidden");
-      console.log('Showing opponent panel with updated abilities');
     }
   }
   
@@ -583,30 +469,14 @@ if (socket) {
 }
 
 function requestUseAbility(abilityText) {
-  console.log('=== REQUEST USE ABILITY CALLED ===');
-  console.log('Ability text:', abilityText);
-  console.log('Player name:', playerName);
-  console.log('Player param:', playerParam);
-  console.log('Game ID:', gameID);
-  
-  // Enhanced mobile feedback
-  const isMobile = window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-  console.log('Is mobile:', isMobile);
-  
+  console.log('Requesting ability:', abilityText);
   if (abilityStatus) {
     abilityStatus.textContent = "تم إرسال طلب استخدام القدرة…";
-    if (isMobile) {
-      abilityStatus.style.color = '#10B981';
-      abilityStatus.style.fontWeight = 'bold';
-    }
   }
-  
   const requestId = `${playerName}:${Date.now()}`;
   tempUsed.add(abilityText);
   pendingRequests.set(requestId, abilityText);
   myAbilities = (myAbilities || []).map(a => a.text === abilityText ? { ...a, used: true } : a);
-  
-  // Immediate UI update
   if (abilitiesWrap) {
     renderBadges(abilitiesWrap, myAbilities, { clickable: true, onClick: requestUseAbility });
   }
@@ -623,12 +493,9 @@ function requestUseAbility(abilityText) {
   
   // Save request to localStorage for host to see
   try {
-    console.log('Saving request to localStorage...');
     const requests = JSON.parse(localStorage.getItem('abilityRequests') || '[]');
-    console.log('Existing requests:', requests);
     requests.push(request);
     localStorage.setItem('abilityRequests', JSON.stringify(requests));
-    console.log('Request saved to localStorage:', request);
     
     // Trigger storage event for host page
     window.dispatchEvent(new StorageEvent('storage', {
@@ -638,32 +505,9 @@ function requestUseAbility(abilityText) {
       storageArea: localStorage
     }));
     
-    console.log('Storage event dispatched');
     console.log('Ability request sent to host via localStorage:', request);
-    
-    // Enhanced mobile feedback
-    if (isMobile) {
-      // Show visual feedback
-      const abilityButton = Array.from(abilitiesWrap.children).find(btn => btn.textContent === abilityText);
-      if (abilityButton) {
-        abilityButton.style.backgroundColor = '#10B981';
-        abilityButton.style.color = 'white';
-        abilityButton.style.transform = 'scale(1.05)';
-        
-        setTimeout(() => {
-          abilityButton.style.transform = 'scale(1)';
-        }, 200);
-      }
-      
-      // Show toast notification for mobile
-      showMobileToast('تم إرسال طلب القدرة للمضيف', 'success');
-    }
-    
   } catch (e) {
     console.error('Error saving ability request:', e);
-    if (isMobile) {
-      showMobileToast('خطأ في إرسال الطلب', 'error');
-    }
   }
   
   // Also try socket if available
@@ -848,12 +692,9 @@ function loadOpponentAbilities() {
   const opponentAbilitiesKey = `${opponentParam}Abilities`;
   const savedAbilities = localStorage.getItem(opponentAbilitiesKey);
   
-  console.log('Loading opponent abilities:', { opponentParam, opponentAbilitiesKey, savedAbilities });
-  
   if (savedAbilities) {
     try {
       const abilities = JSON.parse(savedAbilities);
-      console.log('Parsed opponent abilities:', abilities);
       
       // Only check for used abilities if we're in the middle of a game
       const currentRound = parseInt(localStorage.getItem('currentRound') || '0');
@@ -879,92 +720,17 @@ function loadOpponentAbilities() {
       if (oppWrap) {
         oppWrap.innerHTML = ''; // Clear first
         renderBadges(oppWrap, opponentAbilities, { clickable: false });
-        console.log('Rendered opponent abilities in UI');
       }
       
       // Show opponent panel if not submitted
       if (oppPanel && !submittedOrder) {
         oppPanel.classList.remove("hidden");
-        console.log('Showing opponent panel');
       }
       
       console.log('Loaded opponent abilities:', opponentAbilities);
     } catch (e) {
       console.error('Error loading opponent abilities:', e);
     }
-  } else {
-    // Try to load from gameSetupProgress as fallback
-    console.log('No opponent abilities found in localStorage, trying gameSetupProgress...');
-    const gameSetup = localStorage.getItem('gameSetupProgress');
-    if (gameSetup) {
-      try {
-        const setupData = JSON.parse(gameSetup);
-        const opponentKey = opponentParam === 'player1' ? 'player1' : 'player2';
-        const opponentData = setupData[opponentKey];
-        
-        if (opponentData && opponentData.abilities) {
-          console.log('Found opponent abilities in gameSetupProgress:', opponentData.abilities);
-          const opponentAbilities = normalizeAbilityList(opponentData.abilities);
-          
-          if (oppWrap) {
-            oppWrap.innerHTML = '';
-            renderBadges(oppWrap, opponentAbilities, { clickable: false });
-            console.log('Rendered opponent abilities from gameSetupProgress');
-          }
-          
-          // Show opponent panel if not submitted
-          if (oppPanel && !submittedOrder) {
-            oppPanel.classList.remove("hidden");
-            console.log('Showing opponent panel from gameSetupProgress');
-          }
-          
-          return;
-        }
-      } catch (e) {
-        console.error('Error parsing gameSetupProgress for opponent abilities:', e);
-      }
-    }
-    
-    // Try to load from Firebase if gameId is available
-    if (gameId && typeof GameService !== 'undefined') {
-      console.log('Trying to load opponent abilities from Firebase...');
-      try {
-        GameService.getGame(gameId).then(gameData => {
-          const opponentKey = opponentParam === 'player1' ? 'player1' : 'player2';
-          const opponentData = gameData[opponentKey];
-          
-          if (opponentData && opponentData.abilities) {
-            console.log('Found opponent abilities in Firebase:', opponentData.abilities);
-            const opponentAbilities = normalizeAbilityList(opponentData.abilities);
-            
-            if (oppWrap) {
-              oppWrap.innerHTML = '';
-              renderBadges(oppWrap, opponentAbilities, { clickable: false });
-              console.log('Rendered opponent abilities from Firebase');
-            }
-            
-            // Show opponent panel if not submitted
-            if (oppPanel && !submittedOrder) {
-              oppPanel.classList.remove("hidden");
-              console.log('Showing opponent panel from Firebase');
-            }
-            
-            return;
-          }
-        }).catch(e => {
-          console.error('Error loading opponent abilities from Firebase:', e);
-        });
-      } catch (e) {
-        console.error('Error accessing Firebase:', e);
-      }
-    }
-    
-    // If no abilities found, show empty state
-    if (oppWrap) {
-      oppWrap.innerHTML = '<p class="text-gray-500 text-sm">لا توجد قدرات للخصم</p>';
-    }
-    
-    console.log('No opponent abilities found');
   }
 }
 
@@ -974,61 +740,12 @@ setTimeout(() => {
   loadOpponentAbilities();
 }, 100);
 
-// Add mobile-specific initialization
-if (isMobile) {
-  console.log('Mobile device detected, adding mobile-specific handlers');
-  
-  // Add a global touch handler for abilities
-  document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(() => {
-      const abilitiesContainer = document.getElementById('playerAbilities');
-      if (abilitiesContainer) {
-        console.log('Adding mobile touch handler to abilities container');
-        
-        abilitiesContainer.addEventListener('touchstart', (e) => {
-          const target = e.target;
-          if (target && target.textContent && !target.disabled && target.classList.contains('bg-yellow-400')) {
-            console.log('Mobile touch start on ability:', target.textContent);
-            target.style.transform = 'scale(0.95)';
-            target.style.backgroundColor = '#fbbf24';
-          }
-        }, { passive: false });
-        
-        abilitiesContainer.addEventListener('touchend', (e) => {
-          const target = e.target;
-          if (target && target.textContent && !target.disabled && target.classList.contains('bg-yellow-400')) {
-            console.log('Mobile touch end on ability:', target.textContent);
-            e.preventDefault();
-            e.stopPropagation();
-            
-            // Reset visual feedback
-            target.style.transform = 'scale(1)';
-            target.style.backgroundColor = '';
-            
-            // Call the ability function
-            if (typeof requestUseAbility === 'function') {
-              console.log('Calling requestUseAbility from mobile handler:', target.textContent);
-              requestUseAbility(target.textContent);
-            }
-          }
-        }, { passive: false });
-      }
-    }, 1000);
-  });
-}
-
 // Check for ability updates every 2 seconds
 setInterval(() => {
   loadPlayerAbilities();
   loadOpponentAbilities();
   checkAbilityRequests();
 }, 2000);
-
-// Force reload opponent abilities every 5 seconds to ensure latest data
-setInterval(() => {
-  console.log('Force reloading opponent abilities...');
-  loadOpponentAbilities();
-}, 5000);
 
 // Simple storage change listener like order.js
 window.addEventListener('storage', function(e) {
@@ -1039,10 +756,6 @@ window.addEventListener('storage', function(e) {
   }
   if (e.key === 'abilityRequests') {
     checkAbilityRequests();
-  }
-  if (e.key === 'gameSetupProgress') {
-    console.log('Game setup progress changed, reloading opponent abilities');
-    loadOpponentAbilities();
   }
 });
 
@@ -2136,77 +1849,6 @@ function showToast(message, type = 'info') {
     
   } catch (error) {
     console.error('Error showing toast:', error);
-  }
-}
-
-// Show mobile toast notification
-function showMobileToast(message, type = 'info') {
-  try {
-    // Remove existing mobile toast
-    const existingToast = document.querySelector('.mobile-toast');
-    if (existingToast) {
-      existingToast.remove();
-    }
-    
-    // Create new mobile toast
-    const toast = document.createElement('div');
-    toast.className = 'mobile-toast';
-    toast.textContent = message;
-    toast.style.cssText = `
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(0, 0, 0, 0.95);
-      color: white;
-      padding: 20px 30px;
-      border-radius: 12px;
-      border: 3px solid #10B981;
-      font-family: "Cairo", sans-serif;
-      font-weight: 700;
-      font-size: 18px;
-      z-index: 10000;
-      opacity: 0;
-      transition: all 0.3s ease;
-      text-align: center;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-      max-width: 90%;
-      word-wrap: break-word;
-    `;
-    
-    // Add type-specific styling
-    if (type === 'success') {
-      toast.style.borderColor = '#10B981';
-      toast.style.backgroundColor = 'rgba(16, 185, 129, 0.1)';
-    } else if (type === 'error') {
-      toast.style.borderColor = '#EF4444';
-      toast.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
-    } else if (type === 'warning') {
-      toast.style.borderColor = '#F59E0B';
-      toast.style.backgroundColor = 'rgba(245, 158, 11, 0.1)';
-    }
-    
-    document.body.appendChild(toast);
-    
-    // Show toast with animation
-    setTimeout(() => {
-      toast.style.opacity = '1';
-      toast.style.transform = 'translate(-50%, -50%) scale(1.05)';
-    }, 100);
-    
-    // Hide toast after 2 seconds
-    setTimeout(() => {
-      toast.style.opacity = '0';
-      toast.style.transform = 'translate(-50%, -50%) scale(0.95)';
-      setTimeout(() => {
-        if (toast.parentNode) {
-          toast.parentNode.removeChild(toast);
-        }
-      }, 300);
-    }, 2000);
-    
-  } catch (error) {
-    console.error('Error showing mobile toast:', error);
   }
 }
 

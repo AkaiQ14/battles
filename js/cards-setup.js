@@ -112,299 +112,18 @@ function generateRandomCards() {
   }
   
   console.log('🎴 Generating new random cards');
-  // Common cards (85% of total) - منظم حسب المجلد المرفق
-  const commonCards = [
-    // الكروت الشائعة الأصلية
-    'images/Stark-card.png',
-    'images/Todoroki.png',
-    'images/CartTitan-card.png',
-    'images/Monspeet-card.png',
-    'images/Rika-card.png',
-    'images/ace.png',
-    'images/Shizuku-card.png',
-    'images/zetsu.png',
-    'images/Overhaul-card.png',
-    'images/Atsuya-card.png',
-    'images/Yoo-Jinho-card.png',
-    'images/Gin-freecss-card.png',
-    'images/Hantengu-card.png',
-    'images/Lily-card.png',
-    'images/Gordon-card.png',
-    'images/Charllotte-card.png',
-    'images/Min-Byung-Gyu-card.png',
-    'images/KiSui-card.png',
-    'images/Iron-card.png',
-    'images/Hawk-card.png',
-    'images/bartolomeo-card.png',
-    'images/WarHammerTitan-card.png',
-    'images/Luck.png',
-    'images/Elfaria Albis.png',
-    'images/Haschwalth-card.png',
-    'images/Hisagi-card.png',
-    'images/Elizabeth.png',
-    'images/MeiMei-card.png',
-    'images/Okabe-card.png',
-    'images/Renpa-card.png',
-    'images/Vengeance.png',
-    'images/Pariston-card.png',
-    'images/franklin_card.png',
-    'images/MouBu-card.png',
-    'images/Android18-card.png',
-    'images/hinata.png',
-    'images/laxus.png',
-    'images/Videl-card.webp',
-    'images/Momo-hinamori-card.webp',
-    'images/cardo20ppsd.webp',
-    'images/Krilin-card.webp',
-    'images/HakuKi-card.webp',
-    'images/ArmorTitan-card.webp',
-    'images/Nachttt.webp',
-    'images/Tosen-card.webp',
-    
-    // الكروت الشائعة الجديدة من مجلد Common
-    'images/Kalluto-card.png',
-    'images/GaiMou-card.png',
-    'images/Paragusss.png',
-    'images/Haruta jjk.png',
-    'images/Akutagawa-card.png',
-    'images/Vista-card.png',
-    'images/Jozi jjk.png',
-    'images/Frierennnnn.png',
-    'images/Tank-card.png',
-    'images/Oden-card.png',
-    'images/Ippo-card.png',
-    'images/Kingkaiii.png',
-    'images/MouGou-card.png',
-    'images/jugo.png',
-    'images/ghiaccio.png',
-    'images/cavendish-card.png',
-    'images/Tenma-card.png',
-    'images/Rojuro-card.png',
-    'images/Miruku bnha.png',
-    'images/Kukoshibo-card.png',
-    'images/Ganju-card.png',
-    'images/Runge-card.png',
-    'images/Rhyaa.png',
-    'images/Meleoron-card.png',
-    'images/Kirach.png',
-    'images/lyon vastia.png',
-    'images/julius wistoria.png',
-    'images/Asui-card.png',
-    'images/Jack-card.png',
-    'images/sting eucliffe.png',
-    'images/edward elric.png',
-    'images/Zeno kingdom.png',
-    'images/Uvogin-card.png',
-    'images/Shinobu-card.png',
-    'images/suzuno.png',
-    'images/caesar-card.png',
-    'images/Shin-card.png',
-    'images/lumiere silvamillion.png',
-    'images/kimimaro.png',
-    'images/Kyoga-card.png',
-    'images/Knov-card.png',
-    'images/Kaguraaaa.png',
-    'images/Chopper-card.png',
-    'images/Franky-card.png',
-    'images/Nejire-card.png',
-    'images/Kurapika-card.png',
-    'images/zaratras.png',
-    'images/Zohakuten.png',
-    'images/Zeo Thorzeus.png',
-    'images/Mina-card.png',
-    'images/MetalBat-card.png',
-    'images/Makio-card.png',
-    'images/Galand-card.png',
-    'images/DiamondJozu.webp',
-    'images/Matsumoto-card.webp',
-    'images/MomoYaorozu-card.webp',
-    'images/Ishida-card.webp',
-    'images/Yoruichi-card.webp',
-    'images/esdeath.webp',
-    'images/Jaw-card.webp',
-    'images/FemaleTitan-card.webp',
-    'images/Aizetsu-card.webp',
-    'images/tenten.webp',
-    'images/Gadjah.webp',
-    'images/naobito-card.webp',
-    'images/Gilthunder.png',
-    'images/Mai-card.png',
-    'images/Maki zenen.png',
-    'images/Itadori-card.png',
-    'images/Picollooo.png',
-    'images/Noelll.png',
-    'images/shino.png',
-    'images/Kenzo-card.png',
-    'images/Masamichi-card.png',
-    'images/ShouBunKun-card.png',
-    'images/Bardooock.png',
-    'images/mahito-card.png',
-    'images/poseidon.png',
-    'images/geten.webp',
-    'images/alex20armstrong.webp',
-    'images/Shinpei-card.webp',
-    'images/Friezaaa.webp',
-    'images/VanAugur-card.webp',
-    'images/Zamasuuu.webp',
-    'images/Mayuri-card.webp',
-    'images/Runge-card.webp',
-    'images/takuma-card.webp',
-    'images/Shinji-card.webp',
-    'images/konohamaru.webp',
-    'images/fubuki.webp',
-    'images/Jirobo.webp',
-    'images/RaiDokingdom.webp',
-    'images/silverfullbuster.webp',
-    'images/Langriiss.webp',
-    'images/Panda-card.webp',
-    'images/pizarro.webp',
-    'images/Mezo-card.webp',
-    'images/Senritsu-card.webp',
-    'images/Merlin-card.webp',
-    'images/Queen-card.webp',
-    'images/Btakuya-card.png',
-    'images/sai.png',
-    'images/crocus-card.png',
-    'images/kurenai.png',
-    'images/Mahoraga.png',
-    'images/Inosuke-card.png',
-    'images/KeiSha-card.png',
-    'images/brook.png',
-    'images/Ur.png',
-    'images/Kurogiri-card.png',
-    'images/Alluka-card.png',
-    'images/Ban-card.png',
-    'images/konan.png',
-    'images/dazai-card.png',
-    'images/Karaku-card.png',
-    'images/Inumaki-card.png',
-    'images/Raditzz.png',
-    'images/Lucci-card.png',
-    'images/Bisky-card.png',
-    'images/Orihime-card.png',
-    'images/Isaac mcdougal.png',
-    'images/ino.png',
-    'images/Eso-card.png',
-    'images/Genthru-card.png',
-    'images/Roy Mustang.png',
-    'images/Stain-card.png',
-    'images/Zagred-card.png',
-    'images/BeastKing-card.png',
-    'images/rin.png',
-    'images/kota izumi.png',
-    'images/Lille-baroo-card.png',
-    'images/tenten.webp',
-    'images/Feitan-card.webp',
-    'images/uraume-card.webp',
-    'images/Akaza-card.webp',
-    'images/Denki-card.webp',
-    'images/monet.webp',
-    'images/zabuza.webp'
-  ];
+  // Use the new cardManager for card generation
+  const commonCards = window.cardManager.getAllCardsByCategory('common');
+  const epicCards = window.cardManager.getAllCardsByCategory('epic');
+  const legendaryCards = window.cardManager.getAllCardsByCategory('legendary');
+  const mythicalCards = window.cardManager.getAllCardsByCategory('mythical');
   
-  // Epic cards (part of 15% with Legendary) - منظم حسب المجلد المرفق
-  const epicCards = [
-    // الكروت الملحمية من مجلد Epic
-    'images/nanami-card.png',
-    'images/kenjaku-card.png',
-    'images/Geto-card.png',
-    'images/Yusaku.png',
-    'images/Danteee.png',
-    'images/Johan-card.png',
-    'images/mansherry.png',
-    'images/Teach-card.png',
-    'images/tobirama.png',
-    'images/BigM.webp',
-    'images/Choi-jong-in-.webp',
-    'images/judarr.webp',
-    'images/Adult-gon-card.webp',
-    'images/ColossialTitan-card.png',
-    'images/gloxinia.png',
-    'images/A4thRaikagee.png',
-    'images/Igris-card.webp',
-    'images/Queen-card.webp',
-    'images/Mahoraga.png',
-    'images/Ban-card.png',
-    'images/dazai-card.png',
-    'images/Orihime-card.png',
-    'images/Zagred-card.png',
-    'images/Lille-baroo-card.png',
-    'images/minato.png',
-    'images/ShouHeiKun-card .png',
-    'images/KudoShinichi-card.png',
-    'images/Ichibe-card.png',
-    'images/Endeavor.png',
-    'images/Tier Harribel.png',
-    'images/Crocodile.png',
-    'images/Nana-card.png',
-    'images/Vegapunk-crad.webp',
-    'images/Go-Gunhee-card.webp',
-    'images/Nami.webp',
-    'images/Hachigen-card.png',
-    'images/Senjumaru-card.png',
-    'images/Arthur-card.png',
-    'images/Lemillion-card.png',
-    'images/Fuegoleonn .png',
-    'images/Itchigo-card .png',
-    'images/Kaito-card .png',
-    'images/DragonBB-67-card.png',
-    'images/Kuma-card.png',
-    'images/YujiroHanma-card.png',
-    'images/Dabi-card.png',
-    'images/gounji.png',
-    'images/Carasuma.png',
-    'images/Conan.png',
-    'images/Kidou.png',
-    'images/Shisui.png',
-    'images/Akaii.png',
-    'images/GTO_2.webp',
-    'images/sasukee.webp',
-    'images/gaara.webp',
-    'images/Cathleen-card.webp',
-    'images/Akaino-card.webp'
-  ];
+  console.log(`📊 Available cards: ${commonCards.length} common, ${epicCards.length} epic, ${legendaryCards.length} legendary, ${mythicalCards.length} mythical`);
   
-  // Legendary cards (part of 15% with Epic) - منظم حسب المجلد المرفق
-  const legendaryCards = [
-    // الكروت الأسطورية من مجلد Legendary
-    'images/obito.webm',
-    'images/whitebeard.webm',
-    'images/SakamotoCard.webm',
-    'images/GojoCard.webm',
-    'images/Gogeta.webm',
-    'images/Vegetto.webm',
-    'images/Hawks.webm',
-    'images/Goku UI.webm',
-    'images/shikamaru.webm',
-    'images/law.webm',
-    'images/madara.webm',
-    'images/NietroCard.webm',
-    'images/aizen.webm',
-    'images/AllForOneCard.webm',
-    'images/ErenCard.webm',
-    'images/LuffyGear5Card.webm',
-    'images/joker.webm',
-    'images/AyanokojiCard.webm',
-    'images/UmibozoCard.webm',
-    'images/MeruemCard.webm',
-    'images/SilverCard.webm',
-    'images/Akai.webm',
-    'images/ShanksCard.webm',
-    'images/Ranpo.webm',
-    'images/Zenitsu.webm',
-    'images/Fubuki.webm',
-    'images/zoro.webm',
-    'images/killua.webm',
-    'images/Asta.webm',
-    // Latest legendary cards
-    'images/Hashirama.webm',
-    'images/Neiji.webm'
-  ];
-  
-  // نظام توزيع عشوائي جداً يعتمد على الحظ - نسبة 98% عادية، 2% قوية
+  // نظام توزيع عشوائي يعتمد على الحظ - نسبة 90% عادية، 10% قوية
   const totalCardsNeeded = 40; // 20 لكل لاعب
-  const commonPercentage = 0.98; // 98% للبطاقات العادية
-  const epicLegendaryPercentage = 0.02; // 2% للبطاقات الملحمية والأسطورية
+  const commonPercentage = 0.90; // 90% للبطاقات العادية
+  const epicLegendaryPercentage = 0.10; // 10% للبطاقات الملحمية والأسطورية
   
   // خلط مكثف لجميع مجموعات البطاقات
   const shuffledCommon = [...commonCards];
@@ -455,6 +174,15 @@ function generateRandomCards() {
   // إضافة البطاقات الأسطورية مع تصنيفها
   shuffledLegendary.forEach(card => {
     allCards.push({ card, type: 'legendary', rarity: 3 });
+  });
+  
+  // إضافة البطاقات الأسطورية (mythical) مع تصنيفها
+  const shuffledMythical = [...mythicalCards];
+  intensiveShuffle(shuffledMythical);
+  superRandomShuffle(shuffledMythical);
+  
+  shuffledMythical.forEach(card => {
+    allCards.push({ card, type: 'mythical', rarity: 4 });
   });
   
   // خلط مكثف لجميع البطاقات
@@ -618,7 +346,7 @@ function generateRandomCards() {
     console.log('✅ تم توزيع 20 بطاقة لكل لاعب بالضبط');
   }
   
-  console.log('🎲 النظام الجديد: توزيع عشوائي جداً يعتمد على الحظ مع نسبة 98% عادية، 2% قوية - بدون تكرار مطلق بين اللاعبين');
+  console.log('🎲 النظام الجديد: توزيع عشوائي يعتمد على الحظ مع نسبة 90% عادية، 10% قوية - بدون تكرار مطلق بين اللاعبين');
   
   // Set available cards for current player
   if (gameState.currentPlayer === 'player1') {

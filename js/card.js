@@ -324,16 +324,7 @@ let voiceSystem = {
     console.log('🎵 Testing all legendary voice mappings...');
     
     const testCards = [
-      'images/aizen.webm', 'images/Akai.webm', 'images/AllForOneCard.webm',
-      'images/AyanokojiCard.webm', 'images/Asta.webm', 'images/ErenCard.webm',
-      'images/Fubuki.webm', 'images/Gogeta.webm', 'images/GojoCard.webm',
-      'images/Goku UI.webm', 'images/Hawks.webm', 'images/joker.webm',
-      'images/killua.webm', 'images/law.webm', 'images/LuffyGear5Card.webm',
-      'images/madara.webm', 'images/MeruemCard.webm', 'images/NietroCard.webm',
-      'images/obito.webm', 'images/SakamotoCard.webm', 'images/shikamaru.webm',
-      'images/ShanksCard.webm', 'images/SilverCard.webm', 'images/UmibozoCard.webm',
-      'images/Vegetto.webm', 'images/whitebeard.webm', 'images/zoro.webm',
-      'images/Zenitsu.webm', 'images/Hashirama.webm', 'images/Neiji.webm'
+      // All card data has been removed - ready for new cards
     ];
     
     testCards.forEach(cardPath => {
@@ -821,12 +812,12 @@ function loadPlayerPicks() {
   
   // Ensure picks has valid data for both players
   if (!picks[player1] || !Array.isArray(picks[player1]) || picks[player1].length === 0) {
-    picks[player1] = ["images/ShanksCard.webm", "images/Akai.webm", "images/madara.webm", "images/Nana-card.png", "images/Vengeance.png"];
-    console.log('Using fallback cards for player1:', picks[player1]);
+    picks[player1] = []; // All card data has been removed - ready for new cards
+    console.log('Using empty cards for player1:', picks[player1]);
   }
   if (!picks[player2] || !Array.isArray(picks[player2]) || picks[player2].length === 0) {
-    picks[player2] = ["images/Akai.webm", "images/ShanksCard.webm", "images/Crocodile.png", "images/MeiMei-card.png", "images/Elizabeth.png"];
-    console.log('Using fallback cards for player2:', picks[player2]);
+    picks[player2] = []; // All card data has been removed - ready for new cards
+    console.log('Using empty cards for player2:', picks[player2]);
   }
   
   return picks;

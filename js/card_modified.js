@@ -119,12 +119,12 @@ function loadPlayerPicks() {
   
   // Ensure picks has valid data for both players
   if (!picks[player1] || !Array.isArray(picks[player1]) || picks[player1].length === 0) {
-    picks[player1] = ["images/ShanksCard.webm", "images/Akai.webm", "images/madara.webm", "images/Nana-card.png", "images/Vengeance.png"];
-    console.log('Using fallback cards for player1:', picks[player1]);
+    picks[player1] = []; // All card data has been removed - ready for new cards
+    console.log('Using empty cards for player1:', picks[player1]);
   }
   if (!picks[player2] || !Array.isArray(picks[player2]) || picks[player2].length === 0) {
-    picks[player2] = ["images/Akai.webm", "images/ShanksCard.webm", "images/Crocodile.png", "images/MeiMei-card.png", "images/Elizabeth.png"];
-    console.log('Using fallback cards for player2:', picks[player2]);
+    picks[player2] = []; // All card data has been removed - ready for new cards
+    console.log('Using empty cards for player2:', picks[player2]);
   }
   
   return picks;
