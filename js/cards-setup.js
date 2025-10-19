@@ -147,33 +147,13 @@ function generateRandomCards() {
   // Dynamic card distribution with updated percentages
   function generateDynamicDistribution() {
     const baseDistribution = {
-      common: 0.45,      // 45%
-      rare: 0.25,        // 25%
-      epic: 0.15,        // 15%
-      legendary: 0.08,   // 8%
-      ultimate: 0.05,    // 5%
-      cursed: 0.02       // 2%
+      common: 0.7,      // 70%
+      epic: 0.3         // 30%
     };
-    
-    // Add small random variations to percentages
-    const variationFactor = 0.05; // 5% variation
-    const dynamicDistribution = {};
-    
-    for (const [category, basePercentage] of Object.entries(baseDistribution)) {
-      // Generate a random variation between -5% and +5%
-      const variation = (Math.random() * 2 - 1) * variationFactor;
-      dynamicDistribution[category] = Math.max(0, basePercentage + variation);
-    }
-    
-    // Normalize to ensure total is 1
-    const total = Object.values(dynamicDistribution).reduce((a, b) => a + b, 0);
-    for (const category in dynamicDistribution) {
-      dynamicDistribution[category] /= total;
-    }
     
     // Convert to card counts
     const cardDistribution = {};
-    for (const [category, percentage] of Object.entries(dynamicDistribution)) {
+    for (const [category, percentage] of Object.entries(baseDistribution)) {
       cardDistribution[category] = Math.floor(totalCardsPerPlayer * percentage);
     }
     
@@ -218,22 +198,14 @@ function generateRandomCards() {
   // Generate cards for player 1
   const player1Cards = [
     ...getRandomCards(allCommonCards, cardDistribution.common),
-    ...getRandomCards(rareCards, cardDistribution.rare),
-    ...getRandomCards(epicCards, cardDistribution.epic),
-    ...getRandomCards(legendaryCards, cardDistribution.legendary),
-    ...getRandomCards(ultimateCards, cardDistribution.ultimate),
-    ...getRandomCards(cursedCards, cardDistribution.cursed)
+    ...getRandomCards(epicCards, cardDistribution.epic)
   ];
   
   // Ensure exactly 20 cards for player 1, filling with additional random cards if needed
   while (player1Cards.length < totalCardsPerPlayer) {
     const allAvailableCards = [
       ...allCommonCards,
-      ...rareCards,
-      ...epicCards,
-      ...legendaryCards,
-      ...ultimateCards,
-      ...cursedCards
+      ...epicCards
     ];
     
     const extraCards = getRandomCards(
@@ -255,24 +227,8 @@ function generateRandomCards() {
       cardDistribution.common
     ),
     ...getRandomCards(
-      rareCards.filter(card => !finalPlayer1Cards.includes(card)), 
-      cardDistribution.rare
-    ),
-    ...getRandomCards(
       epicCards.filter(card => !finalPlayer1Cards.includes(card)), 
       cardDistribution.epic
-    ),
-    ...getRandomCards(
-      legendaryCards.filter(card => !finalPlayer1Cards.includes(card)), 
-      cardDistribution.legendary
-    ),
-    ...getRandomCards(
-      ultimateCards.filter(card => !finalPlayer1Cards.includes(card)), 
-      cardDistribution.ultimate
-    ),
-    ...getRandomCards(
-      cursedCards.filter(card => !finalPlayer1Cards.includes(card)), 
-      cardDistribution.cursed
     )
   ];
   
@@ -280,11 +236,7 @@ function generateRandomCards() {
   while (player2Cards.length < totalCardsPerPlayer) {
     const allAvailableCards = [
       ...allCommonCards,
-      ...rareCards,
-      ...epicCards,
-      ...legendaryCards,
-      ...ultimateCards,
-      ...cursedCards
+      ...epicCards
     ];
     
     const extraCards = getRandomCards(
@@ -306,11 +258,7 @@ function generateRandomCards() {
   const verifyCardTypes = (cards) => {
     const typeCount = {
       common: cards.filter(card => allCommonCards.includes(card)).length,
-      rare: cards.filter(card => rareCards.includes(card)).length,
-      epic: cards.filter(card => epicCards.includes(card)).length,
-      legendary: cards.filter(card => legendaryCards.includes(card)).length,
-      ultimate: cards.filter(card => ultimateCards.includes(card)).length,
-      cursed: cards.filter(card => cursedCards.includes(card)).length
+      epic: cards.filter(card => epicCards.includes(card)).length
     };
     
     console.log('🎲 Card Distribution:', typeCount);
@@ -729,70 +677,55 @@ function initializeTournamentCards() {
       mythical: mythicalCards.length
     });
     
-    // إنشاء مجموعة البطاقات مع نسبة 60% للبطاقات الأسطورية والملحمية
+    // إنشاء مجموعة البطاقات مع نسبة 70% للعادية و30% للملحمية
     const cardsPerPlayer = 20;
     
     // حساب عدد البطاقات من كل فئة
-    const highRarityCount = Math.floor(cardsPerPlayer * 0.6); // 60% أسطورية وملحمية (12 بطاقة)
-    const lowRarityCount = cardsPerPlayer - highRarityCount; // 40% عادية (8 بطاقات)
+    const commonCount = Math.floor(cardsPerPlayer * 0.7); // 70% عادية (14 بطاقات)
+    const epicCount = cardsPerPlayer - commonCount; // 30% ملحمية (6 بطاقات)
     
-    // دالة لاختيار بطاقات عشوائية من مصفوفة
-    function getRandomCards(arr, count) {
-      if (!arr || arr.length === 0) return [];
-      const shuffled = [...arr].sort(() => Math.random() - 0.5);
-      return shuffled.slice(0, Math.min(count, arr.length));
-    }
-    
-    // بناء بطاقات اللاعب الأول - البطاقات القوية (60%)
-    // Mythical: 0.1% chance only (very rare!)
-    const mythicalChance = Math.random() < 0.001; // 0.1% chance
-    const mythicalCount = mythicalChance ? 1 : 0;
-    
-    let player1HighRarity = [
-      ...getRandomCards(epicCards, Math.floor((highRarityCount - mythicalCount) * 0.5)), // 50% epic
-      ...getRandomCards(legendaryCards, Math.floor((highRarityCount - mythicalCount) * 0.5)), // 50% legendary
-      ...(mythicalCount > 0 ? getRandomCards(mythicalCards, 1) : []) // 0.1% mythical
+    // بناء بطاقات اللاعب الأول
+    let player1Cards = [
+      ...getRandomCards(commonCards, commonCount),
+      ...getRandomCards(epicCards, epicCount)
     ];
     
-    // إذا لم نصل للعدد المطلوب، نكمل من البطاقات الأسطورية
-    while (player1HighRarity.length < highRarityCount) {
-      const extra = getRandomCards([...epicCards, ...legendaryCards], highRarityCount - player1HighRarity.length);
-      player1HighRarity = [...player1HighRarity, ...extra.filter(c => !player1HighRarity.includes(c))];
-      if (player1HighRarity.length >= highRarityCount) break;
+    // إذا لم نصل للعدد المطلوب، نكمل من البطاقات المتاحة
+    while (player1Cards.length < cardsPerPlayer) {
+      const extra = getRandomCards([...commonCards, ...epicCards], cardsPerPlayer - player1Cards.length);
+      player1Cards = [...player1Cards, ...extra.filter(c => !player1Cards.includes(c))];
+      if (player1Cards.length >= cardsPerPlayer) break;
     }
-    player1HighRarity = player1HighRarity.slice(0, highRarityCount);
+    player1Cards = player1Cards.slice(0, cardsPerPlayer).sort(() => Math.random() - 0.5);
     
-    // بطاقات اللاعب الأول - البطاقات العادية (40%)
-    let player1LowRarity = getRandomCards(commonCards, lowRarityCount);
-    
-    gameState.player1Cards = [...player1HighRarity, ...player1LowRarity].sort(() => Math.random() - 0.5);
-    
-    // بناء بطاقات اللاعب الثاني (بنفس النسب لكن بطاقات مختلفة)
-    const mythicalChance2 = Math.random() < 0.001; // 0.1% chance for player 2
-    const mythicalCount2 = mythicalChance2 ? 1 : 0;
-    
-    let player2HighRarity = [
-      ...getRandomCards(epicCards.filter(c => !player1HighRarity.includes(c)), Math.floor((highRarityCount - mythicalCount2) * 0.5)),
-      ...getRandomCards(legendaryCards.filter(c => !player1HighRarity.includes(c)), Math.floor((highRarityCount - mythicalCount2) * 0.5)),
-      ...(mythicalCount2 > 0 ? getRandomCards(mythicalCards.filter(c => !player1HighRarity.includes(c)), 1) : [])
+    // بناء بطاقات اللاعب الثاني (بطاقات مختلفة)
+    let player2Cards = [
+      ...getRandomCards(
+        commonCards.filter(c => !player1Cards.includes(c)), 
+        commonCount
+      ),
+      ...getRandomCards(
+        epicCards.filter(c => !player1Cards.includes(c)), 
+        epicCount
+      )
     ];
     
-    while (player2HighRarity.length < highRarityCount) {
+    // إذا لم نصل للعدد المطلوب، نكمل من البطاقات المتاحة
+    while (player2Cards.length < cardsPerPlayer) {
       const extra = getRandomCards(
-        [...epicCards, ...legendaryCards].filter(c => !player1HighRarity.includes(c) && !player2HighRarity.includes(c)),
-        highRarityCount - player2HighRarity.length
+        [...commonCards, ...epicCards].filter(c => 
+          !player1Cards.includes(c) && 
+          !player2Cards.includes(c)
+        ), 
+        cardsPerPlayer - player2Cards.length
       );
-      player2HighRarity = [...player2HighRarity, ...extra];
-      if (player2HighRarity.length >= highRarityCount) break;
+      player2Cards = [...player2Cards, ...extra];
+      if (player2Cards.length >= cardsPerPlayer) break;
     }
-    player2HighRarity = player2HighRarity.slice(0, highRarityCount);
+    player2Cards = player2Cards.slice(0, cardsPerPlayer).sort(() => Math.random() - 0.5);
     
-    let player2LowRarity = getRandomCards(
-      commonCards.filter(c => !player1LowRarity.includes(c)),
-      lowRarityCount
-    );
-    
-    gameState.player2Cards = [...player2HighRarity, ...player2LowRarity].sort(() => Math.random() - 0.5);
+    gameState.player1Cards = player1Cards;
+    gameState.player2Cards = player2Cards;
     
     // تعيين البطاقات المتاحة للاعب الحالي
     if (gameState.currentPlayer === 'player1') {

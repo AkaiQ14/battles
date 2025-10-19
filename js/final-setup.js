@@ -201,11 +201,17 @@ async function copyPlayerLink(player) {
       return;
     }
     
+    // Clear previous game data to ensure fresh links
+    localStorage.removeItem(`${player}StrategicOrdered`);
+    localStorage.removeItem(`${player}StrategicPicks`);
+    localStorage.removeItem(`${player}CardArrangement`);
+    localStorage.removeItem(`${player}ArrangementCompleted`);
+    
     // Show loading state
     const button = document.querySelector(`.${player}-btn`);
     if (button) {
       const originalText = button.textContent;
-      button.textContent = 'جاري التحضير...';
+      // Remove "جاري التحضير" text
       button.disabled = true;
     }
     

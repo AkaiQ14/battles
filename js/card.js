@@ -36,7 +36,9 @@ let voiceSystem = {
       'Hashirama', 'Hawks', 'Hinata', 'Hisoka', 'jiraya', 'joker', 'KaidoCard', 'KaitoKidCard', 'KankiCard',
       'killua', 'law', 'Lelouch', 'LuffyGear5Card', 'madara', 'MeruemCard', 'naruto', 'Neiji', 'NietroCard', 'obito',
       'QG14', 'queen', 'SakamotoCard', 'shikamaru', 'ShanksCard', 'SilverCard', 'smith', 'UmibozoCard',
-      'Vegetto', 'whitebeard', 'zoro', 'Zenitsu', 'ZenoCard', 'RockLee', 'AlocardCard', 'alocard', 'alucard', 'AloCard' // إضافة جميع الأسماء المحتملة
+      'Vegetto', 'whitebeard', 'zoro', 'Zenitsu', 'ZenoCard', 'RockLee', 'AlocardCard', 'alocard', 'alucard', 'AloCard', // إضافة جميع الأسماء المحتملة
+      // New voice files added
+      'All-For-One', 'Goku Black', 'Yoriichi'
     ];
     
     const cardName = cardPath.split('/').pop().split('.')[0].toLowerCase();
@@ -123,7 +125,11 @@ let voiceSystem = {
       'Alocard': 'AlocardCard',
       'alocard': 'AlocardCard',
       'AloCard': 'AlocardCard',
-      'alucard': 'AlocardCard'
+      'alucard': 'AlocardCard',
+      // New voice files added
+      'All-For-One': 'All-For-One',
+      'Goku Black': 'Goku Black',
+      'Yoriichi': 'Yoriichi'
     };
     
     // Check for exact match first

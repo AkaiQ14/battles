@@ -13,17 +13,6 @@ class CardManager {
   }
 
   initializeCardDatabase() {
-    // Cursed Cards (from Cursed folder + QG14)
-    this.cardDatabase.cursed = [
-      'images/QG14.webm',
-      'images/Luffy-Nightmare.png',
-      'images/Konohamaru.png',
-      'images/Kenjaku.png',
-      'images/Chopper.png',
-      'images/Adult-Gon.png',
-      'images/Kokushibo.png'
-    ];
-
     // Epic Cards (from Epic folder)
     this.cardDatabase.epic = [
       'images/A4thRaikagee.png',
@@ -109,7 +98,79 @@ class CardManager {
       'images/Yumeko-Jabami.png',
       'images/Yusaku.png',
       'images/Yuta.png',
-      'images/Zagred.png'
+      'images/Zagred.png',
+      'images/LuffyGear5.webm',
+      'images/All-For-One.webm',
+      'images/Escanor.webm',
+      'images/Dio.webm',
+      'images/Hashirama.webm',
+      'images/Aizen.webm',
+      'images/Saitama.webm',
+      'images/Queen.webm',
+      'images/Madara.webm',
+      'images/Yoriichi.webm',
+      'images/ZORO.webm',
+      'images/Hawks.webm',
+      'images/Gohan Beast.webm',
+      'images/Goku Black.webm',
+      'images/Gilgamesh.webm',
+      'images/Bakugo.webm',
+      'images/AllMight.webm',
+      'images/Ulquiorra.webm',
+      'images/Vermoth.webm',
+      'images/Todo.webm',
+      'images/Meruem.webm',
+      'images/Lecht.webm',
+      'images/AizenCrow.webm',
+      'images/Zenon.webm',
+      'images/Zeno.webm',
+      'images/Zaraki.webm',
+      'images/Yhwach.webm',
+      'images/Yamato.webm',
+      'images/Yamamoto.webm',
+      'images/Walker.webm',
+      'images/Utsuro.webm',
+      'images/UmibozoCard.webm',
+      'images/Toji.webm',
+      'images/Takamura.webm',
+      'images/Sung-Jinwoo.webm',
+      'images/Smiley.webm',
+      'images/Sanji.webm',
+      'images/Sakamoto.webm',
+      'images/Roger.webm',
+      'images/Riboku.webm',
+      'images/Ranpo.webm',
+      'images/PrinceHata.webm',
+      'images/Ouki.webm',
+      'images/Obito.webm',
+      'images/Naruto.webm',
+      'images/Meliodas.webm',
+      'images/Midoriya.webm',
+      'images/Makima.webm',
+      'images/Law.webm',
+      'images/Kyurak.webm',
+      'images/Kanki.webm',
+      'images/Kakashi.webm',
+      'images/KaitoKid.webm',
+      'images/Kaido.webm',
+      'images/Jiraya.webm',
+      'images/Itachi.webm',
+      'images/Ippo.webm',
+      'images/Gintoki.webm',
+      'images/Gin.webm',
+      'images/Garp.webm',
+      'images/ErenCard.webm',
+      'images/Chrollo.webm',
+      'images/Cell.webm',
+      'images/Broly.webm',
+      'images/Beru.webm',
+      'images/Akai.webm',
+      'images/Ayanokoji.webm',
+      'images/Alocard.webm',
+      'images/Rimuru Tempest.webm',
+      'images/zabuza.webm',
+      'images/Lelouch.webm',
+      'images/Hinata.webm'
     ];
 
     // Common Cards (from Common folder) - Batch 1
@@ -163,11 +224,7 @@ class CardManager {
       'images/DukeHyou.png',
       'images/Charmyy.png',
       'images/Baraggan.png',
-      'images/Aizetsu.png'
-    ];
-
-    // Common Cards - Batch 2
-    this.cardDatabase.common2 = [
+      'images/Aizetsu.png',
       'images/Zora.png',
       'images/Zeno-kingdom.png',
       'images/Zeff.png',
@@ -216,11 +273,7 @@ class CardManager {
       'images/RyoFui.png',
       'images/Rui.png',
       'images/Rojuro.png',
-      'images/Robin.png'
-    ];
-
-    // Common Cards - Batch 3
-    this.cardDatabase.common3 = [
+      'images/Robin.png',
       'images/RinBuKun.png',
       'images/Rill.png',
       'images/RaiDo.png',
@@ -263,11 +316,7 @@ class CardManager {
       'images/Makoto.png',
       'images/Maki-Zenen.png',
       'images/Mai.png',
-      'images/Ma-Dongwook.png'
-    ];
-
-    // Common Cards - Batch 4
-    this.cardDatabase.common4 = [
+      'images/Ma-Dongwook.png',
       'images/Komei.png',
       'images/Komamura.png',
       'images/KnuckledDuster.png',
@@ -308,11 +357,7 @@ class CardManager {
       'images/Gon.png',
       'images/GoHouMei.png',
       'images/Ginjo.png',
-      'images/Gin-Ichimaru.png'
-    ];
-
-    // Common Cards - Batch 5 (updated to include all remaining cards)
-    this.cardDatabase.common5 = [
+      'images/Gin-Ichimaru.png',
       'images/Genthru.png',
       'images/GaiMou.png',
       'images/Fumikage.png',
@@ -330,7 +375,6 @@ class CardManager {
       'images/EdgeShot.png',
       'images/Dodoriaa.png',
       'images/Diane-card.png',
-      // Additional cards to complete the 286 total
       'images/Kaminari.png',
       'images/Kale.png',
       'images/Jugo.png',
@@ -377,11 +421,7 @@ class CardManager {
       'images/Dorothy.png',
       'images/EdgeShot.png',
       'images/Dodoriaa.png',
-      'images/Diane-card.png'
-    ];
-
-    // Rare Cards (from Rare folder)
-    this.cardDatabase.rare = [
+      'images/Diane-card.png',
       'images/Zeldris.png',
       'images/Zamasu.png',
       'images/Yuno.png',
@@ -453,22 +493,14 @@ class CardManager {
       'images/Best-Jeanist.png',
       'images/Baki.png',
       'images/Asta.png',
-      'images/Akiko-Yosano.png'
-    ];
-
-    // Ultimate Cards (from Ultimate folder)
-    this.cardDatabase.ultimate = [
-      'images/LuffyGear5.webm',
-      'images/All-For-One.webm',
-      'images/Escanor.webm',
-      'images/Dio.webm',
-      'images/Hashirama.webm',
-      'images/Aizen.webm',
-      'images/Saitama.webm',
-      'images/Queen.webm',
-      'images/Madara.webm',
-      'images/Yoriichi.webm',
-      'images/ZORO.webm'
+      'images/Akiko-Yosano.png',
+      'images/QG14.webm',
+      'images/Luffy-Nightmare.png',
+      'images/Konohamaru.png',
+      'images/Kenjaku.png',
+      'images/Chopper.png',
+      'images/Adult-Gon.png',
+      'images/Kokushibo.png'
     ];
   }
 
