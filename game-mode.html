@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>اختر نوع اللعبة - تحدي بطاقات الأنمي</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg: #8B1538;
+      --panel: #2d2d2d;
+      --panel-light: #3a3a3a;
+      --accent: #dc2626;
+      --accent-light: #ef4444;
+      --accent-dark: #b91c1c;
+      --text: #ffffff;
+      --text-muted: #cccccc;
+      --btn: #dc2626;
+      --btn-hover: #ef4444;
+      --shadow: 0 8px 32px rgba(0,0,0,0.3);
+      --shadow-light: 0 4px 16px rgba(0,0,0,0.2);
+      --radius: 12px;
+      --radius-large: 16px;
+      --error: #f44336;
+      --success: #4caf50;
+    }
+    *{box-sizing: border-box; margin: 0; padding: 0;}
+    body{
+      font-family: "Cairo", sans-serif;
+      background: #8B1538;
+      color: var(--text);
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+      line-height: 1.6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+      box-sizing: border-box;
+    }
+    .video-background {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: -1;
+      object-fit: cover;
+      background-image: url('images/QG14Background.png');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+    .game-mode-container {
+      background: rgba(45, 45, 45, 0.545);
+      border: 2px solid rgba(220, 38, 38, 0.3);
+      border-radius: var(--radius-large);
+      padding: 40px;
+      backdrop-filter: blur(20px);
+      box-shadow: var(--shadow);
+      max-width: 520px;
+      width: 100%;
+      min-height: 320px;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 38px;
+      transition: all 0.3s ease;
+    }
+    .game-mode-container:hover {
+      border-color: var(--accent);
+      box-shadow: 0 12px 40px rgba(220, 38, 38, 0.2);
+    }
+    .game-mode-header h1 {
+      color: var(--accent);
+      font-size: 32px;
+      font-weight: 800;
+      margin-bottom: 10px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    .select-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    label {
+      color: var(--text-muted);
+      font-size: 16px;
+      margin-bottom: 3px;
+      font-weight: 500;
+    }
+    select {
+      width: 100%;
+      max-width: 300px;
+      padding: 14px;
+      border-radius: var(--radius);
+      background: var(--panel-light);
+      border: 2px solid transparent;
+      color: var(--text);
+      font-size: 16px;
+      font-family: "Cairo", sans-serif;
+      margin-bottom: 0;
+      outline: none;
+      transition: all 0.3s ease;
+      text-align: right;
+      direction: rtl;
+    }
+    select:focus {
+      border-color: var(--accent);
+      background: #4a4a4a;
+      box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.2);
+    }
+    .proceed-btn {
+      background: linear-gradient(135deg, var(--btn), var(--accent-light));
+      color: white;
+      border: none;
+      border-radius: var(--radius);
+      padding: 16px 32px;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: "Cairo", sans-serif;
+      transition: all 0.3s ease;
+      box-shadow: 0 6px 20px rgba(220, 38, 38, 0.3);
+      margin-top: 10px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .proceed-btn:hover {
+      background: linear-gradient(135deg, var(--accent-light), var(--btn));
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px rgba(220, 38, 38, 0.4);
+    }
+    @media (max-width: 480px) {
+      .game-mode-container {
+        margin: 15px;
+        padding: 30px 14px;
+        max-width: 340px;
+      }
+      .game-mode-header h1 {
+        font-size: 22px;
+      }
+      .proceed-btn {
+        font-size: 15px;
+        padding: 12px 22px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="video-background"></div>
+  <div class="game-mode-container">
+    <div class="game-mode-header">
+      <h1>اختر نوع اللعبة</h1>
+    </div>
+    <form id="gameModeForm">
+      <div class="select-group">
+        <label for="gameModeSelect">نوع اللعبة</label>
+        <select id="gameModeSelect" name="gameMode">
+          <option value="challenge" selected>التحدي</option>
+          <option value="tournament">البطولة</option>
+        </select>
+      </div>
+      <button type="submit" class="proceed-btn">متابعة</button>
+    </form>
+  </div>
+  <script>
+    document.getElementById("gameModeForm").addEventListener("submit", function(e){
+      e.preventDefault();
+      const mode = document.getElementById("gameModeSelect").value;
+      if(mode === "challenge"){
+        window.location.href = "names-setup.html";
+      }else if(mode === "tournament"){
+        window.location.href = "tournament-setup.html";
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>إعداد المواجهات - تحدي بطاقات الأنمي</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg: #8B1538;
+      --panel: #2d2d2d;
+      --panel-light: #3a3a3a;
+      --accent: #dc2626;
+      --accent-light: #ef4444;
+      --accent-dark: #b91c1c;
+      --text: #ffffff;
+      --text-muted: #cccccc;
+      --btn: #dc2626;
+      --btn-hover: #ef4444;
+      --shadow: 0 8px 32px rgba(0,0,0,0.3);
+      --shadow-light: 0 4px 16px rgba(0,0,0,0.2);
+      --radius: 12px;
+      --radius-large: 16px;
+      --error: #f44336;
+      --success: #4caf50;
+    }
+    *{box-sizing: border-box; margin: 0; padding: 0;}
+    body{
+      font-family: "Cairo", sans-serif;
+      background: #8B1538;
+      color: var(--text);
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+      line-height: 1.6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+      box-sizing: border-box;
+    }
+    .video-background {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: -1;
+      object-fit: cover;
+      background-image: url('images/QG14Background.png');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+    .tournament-container {
+      background: rgba(45, 45, 45, 0.545);
+      border: 2px solid rgba(220, 38, 38, 0.3);
+      border-radius: var(--radius-large);
+      padding: 40px 32px;
+      backdrop-filter: blur(20px);
+      box-shadow: var(--shadow);
+      max-width: 900px;
+      width: 95%;
+      min-height: 360px;
+      max-height: 85vh;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      align-items: center;
+      overflow-y: auto;
+    }
+    .tournament-container:hover {
+      border-color: var(--accent);
+      box-shadow: 0 12px 40px rgba(220, 38, 38, 0.2);
+    }
+    
+    /* Custom Scrollbar */
+    .tournament-container::-webkit-scrollbar {
+      width: 10px;
+    }
+    .tournament-container::-webkit-scrollbar-track {
+      background: rgba(45, 45, 45, 0.5);
+      border-radius: 10px;
+    }
+    .tournament-container::-webkit-scrollbar-thumb {
+      background: linear-gradient(135deg, var(--accent), var(--accent-light));
+      border-radius: 10px;
+      transition: all 0.3s ease;
+    }
+    .tournament-container::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(135deg, var(--accent-light), var(--accent));
+    }
+    .tournament-header h1 {
+      color: var(--accent);
+      font-size: 28px;
+      font-weight: 800;
+      margin-bottom: 12px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    .form-section {
+      width: 100%;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    label {
+      color: var(--text-muted);
+      font-size: 16px;
+      font-weight: 500;
+      margin-bottom: 8px;
+      display: block;
+      text-align: right;
+      padding-right: 10px;
+    }
+    input[type='number'], input[type='text'] {
+      width: 100%;
+      padding: 11px 14px;
+      border-radius: var(--radius);
+      background: var(--panel-light);
+      border: 2px solid transparent;
+      color: var(--text);
+      font-size: 14px;
+      font-family: "Cairo", sans-serif;
+      outline: none;
+      transition: all 0.3s ease;
+      text-align: right;
+      direction: rtl;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    #playerCount {
+      max-width: 360px;
+      margin: 0 auto 14px auto;
+      display: block;
+      font-size: 15px;
+      padding: 13px 16px;
+    }
+    input[type='number']:focus, input[type='text']:focus {
+      border-color: var(--accent);
+      background: #4a4a4a;
+      box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.2);
+    }
+    .btn-action {
+      background: linear-gradient(135deg, var(--btn), var(--accent-light));
+      color: white;
+      border: none;
+      border-radius: var(--radius);
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: "Cairo", sans-serif;
+      transition: all 0.3s ease;
+      box-shadow: 0 6px 20px rgba(220, 38, 38, 0.3);
+      margin-top: 6px;
+      letter-spacing: 0.5px;
+    }
+    .btn-action:disabled {
+      background: #666;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    .btn-action:hover:enabled {
+      background: linear-gradient(135deg, var(--accent-light), var(--btn));
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px rgba(220, 38, 38, 0.4);
+    }
+    .names-group {
+      margin-top: 15px;
+      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px 24px;
+      padding: 10px 0;
+    }
+    
+    .names-group input {
+      width: 100%;
+    }
+    
+    
+    .scroll-hint {
+      color: var(--text-muted);
+      font-size: 13px;
+      margin-top: 12px;
+      opacity: 0.8;
+      text-align: center;
+      font-weight: 500;
+    }
+    
+    @keyframes slideInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .names-group input {
+      animation: slideInUp 0.4s ease-out;
+    }
+    
+    .names-group input:nth-child(1) { animation-delay: 0.05s; }
+    .names-group input:nth-child(2) { animation-delay: 0.1s; }
+    .names-group input:nth-child(3) { animation-delay: 0.15s; }
+    .names-group input:nth-child(4) { animation-delay: 0.2s; }
+    .names-group input:nth-child(5) { animation-delay: 0.25s; }
+    .names-group input:nth-child(6) { animation-delay: 0.3s; }
+    
+    .home-btn {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: linear-gradient(135deg, #dc2626, #b91c1c);
+      border: 3px solid white;
+      border-radius: var(--radius);
+      color: #fff;
+      padding: 10px 24px;
+      font-size: 16px;
+      font-family: "Cairo", sans-serif;
+      font-weight: 900;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 6px 20px rgba(220, 38, 38, 0.5), 0 0 30px rgba(220, 38, 38, 0.3);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+    .home-btn:hover {
+      transform: translateY(-3px) scale(1.05);
+      box-shadow: 0 8px 25px rgba(220, 38, 38, 0.7), 0 0 40px rgba(220, 38, 38, 0.5);
+      border-color: #fbbf24;
+      background: linear-gradient(135deg, #b91c1c, #991b1b);
+    }
+    .home-btn::before {
+      content: '🏠';
+      font-size: 18px;
+    }
+    
+    .control-buttons {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      width: 100%;
+      max-width: 500px;
+      margin: 12px auto 0 auto;
+    }
+    
+    .leaderboard-btn, .control-panel-btn {
+      background: linear-gradient(135deg, #4CAF50, #45a049);
+      border: none;
+      border-radius: var(--radius);
+      color: white;
+      padding: 10px 18px;
+      font-size: 14px;
+      font-family: "Cairo", sans-serif;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      min-height: 42px;
+    }
+    
+    .control-panel-btn {
+      background: linear-gradient(135deg, #2196F3, #1976D2);
+      box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
+    }
+    
+    .leaderboard-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(76, 175, 80, 0.5);
+      background: linear-gradient(135deg, #45a049, #388e3c);
+    }
+    
+    .control-panel-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(33, 150, 243, 0.5);
+      background: linear-gradient(135deg, #1976D2, #1565C0);
+    }
+    
+    @media (max-width: 900px) {
+      .tournament-container {
+        max-width: 95%;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .tournament-container {
+        max-width: 95%;
+        padding: 30px 20px;
+      }
+      .names-group {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+      .control-buttons {
+        max-width: 100%;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .tournament-container {
+        margin: 10px;
+        padding: 20px 15px;
+        max-width: 95%;
+      }
+      .tournament-header h1 {
+        font-size: 20px;
+      }
+      .btn-action {
+        font-size: 14px;
+        padding: 11px 20px;
+      }
+      .home-btn {
+        top: 10px;
+        right: 10px;
+        padding: 8px 18px;
+        font-size: 14px;
+      }
+      .control-buttons {
+        flex-direction: column;
+        max-width: 100%;
+      }
+      .leaderboard-btn, .control-panel-btn {
+        font-size: 13px;
+        padding: 10px 16px;
+      }
+      .names-group {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+      input[type='number'], input[type='text'] {
+        font-size: 14px;
+        padding: 10px 12px;
+      }
+      #playerCount {
+        font-size: 14px;
+        padding: 11px 14px;
+      }
+      #continueBtn {
+        font-size: 15px !important;
+        padding: 12px 30px !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="video-background"></div>
+  
+  <!-- Home Button -->
+  <a href="index.html" class="home-btn">الرئيسية</a>
+  
+  <div class="tournament-container">
+    <div class="tournament-header">
+      <h1>إعداد المواجهات</h1>
+    </div>
+    <form id="tournamentForm">
+      <div class="form-section">
+        <label for="playerCount">عدد المشاركين (4 أو أكثر)</label>
+        <input type="number" min="4" id="playerCount" name="playerCount" placeholder="أدخل عدد المشاركين" required>
+        <button type="button" class="btn-action" id="generateNames" style="width: 100%; max-width: 360px; margin: 10px auto 0 auto; display: block;">⬇️ إنشاء حقول الأسماء</button>
+        
+        <!-- Control Buttons -->
+        <div class="control-buttons">
+          <button type="button" class="leaderboard-btn" onclick="showTournamentLeaderboard()">
+            🏆 المتصدرين
+          </button>
+          <button type="button" class="control-panel-btn" onclick="showControlPanel()">
+            ⚙️ لوحة التحكم
+          </button>
+        </div>
+      </div>
+      <div id="namesInputs" class="names-group"></div>
+      <div class="scroll-hint" id="scrollHint" style="display:none;">⬇️ مرر للأسفل لإدخال باقي الأسماء</div>
+      <div id="quickActions" style="display:none; margin-top: 15px; gap: 10px; justify-content: center; flex-direction: row;">
+        <button type="button" class="btn-action" id="clearAllBtn" style="background: linear-gradient(135deg, #f44336, #d32f2f); font-size: 13px; padding: 9px 18px; box-shadow: 0 4px 15px rgba(244, 67, 54, 0.3);">🗑️ مسح الكل</button>
+      </div>
+      <button type="submit" class="btn-action" id="continueBtn" style="display:none; font-size: 16px; padding: 14px 40px; margin-top: 20px;">متابعة إلى جدول المواجهات ➜</button>
+    </form>
+  </div>
+  <script>
+    const generateNamesBtn = document.getElementById('generateNames');
+    const namesInputsDiv = document.getElementById('namesInputs');
+    const playerCountInput = document.getElementById('playerCount');
+    const continueBtn = document.getElementById('continueBtn');
+    const scrollHint = document.getElementById('scrollHint');
+    const quickActions = document.getElementById('quickActions');
+    const clearAllBtn = document.getElementById('clearAllBtn');
+    
+    // Clear all button
+    clearAllBtn.addEventListener('click', function() {
+      if (confirm('هل أنت متأكد من مسح جميع الأسماء؟')) {
+        const inputs = namesInputsDiv.querySelectorAll('input[type="text"]');
+        inputs.forEach(input => {
+          input.value = '';
+        });
+      }
+    });
+    
+    generateNamesBtn.addEventListener('click', function(){
+      const count = parseInt(playerCountInput.value);
+      namesInputsDiv.innerHTML = '';
+      if(!count || count < 4) {
+        alert('يجب إدخال عدد مشاركين لا يقل عن 4');
+        continueBtn.style.display = 'none';
+        scrollHint.style.display = 'none';
+        quickActions.style.display = 'none';
+        return;
+      }
+      
+      // Show scroll hint if many players
+      if (count > 6) {
+        scrollHint.style.display = 'block';
+      } else {
+        scrollHint.style.display = 'none';
+      }
+      
+      for(let i=1; i<=count; i++){
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.name = 'player'+i;
+        input.id = 'player'+i;
+        input.placeholder = `المشارك ${i}`;
+        input.required = true;
+        
+        namesInputsDiv.appendChild(input);
+      }
+      continueBtn.style.display = 'block';
+      quickActions.style.display = 'flex';
+      
+      // Scroll to names section
+      namesInputsDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+    document.getElementById('tournamentForm').addEventListener('submit', function(e){
+      e.preventDefault();
+      console.log('Form submitted');
+      
+      // جمع الأسماء
+      const playerCount = parseInt(playerCountInput.value);
+      console.log('Player count:', playerCount);
+      
+      const names = [];
+      for(let i=1; i<=playerCount; i++){
+        const val = document.getElementById('player'+i).value.trim();
+        console.log(`Player ${i}:`, val);
+        if(!val) {
+          alert('يرجى تعبئة كل أسماء المشاركين');
+          return;
+        }
+        names.push(val);
+      }
+      
+      console.log('All names collected:', names);
+      
+      // حفظ الأسماء في localStorage
+      localStorage.setItem('tournamentPlayerNames', JSON.stringify(names));
+      
+      // التحقق من الحفظ
+      const savedData = localStorage.getItem('tournamentPlayerNames');
+      console.log('Data saved to localStorage:', savedData);
+      
+      // مسح أي بيانات بطولة سابقة
+      localStorage.removeItem('tournamentData');
+      console.log('Cleared previous tournament data');
+      
+      // الانتقال لصفحة البطولة
+      console.log('Redirecting to tournament bracket...');
+      window.location.href = 'tournament-bracket.html';
+    });
+    
+    // Show tournament leaderboard
+    function showTournamentLeaderboard() {
+      const leaderboard = getTournamentLeaderboard();
+      
+      const overlay = document.createElement('div');
+      overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('images/QG14Background.png') center/cover no-repeat, #8B1538;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        font-family: "Cairo", sans-serif;
+        padding: 0;
+      `;
+      
+      overlay.innerHTML = `
+        <style>
+          @keyframes fadeInUp {
+            from {
+              opacity: 0;
+              transform: translateY(30px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+          
+          .leaderboard-row {
+            animation: fadeInUp 0.6s ease-out;
+          }
+          
+          .leaderboard-row:nth-child(1) { animation-delay: 0.1s; }
+          .leaderboard-row:nth-child(2) { animation-delay: 0.2s; }
+          .leaderboard-row:nth-child(3) { animation-delay: 0.3s; }
+          .leaderboard-row:nth-child(4) { animation-delay: 0.4s; }
+          .leaderboard-row:nth-child(5) { animation-delay: 0.5s; }
+        </style>
+        <div style="
+          background: transparent;
+          color: white;
+          width: 96vw;
+          height: 96vh;
+          border-radius: 0;
+          overflow: hidden;
+          font-family: 'Cairo', sans-serif;
+          position: relative;
+          display: flex;
+          flex-direction: column;
+        ">
+          <div style="background: transparent; color: white; padding: 20px; text-align: center; position: relative;">
+            <h1 style="margin: 0; font-size: 28px; font-weight: 700; color: white; letter-spacing: 1px; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);">
+              المتصدرين - البطولة
+            </h1>
+          </div>
+          <div style="background: transparent; padding: 20px; display: flex; justify-content: center; align-items: flex-end; gap: 30px; margin-bottom: 20px;">
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+              <div style="width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 22px; color: white; background: linear-gradient(135deg, #C0C0C0, #808080); box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4); border: 3px solid #C0C0C0;">2</div>
+              <div style="color: white; font-weight: bold; font-size: 14px; text-align: center; max-width: 100px;">${leaderboard.length >= 2 ? leaderboard[1].name : '---'}</div>
+              <div style="color: #FFD700; font-weight: bold; font-size: 12px;">${leaderboard.length >= 2 ? leaderboard[1].points + ' نقطة' : '0 نقطة'}</div>
+            </div>
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+              <div style="width: 90px; height: 90px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 28px; color: white; background: linear-gradient(135deg, #FFD700, #FFA500); box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5); border: 4px solid #FFD700;">1</div>
+              <div style="color: white; font-weight: bold; font-size: 16px; text-align: center; max-width: 120px;">${leaderboard.length >= 1 ? leaderboard[0].name : '---'}</div>
+              <div style="color: #FFD700; font-weight: bold; font-size: 14px;">${leaderboard.length >= 1 ? leaderboard[0].points + ' نقطة' : '0 نقطة'}</div>
+            </div>
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+              <div style="width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px; color: white; background: linear-gradient(135deg, #CD7F32, #8B4513); box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); border: 3px solid #CD7F32;">3</div>
+              <div style="color: white; font-weight: bold; font-size: 12px; text-align: center; max-width: 90px;">${leaderboard.length >= 3 ? leaderboard[2].name : '---'}</div>
+              <div style="color: #FFD700; font-weight: bold; font-size: 11px;">${leaderboard.length >= 3 ? leaderboard[2].points + ' نقطة' : '0 نقطة'}</div>
+            </div>
+          </div>
+          <div style="flex: 1; overflow-y: auto; padding: 20px; max-height: 60vh; position: relative;">
+            <table style="width: 100%; border-collapse: collapse; background: rgba(107, 15, 42, 0.7); color: white; font-size: 14px; border-radius: 8px; overflow: hidden;">
+              <thead>
+                <tr style="background: rgba(90, 13, 36, 0.8);">
+                  <th style="padding: 15px 3px; text-align: center; border-bottom: 1px solid #FFD700; color: white; font-weight: bold;">#</th>
+                  <th style="padding: 15px 3px; text-align: right; border-bottom: 1px solid #FFD700; color: white; font-weight: bold;">اسم اللاعب</th>
+                  <th style="padding: 15px 3px; text-align: center; border-bottom: 1px solid #FFD700; color: white; font-weight: bold;">عدد المباريات</th>
+                  <th style="padding: 15px 3px; text-align: center; border-bottom: 1px solid #FFD700; color: white; font-weight: bold;">فاز</th>
+                  <th style="padding: 15px 3px; text-align: center; border-bottom: 1px solid #FFD700; color: white; font-weight: bold;">خسر</th>
+                  <th style="padding: 15px 3px; text-align: center; border-bottom: 1px solid #FFD700; color: white; font-weight: bold;">نسبة الفوز</th>
+                  <th style="padding: 15px 3px; text-align: center; border-bottom: 1px solid #FFD700; color: white; font-weight: bold;">نقاط</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${leaderboard.length === 0 ? 
+                  '<tr><td colspan="7" style="padding: 40px; text-align: center; color: #ccc; font-size: 18px;">لا توجد نتائج بعد. ابدأ اللعب!</td></tr>' :
+                  leaderboard.map((player, index) => `
+                    <tr class="leaderboard-row" style="border-bottom: 1px solid #4A0A1A; background: ${index % 2 === 0 ? 'rgba(107, 15, 42, 0.6)' : 'rgba(90, 13, 36, 0.6)'};">
+                      <td style="padding: 15px 3px; text-align: center; font-weight: bold; color: white;">${index + 1}</td>
+                      <td style="padding: 15px 3px; text-align: right; font-weight: bold; font-size: 16px; color: white;">${player.name}</td>
+                      <td style="padding: 15px 3px; text-align: center; color: white;">${player.games || 0}</td>
+                      <td style="padding: 15px 3px; text-align: center; color: #4CAF50; font-weight: bold;">${player.wins || 0}</td>
+                      <td style="padding: 15px 3px; text-align: center; color: #f44336; font-weight: bold;">${player.losses || 0}</td>
+                      <td style="padding: 15px 3px; text-align: center; font-weight: bold; color: white;">${player.winRate || 0}%</td>
+                      <td style="padding: 15px 3px; text-align: center; color: white; font-weight: bold; font-size: 16px;">${player.points || 0}</td>
+                    </tr>
+                  `).join('')
+                }
+              </tbody>
+            </table>
+          </div>
+          <div style="background: transparent; padding: 20px; text-align: center;">
+            <button id="closeLeaderboardBtn" style="background: #FFD700; color: #000; border: none; border-radius: 8px; padding: 12px 24px; font-size: 16px; font-weight: bold; cursor: pointer; font-family: 'Cairo', sans-serif; transition: all 0.3s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">إغلاق</button>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(overlay);
+      
+      document.getElementById('closeLeaderboardBtn').addEventListener('click', function() {
+        document.body.removeChild(overlay);
+      });
+      
+      const handleEscape = function(e) {
+        if (e.key === 'Escape') {
+          document.body.removeChild(overlay);
+          document.removeEventListener('keydown', handleEscape);
+        }
+      };
+      document.addEventListener('keydown', handleEscape);
+    }
+    
+    function getTournamentLeaderboard() {
+      const leaderboardData = localStorage.getItem('tournamentLeaderboard');
+      if (!leaderboardData) {
+        return [];
+      }
+      
+      const players = JSON.parse(leaderboardData);
+      return players.sort((a, b) => {
+        if (b.points !== a.points) return b.points - a.points;
+        if (b.winRate !== a.winRate) return b.winRate - a.winRate;
+        return b.wins - a.wins;
+      });
+    }
+    
+    // Show control panel
+    function showControlPanel() {
+      console.log('showControlPanel called');
+      const leaderboard = getTournamentLeaderboard();
+      console.log('Control Panel data:', leaderboard);
+      
+      const overlay = document.createElement('div');
+      overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('images/QG14Background.png') center/cover no-repeat, #8B1538;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        font-family: "Cairo", sans-serif;
+        padding: 0;
+      `;
+      
+      overlay.innerHTML = `
+        <style>
+          @keyframes fadeInUp {
+            from {
+              opacity: 0;
+              transform: translateY(30px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+          
+          .control-row {
+            animation: fadeInUp 0.6s ease-out;
+          }
+          
+          .control-row:nth-child(1) { animation-delay: 0.1s; }
+          .control-row:nth-child(2) { animation-delay: 0.2s; }
+          .control-row:nth-child(3) { animation-delay: 0.3s; }
+          .control-row:nth-child(4) { animation-delay: 0.4s; }
+          .control-row:nth-child(5) { animation-delay: 0.5s; }
+        </style>
+        <div style="
+          background: transparent;
+          color: white;
+          width: 96vw;
+          height: 96vh;
+          border-radius: 0;
+          overflow: hidden;
+          font-family: 'Cairo', sans-serif;
+          position: relative;
+          display: flex;
+          flex-direction: column;
+        ">
+          <!-- Header -->
+          <div style="
+            background: transparent;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+          ">
+            <h1 style="
+              margin: 0; 
+              font-size: 24px; 
+              font-weight: 700; 
+              color: white;
+              letter-spacing: 1px;
+              text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            ">
+              إدارة لوحة المتصدرين - البطولة
+            </h1>
+          </div>
+          
+          <!-- Controls Section -->
+          <div style="
+            background: transparent;
+            padding: 20px;
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+          ">
+            <!-- Add New Player -->
+            <div style="flex: 1; min-width: 300px;">
+              <h3 style="color: white; margin: 0 0 10px 0; font-size: 16px;">إضافة لاعب جديد (اختياري)</h3>
+              <div style="display: flex; gap: 10px; align-items: center;">
+                <input type="text" id="newPlayerNameControl" placeholder="اسم اللاعب" style="
+                  flex: 1;
+                  padding: 12px 15px;
+                  border: 2px solid #444;
+                  border-radius: 8px;
+                  background: white;
+                  color: #000;
+                  font-family: 'Cairo', sans-serif;
+                  font-size: 14px;
+                  outline: none;
+                  transition: border-color 0.3s;
+                " onfocus="this.style.borderColor='#FFD700'" onblur="this.style.borderColor='#444'">
+                <button onclick="addNewPlayerControl()" style="
+                  background: linear-gradient(135deg, #4CAF50, #45a049);
+                  color: white;
+                  border: none;
+                  border-radius: 8px;
+                  padding: 12px 20px;
+                  font-size: 14px;
+                  font-weight: bold;
+                  cursor: pointer;
+                  font-family: 'Cairo', sans-serif;
+                  transition: transform 0.2s;
+                " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                  إضافة
+                </button>
+              </div>
+            </div>
+            
+            <!-- Search Player -->
+            <div style="flex: 1; min-width: 300px;">
+              <h3 style="color: white; margin: 0 0 10px 0; font-size: 16px;">ابحث عن لاعب</h3>
+              <div style="position: relative;">
+                <input type="text" id="searchPlayerControl" placeholder="اكتب اسم اللاعب...." style="
+                  width: 100%;
+                  padding: 12px 40px 12px 15px;
+                  border: 2px solid #444;
+                  border-radius: 8px;
+                  background: white;
+                  color: #000;
+                  font-family: 'Cairo', sans-serif;
+                  font-size: 14px;
+                  outline: none;
+                  transition: border-color 0.3s;
+                " onfocus="this.style.borderColor='#FFD700'" onblur="this.style.borderColor='#444'" oninput="searchPlayersControl()">
+                <span onclick="clearSearchControl()" style="
+                  position: absolute;
+                  right: 15px;
+                  top: 50%;
+                  transform: translateY(-50%);
+                  color: #f44336;
+                  cursor: pointer;
+                  font-size: 18px;
+                  font-weight: bold;
+                ">✕</span>
+              </div>
+            </div>
+            
+            <!-- Save Changes Button -->
+            <div>
+              <button onclick="saveAllChangesControl()" style="
+                background: linear-gradient(135deg, #FFD700, #FFA500);
+                color: #000;
+                border: none;
+                border-radius: 8px;
+                padding: 12px 20px;
+                font-size: 14px;
+                font-weight: bold;
+                cursor: pointer;
+                font-family: 'Cairo', sans-serif;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                transition: transform 0.2s;
+              " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                💾 حفظ كل التعديلات
+              </button>
+            </div>
+          </div>
+          
+          <!-- Table Container -->
+          <div style="flex: 1; overflow-y: auto; padding: 0 20px 20px 20px;">
+            <table style="
+              width: 100%;
+              border-collapse: collapse;
+              background: rgba(107, 15, 42, 0.7);
+              color: white;
+              font-size: 14px;
+              border-radius: 8px;
+              overflow: hidden;
+            ">
+              <thead>
+                <tr style="background: rgba(90, 13, 36, 0.8);">
+                  <th style="padding: 15px 10px; text-align: center; border-bottom: 1px solid #FFD700; color: white; font-weight: bold;">#</th>
+                  <th style="padding: 15px 10px; text-align: right; border-bottom: 1px solid #FFD700; color: white; font-weight: bold;">اسم اللاعب</th>
+                  <th style="padding: 15px 10px; text-align: center; border-bottom: 1px solid #FFD700; color: white; font-weight: bold;">عدد المباريات</th>
+                  <th style="padding: 15px 10px; text-align: center; border-bottom: 1px solid #FFD700; color: white; font-weight: bold;">فاز</th>
+                  <th style="padding: 15px 10px; text-align: center; border-bottom: 1px solid #FFD700; color: white; font-weight: bold;">خسر</th>
+                  <th style="padding: 15px 10px; text-align: center; border-bottom: 1px solid #FFD700; color: white; font-weight: bold;">نسبة الفوز</th>
+                  <th style="padding: 15px 10px; text-align: center; border-bottom: 1px solid #FFD700; color: white; font-weight: bold;">نقاط</th>
+                  <th style="padding: 15px 10px; text-align: center; border-bottom: 1px solid #FFD700; color: white; font-weight: bold;">التحكم</th>
+                </tr>
+              </thead>
+              <tbody id="controlTableBody">
+                ${leaderboard.length === 0 ? 
+                  '<tr><td colspan="8" style="padding: 40px; text-align: center; color: #ccc; font-size: 18px;">لا توجد نتائج بعد. ابدأ اللعب!</td></tr>' :
+                  leaderboard.map((player, index) => `
+                    <tr class="control-row" style="
+                      border-bottom: 1px solid #4A0A1A;
+                      background: ${index % 2 === 0 ? 'rgba(107, 15, 42, 0.6)' : 'rgba(90, 13, 36, 0.6)'};
+                    ">
+                      <td style="padding: 15px 10px; text-align: center; font-weight: bold; color: white;">${index + 1}</td>
+                      <td style="padding: 15px 10px; text-align: right; font-weight: bold; font-size: 16px; color: white;">${player.name}</td>
+                      <td style="padding: 15px 10px; text-align: center;">
+                        <input type="number" value="${player.games || 0}" min="0" style="
+                          width: 60px;
+                          padding: 5px;
+                          border: 1px solid #444;
+                          border-radius: 4px;
+                          background: white;
+                          color: #000;
+                          text-align: center;
+                          font-size: 14px;
+                        " onchange="updatePlayerData('${player.name}', 'games', this.value)">
+                      </td>
+                      <td style="padding: 15px 10px; text-align: center;">
+                        <input type="number" value="${player.wins || 0}" min="0" style="
+                          width: 60px;
+                          padding: 5px;
+                          border: 1px solid #444;
+                          border-radius: 4px;
+                          background: white;
+                          color: #000;
+                          text-align: center;
+                          font-size: 14px;
+                        " onchange="updatePlayerData('${player.name}', 'wins', this.value)">
+                      </td>
+                      <td style="padding: 15px 10px; text-align: center;">
+                        <input type="number" value="${player.losses || 0}" min="0" style="
+                          width: 60px;
+                          padding: 5px;
+                          border: 1px solid #444;
+                          border-radius: 4px;
+                          background: white;
+                          color: #000;
+                          text-align: center;
+                          font-size: 14px;
+                        " onchange="updatePlayerData('${player.name}', 'losses', this.value)">
+                      </td>
+                      <td style="padding: 15px 10px; text-align: center; font-weight: bold; color: white;">${player.winRate || 0}%</td>
+                      <td style="padding: 15px 10px; text-align: center; color: white; font-weight: bold; font-size: 16px;">${player.points || 0}</td>
+                      <td style="padding: 15px 10px; text-align: center;">
+                        <div style="display: flex; gap: 8px; justify-content: center; align-items: center; flex-wrap: wrap;">
+                          <button onclick="addPointToPlayerControl('${player.name}')" style="
+                            background: linear-gradient(135deg, #4CAF50, #45a049);
+                            color: white;
+                            border: none;
+                            border-radius: 12px;
+                            padding: 8px 12px;
+                            font-size: 12px;
+                            font-weight: 800;
+                            cursor: pointer;
+                            font-family: 'Cairo', sans-serif;
+                            transition: all 0.3s ease;
+                            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+                            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+                            position: relative;
+                            overflow: hidden;
+                          " onmouseover="
+                            this.style.transform='scale(1.15) translateY(-2px)';
+                            this.style.boxShadow='0 8px 25px rgba(76, 175, 80, 0.5)';
+                          " onmouseout="
+                            this.style.transform='scale(1) translateY(0)';
+                            this.style.boxShadow='0 4px 15px rgba(76, 175, 80, 0.3)';
+                          ">+1 نقطة</button>
+                          <button onclick="removePointFromPlayerControl('${player.name}')" style="
+                            background: linear-gradient(135deg, #f44336, #d32f2f);
+                            color: white;
+                            border: none;
+                            border-radius: 12px;
+                            padding: 8px 12px;
+                            font-size: 12px;
+                            font-weight: 800;
+                            cursor: pointer;
+                            font-family: 'Cairo', sans-serif;
+                            transition: all 0.3s ease;
+                            box-shadow: 0 4px 15px rgba(244, 67, 54, 0.3);
+                            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+                            position: relative;
+                            overflow: hidden;
+                          " onmouseover="
+                            this.style.transform='scale(1.15) translateY(-2px)';
+                            this.style.boxShadow='0 8px 25px rgba(244, 67, 54, 0.5)';
+                          " onmouseout="
+                            this.style.transform='scale(1) translateY(0)';
+                            this.style.boxShadow='0 4px 15px rgba(244, 67, 54, 0.3)';
+                          ">-1 نقطة</button>
+                          <button onclick="deletePlayerControl('${player.name}')" style="
+                            background: linear-gradient(135deg, #666, #555);
+                            color: white;
+                            border: none;
+                            border-radius: 12px;
+                            padding: 8px 12px;
+                            font-size: 12px;
+                            font-weight: 800;
+                            cursor: pointer;
+                            font-family: 'Cairo', sans-serif;
+                            display: flex;
+                            align-items: center;
+                            gap: 4px;
+                            transition: all 0.3s ease;
+                            box-shadow: 0 4px 15px rgba(102, 102, 102, 0.3);
+                            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+                            position: relative;
+                            overflow: hidden;
+                          " onmouseover="
+                            this.style.transform='scale(1.15) translateY(-2px)';
+                            this.style.boxShadow='0 8px 25px rgba(102, 102, 102, 0.5)';
+                          " onmouseout="
+                            this.style.transform='scale(1) translateY(0)';
+                            this.style.boxShadow='0 4px 15px rgba(102, 102, 102, 0.3)';
+                          ">🗑️ حذف</button>
+                        </div>
+                      </td>
+                    </tr>
+                  `).join('')
+                }
+              </tbody>
+            </table>
+          </div>
+          
+          <!-- Footer -->
+          <div style="
+            background: transparent;
+            padding: 20px;
+            text-align: center;
+          ">
+            <button id="closeControlPanelBtn" style="
+              background: #FFD700;
+              color: #000;
+              border: none;
+              border-radius: 8px;
+              padding: 12px 24px;
+              font-size: 16px;
+              font-weight: bold;
+              cursor: pointer;
+              font-family: 'Cairo', sans-serif;
+              transition: all 0.3s ease;
+            " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+              إغلاق
+            </button>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(overlay);
+      
+      // Close button handler
+      document.getElementById('closeControlPanelBtn').addEventListener('click', function() {
+        document.body.removeChild(overlay);
+      });
+      
+      // Close on ESC key
+      const handleEscape = function(e) {
+        if (e.key === 'Escape') {
+          document.body.removeChild(overlay);
+          document.removeEventListener('keydown', handleEscape);
+        }
+      };
+      document.addEventListener('keydown', handleEscape);
+    }
+    
+    // Control Panel Functions for Tournament
+    function addNewPlayerControl() {
+      const playerNameInput = document.getElementById('newPlayerNameControl');
+      const playerName = playerNameInput.value.trim();
+      
+      if (!playerName) {
+        alert('يرجى إدخال اسم اللاعب');
+        return;
+      }
+      
+      if (playerName.length < 2) {
+        alert('اسم اللاعب يجب أن يكون حرفين على الأقل');
+        return;
+      }
+      
+      const leaderboardData = localStorage.getItem('tournamentLeaderboard');
+      let players = leaderboardData ? JSON.parse(leaderboardData) : [];
+      
+      // Check if player exists
+      if (players.find(p => p.name === playerName)) {
+        alert('اللاعب موجود بالفعل في القائمة');
+        return;
+      }
+      
+      // Add new player
+      const newPlayer = {
+        name: playerName,
+        wins: 0,
+        losses: 0,
+        games: 0,
+        points: 0,
+        winRate: 0
+      };
+      
+      players.push(newPlayer);
+      localStorage.setItem('tournamentLeaderboard', JSON.stringify(players));
+      
+      // Clear input
+      playerNameInput.value = '';
+      
+      // Refresh display
+      showControlPanel();
+      
+      console.log(`تم إضافة اللاعب الجديد: ${playerName}`);
+    }
+    
+    function searchPlayersControl() {
+      const searchTerm = document.getElementById('searchPlayerControl').value.toLowerCase();
+      const tableBody = document.getElementById('controlTableBody');
+      
+      if (!tableBody) return;
+      
+      const rows = tableBody.querySelectorAll('tr');
+      
+      rows.forEach(row => {
+        const playerNameCell = row.querySelector('td:nth-child(2)');
+        if (playerNameCell) {
+          const playerName = playerNameCell.textContent.toLowerCase();
+          if (playerName.includes(searchTerm)) {
+            row.style.display = '';
+          } else {
+            row.style.display = 'none';
+          }
+        }
+      });
+    }
+    
+    function clearSearchControl() {
+      const searchInput = document.getElementById('searchPlayerControl');
+      searchInput.value = '';
+      searchPlayersControl();
+    }
+    
+    function saveAllChangesControl() {
+      alert('تم حفظ جميع التعديلات بنجاح!');
+    }
+    
+    function updatePlayerData(playerName, field, value) {
+      const leaderboardData = localStorage.getItem('tournamentLeaderboard');
+      if (!leaderboardData) return;
+      
+      const players = JSON.parse(leaderboardData);
+      const player = players.find(p => p.name === playerName);
+      
+      if (player) {
+        player[field] = parseInt(value) || 0;
+        
+        // Recalculate win rate
+        if (player.games > 0) {
+          player.winRate = Math.round((player.wins / player.games) * 100);
+        } else {
+          player.winRate = 0;
+        }
+        
+        localStorage.setItem('tournamentLeaderboard', JSON.stringify(players));
+        showControlPanel(); // Refresh display
+      }
+    }
+    
+    function addPointToPlayerControl(playerName) {
+      const leaderboardData = localStorage.getItem('tournamentLeaderboard');
+      if (!leaderboardData) return;
+      
+      const players = JSON.parse(leaderboardData);
+      let player = players.find(p => p.name === playerName);
+      
+      if (!player) {
+        player = { name: playerName, wins: 0, losses: 0, games: 0, points: 0, winRate: 0 };
+        players.push(player);
+      }
+      
+      // Add point
+      player.points = (player.points || 0) + 1;
+      
+      localStorage.setItem('tournamentLeaderboard', JSON.stringify(players));
+      showControlPanel(); // Refresh display
+      
+      console.log(`تم إضافة نقطة للاعب ${playerName} في لوحة التحكم`);
+    }
+    
+    function removePointFromPlayerControl(playerName) {
+      const leaderboardData = localStorage.getItem('tournamentLeaderboard');
+      if (!leaderboardData) return;
+      
+      const players = JSON.parse(leaderboardData);
+      const player = players.find(p => p.name === playerName);
+      
+      if (player) {
+        // Remove point
+        player.points = Math.max(0, (player.points || 0) - 1);
+        
+        localStorage.setItem('tournamentLeaderboard', JSON.stringify(players));
+        showControlPanel(); // Refresh display
+        
+        console.log(`تم إزالة نقطة من اللاعب ${playerName} في لوحة التحكم`);
+      }
+    }
+    
+    function deletePlayerControl(playerName) {
+      if (confirm(`هل أنت متأكد من حذف اللاعب "${playerName}"؟`)) {
+        const leaderboardData = localStorage.getItem('tournamentLeaderboard');
+        if (!leaderboardData) return;
+        
+        const players = JSON.parse(leaderboardData);
+        const filteredPlayers = players.filter(p => p.name !== playerName);
+        localStorage.setItem('tournamentLeaderboard', JSON.stringify(filteredPlayers));
+        showControlPanel(); // Refresh display
+      }
+    }
+  </script>
+</body>
+</html>

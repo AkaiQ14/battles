@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>تحديد الجولات - تحدي بطاقات الأنمي</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg: #8B1538;
+      --panel: #2d2d2d;
+      --panel-light: #3a3a3a;
+      --accent: #dc2626;
+      --accent-light: #ef4444;
+      --text: #ffffff;
+      --text-muted: #cccccc;
+      --btn: #dc2626;
+      --btn-hover: #ef4444;
+      --radius: 12px;
+      --radius-large: 16px;
+    }
+    *{box-sizing: border-box; margin: 0; padding: 0;}
+    body{
+      font-family: "Cairo", sans-serif;
+      background: #8B1538;
+      color: var(--text);
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+      line-height: 1.6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+      box-sizing: border-box;
+    }
+    .video-background {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      object-fit: cover;
+      background-image: url('images/QG14Background.png');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+    .rounds-container {
+      background: rgba(45, 45, 45, 0.545);
+      border: 2px solid rgba(220, 38, 38, 0.3);
+      border-radius: var(--radius-large);
+      padding: 40px;
+      backdrop-filter: blur(20px);
+      box-shadow: var(--shadow);
+      width: 100%;
+      max-width: 520px;
+      min-height: 420px;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 35px;
+    }
+    .rounds-container:hover {
+      border-color: var(--accent);
+      box-shadow: 0 12px 40px rgba(220, 38, 38, 0.2);
+    }
+    .rounds-header h1 {
+      color: var(--accent);
+      font-size: 32px;
+      font-weight: 800;
+      margin-bottom: 12px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+      letter-spacing: 1px;
+    }
+    .rounds-header p {
+      color: var(--text-muted);
+      font-size: 16px;
+      margin-bottom: 0;
+      font-weight: 400;
+    }
+    .match-info {
+      background: rgba(220, 38, 38, 0.1);
+      border: 2px solid rgba(220, 38, 38, 0.3);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .match-info h3 {
+      color: var(--accent);
+      font-size: 20px;
+      margin-bottom: 10px;
+    }
+    .players {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+    .player {
+      flex: 1;
+      background: var(--panel-light);
+      padding: 12px;
+      border-radius: var(--radius);
+      font-weight: 600;
+      font-size: 16px;
+    }
+    .vs-text {
+      color: var(--accent);
+      font-weight: bold;
+      font-size: 18px;
+    }
+    .form-group {
+      position: relative;
+      text-align: right;
+    }
+    .form-group label {
+      position: absolute;
+      top: 50%;
+      right: 18px;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-weight: 500;
+      font-size: 16px;
+      pointer-events: none;
+      transition: all 0.3s ease;
+      z-index: 1;
+      background: var(--panel-light);
+      padding: 0 4px;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 18px 18px 18px 18px;
+      border: 2px solid transparent;
+      border-radius: var(--radius);
+      background: var(--panel-light);
+      color: var(--text);
+      font-size: 16px;
+      font-family: "Cairo", sans-serif;
+      transition: all 0.3s ease;
+      text-align: right;
+      direction: rtl;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .form-group input:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: #4a4a4a;
+      box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.2);
+      transform: translateY(-1px);
+    }
+    .form-group input:focus + label,
+    .form-group input:not(:placeholder-shown) + label,
+    .form-group input:valid + label {
+      top: -8px;
+      right: 14px;
+      font-size: 12px;
+      color: var(--accent);
+      font-weight: 600;
+      background: var(--panel);
+      padding: 0 6px;
+    }
+    .form-group input:hover {
+      background: #4a4a4a;
+      transform: translateY(-1px);
+    }
+    .form-group input::placeholder {
+      color: transparent;
+    }
+    .rounds-btn {
+      background: linear-gradient(135deg, var(--btn), var(--accent-light));
+      color: white;
+      border: none;
+      border-radius: var(--radius);
+      padding: 16px 32px;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: "Cairo", sans-serif;
+      transition: all 0.3s ease;
+      box-shadow: 0 6px 20px rgba(220, 38, 38, 0.3);
+      margin-top: 10px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .rounds-btn:hover {
+      background: linear-gradient(135deg, var(--accent-light), var(--btn));
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px rgba(220, 38, 38, 0.4);
+    }
+    .rounds-btn:active {
+      transform: translateY(-1px);
+    }
+    .rounds-btn:disabled {
+      background: #666;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    .back-btn {
+      background: linear-gradient(135deg, #666, #888);
+      color: white;
+      border: none;
+      border-radius: var(--radius);
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: "Cairo", sans-serif;
+      transition: all 0.3s ease;
+      margin-top: 15px;
+    }
+    .back-btn:hover {
+      background: linear-gradient(135deg, #777, #999);
+      transform: translateY(-2px);
+    }
+    @media (max-width: 768px) {
+      .rounds-container {
+        margin: 20px;
+        padding: 35px 25px;
+        max-width: 380px;
+        min-height: 380px;
+      }
+      .rounds-header h1 {
+        font-size: 26px;
+      }
+      .rounds-header p {
+        font-size: 14px;
+      }
+      .rounds-btn {
+        font-size: 16px;
+        padding: 14px 28px;
+      }
+      .players {
+        flex-direction: column;
+        gap: 10px;
+      }
+      .vs-text {
+        margin: 5px 0;
+      }
+    }
+    .home-btn {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: linear-gradient(135deg, #dc2626, #b91c1c);
+      border: 3px solid white;
+      border-radius: var(--radius);
+      color: #fff;
+      padding: 10px 24px;
+      font-size: 16px;
+      font-family: "Cairo", sans-serif;
+      font-weight: 900;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 6px 20px rgba(220, 38, 38, 0.5), 0 0 30px rgba(220, 38, 38, 0.3);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+    .home-btn:hover {
+      transform: translateY(-3px) scale(1.05);
+      box-shadow: 0 8px 25px rgba(220, 38, 38, 0.7), 0 0 40px rgba(220, 38, 38, 0.5);
+      border-color: #fbbf24;
+      background: linear-gradient(135deg, #b91c1c, #991b1b);
+    }
+    .home-btn::before {
+      content: '🏠';
+      font-size: 18px;
+    }
+    
+    .leaderboard-btn {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background: linear-gradient(135deg, #4CAF50, #45a049);
+      border: 3px solid white;
+      border-radius: var(--radius);
+      color: white;
+      padding: 10px 24px;
+      font-size: 16px;
+      font-family: "Cairo", sans-serif;
+      font-weight: 900;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 6px 20px rgba(76, 175, 80, 0.5), 0 0 30px rgba(76, 175, 80, 0.3);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border: none;
+    }
+    
+    .leaderboard-btn:hover {
+      transform: translateY(-3px) scale(1.05);
+      box-shadow: 0 8px 25px rgba(76, 175, 80, 0.7), 0 0 40px rgba(76, 175, 80, 0.5);
+      background: linear-gradient(135deg, #45a049, #388e3c);
+    }
+    
+    @media (max-width: 480px) {
+      .rounds-container {
+        margin: 15px;
+        padding: 30px 20px;
+        max-width: 350px;
+        min-height: 350px;
+      }
+      .rounds-header h1 {
+        font-size: 22px;
+      }
+      .rounds-header p {
+        font-size: 13px;
+      }
+      .rounds-btn {
+        font-size: 15px;
+        padding: 12px 24px;
+      }
+      .home-btn {
+        top: 10px;
+        right: 10px;
+        padding: 8px 18px;
+        font-size: 14px;
+      }
+      .leaderboard-btn {
+        top: 10px;
+        left: 10px;
+        padding: 8px 18px;
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="video-background"></div>
+  
+  <!-- Home Button -->
+  <a href="tournament-bracket.html" class="home-btn">العودة للجدول</a>
+  
+  <!-- Leaderboard Button -->
+  <button class="leaderboard-btn" onclick="showTournamentLeaderboard()">
+    🏆 المتصدرين
+  </button>
+  
+  <div class="rounds-container">
+    <div class="rounds-header">
+      <h1>تحديد الجولات</h1>
+      <p>اختر عدد الجولات للمباراة</p>
+    </div>
+    
+    <div class="match-info" id="matchInfo">
+      <h3>المباراة</h3>
+      <div class="players">
+        <div class="player" id="player1Name">اللاعب الأول</div>
+        <div class="vs-text">VS</div>
+        <div class="player" id="player2Name">اللاعب الثاني</div>
+      </div>
+    </div>
+    
+    <form id="roundsForm">
+      <div class="form-group">
+        <input 
+          type="number" 
+          id="rounds" 
+          name="rounds" 
+          placeholder=" "
+          min="1"
+          max="20"
+          value="11"
+          required
+        >
+        <label for="rounds">عدد الجولات</label>
+      </div>
+      
+      <button type="submit" class="rounds-btn" id="roundsBtn">
+        بدء المباراة
+      </button>
+    </form>
+    
+    <button class="back-btn" onclick="goBack()">العودة للجدول</button>
+  </div>
+
+  <script>
+    // جلب بيانات المباراة
+    let matchData = null;
+    
+    function loadMatchData() {
+      const currentMatchPlayers = localStorage.getItem('currentMatchPlayers');
+      const currentMatchId = localStorage.getItem('currentMatchId');
+      
+      if (currentMatchPlayers && currentMatchId) {
+        const players = JSON.parse(currentMatchPlayers);
+        document.getElementById('player1Name').textContent = players[0];
+        document.getElementById('player2Name').textContent = players[1];
+        
+        matchData = {
+          id: currentMatchId,
+          player1: players[0],
+          player2: players[1]
+        };
+        
+        console.log('Match data loaded:', matchData);
+      } else {
+        console.error('No match data found');
+        alert('لا توجد بيانات مباراة. يرجى العودة للجدول.');
+        window.location.href = 'tournament-bracket.html';
+      }
+    }
+    
+    function goBack() {
+      window.location.href = 'tournament-bracket.html';
+    }
+    
+    document.getElementById('roundsForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const rounds = parseInt(document.getElementById('rounds').value);
+      
+      if (!rounds || rounds < 1 || rounds > 20) {
+        alert('يرجى إدخال عدد جولات صحيح (1-20)');
+        return;
+      }
+      
+      console.log('Starting match with rounds:', rounds);
+      
+      // حفظ عدد الجولات للمباراة
+      localStorage.setItem('tournamentRounds', rounds.toString());
+      
+      // الانتقال لصفحة إعداد القدرات
+      window.location.href = 'abilities-setup.html';
+    });
+    
+    // تهيئة الصفحة
+    document.addEventListener('DOMContentLoaded', function() {
+      loadMatchData();
+    });
+    
+    // تهيئة فورية في حالة تحميل الصفحة مسبقاً
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', loadMatchData);
+    } else {
+      loadMatchData();
+    }
+    
+    // Show tournament leaderboard
+    function showTournamentLeaderboard() {
+      const leaderboard = getTournamentLeaderboard();
+      
+      const overlay = document.createElement('div');
+      overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('images/QG14Background.png') center/cover no-repeat, #8B1538;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        font-family: "Cairo", sans-serif;
+        padding: 0;
+      `;
+      
+      overlay.innerHTML = `
+        <style>
+          @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+          .leaderboard-row { animation: fadeInUp 0.6s ease-out; }
+          .leaderboard-row:nth-child(1) { animation-delay: 0.1s; }
+          .leaderboard-row:nth-child(2) { animation-delay: 0.2s; }
+          .leaderboard-row:nth-child(3) { animation-delay: 0.3s; }
+          .leaderboard-row:nth-child(4) { animation-delay: 0.4s; }
+          .leaderboard-row:nth-child(5) { animation-delay: 0.5s; }
+        </style>
+        <div style="background: transparent; color: white; width: 96vw; height: 96vh; border-radius: 0; overflow: hidden; font-family: 'Cairo', sans-serif; position: relative; display: flex; flex-direction: column;">
+          <div style="background: transparent; color: white; padding: 20px; text-align: center;">
+            <h1 style="margin: 0; font-size: 28px; font-weight: 700; color: white; letter-spacing: 1px; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);">المتصدرين - البطولة</h1>
+          </div>
+          <div style="background: transparent; padding: 20px; display: flex; justify-content: center; align-items: flex-end; gap: 30px; margin-bottom: 20px;">
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+              <div style="width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 22px; color: white; background: linear-gradient(135deg, #C0C0C0, #808080); box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4); border: 3px solid #C0C0C0;">2</div>
+              <div style="color: white; font-weight: bold; font-size: 14px; text-align: center; max-width: 100px;">${leaderboard.length >= 2 ? leaderboard[1].name : '---'}</div>
+              <div style="color: #FFD700; font-weight: bold; font-size: 12px;">${leaderboard.length >= 2 ? leaderboard[1].points + ' نقطة' : '0 نقطة'}</div>
+            </div>
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+              <div style="width: 90px; height: 90px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 28px; color: white; background: linear-gradient(135deg, #FFD700, #FFA500); box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5); border: 4px solid #FFD700;">1</div>
+              <div style="color: white; font-weight: bold; font-size: 16px; text-align: center; max-width: 120px;">${leaderboard.length >= 1 ? leaderboard[0].name : '---'}</div>
+              <div style="color: #FFD700; font-weight: bold; font-size: 14px;">${leaderboard.length >= 1 ? leaderboard[0].points + ' نقطة' : '0 نقطة'}</div>
+            </div>
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+              <div style="width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px; color: white; background: linear-gradient(135deg, #CD7F32, #8B4513); box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); border: 3px solid #CD7F32;">3</div>
+              <div style="color: white; font-weight: bold; font-size: 12px; text-align: center; max-width: 90px;">${leaderboard.length >= 3 ? leaderboard[2].name : '---'}</div>
+              <div style="color: #FFD700; font-weight: bold; font-size: 11px;">${leaderboard.length >= 3 ? leaderboard[2].points + ' نقطة' : '0 نقطة'}</div>
+            </div>
+          </div>
+          <div style="flex: 1; overflow-y: auto; padding: 20px; max-height: 60vh;">
+            <table style="width: 100%; border-collapse: collapse; background: rgba(107, 15, 42, 0.7); color: white; font-size: 14px; border-radius: 8px; overflow: hidden;">
+              <thead>
+                <tr style="background: rgba(90, 13, 36, 0.8);">
+                  <th style="padding: 15px 3px; text-align: center; border-bottom: 1px solid #FFD700; color: white; font-weight: bold;">#</th>
+                  <th style="padding: 15px 3px; text-align: right; border-bottom: 1px solid #FFD700; color: white; font-weight: bold;">اسم اللاعب</th>
+                  <th style="padding: 15px 3px; text-align: center; border-bottom: 1px solid #FFD700; color: white; font-weight: bold;">عدد المباريات</th>
+                  <th style="padding: 15px 3px; text-align: center; border-bottom: 1px solid #FFD700; color: white; font-weight: bold;">فاز</th>
+                  <th style="padding: 15px 3px; text-align: center; border-bottom: 1px solid #FFD700; color: white; font-weight: bold;">خسر</th>
+                  <th style="padding: 15px 3px; text-align: center; border-bottom: 1px solid #FFD700; color: white; font-weight: bold;">نسبة الفوز</th>
+                  <th style="padding: 15px 3px; text-align: center; border-bottom: 1px solid #FFD700; color: white; font-weight: bold;">نقاط</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${leaderboard.length === 0 ? 
+                  '<tr><td colspan="7" style="padding: 40px; text-align: center; color: #ccc; font-size: 18px;">لا توجد نتائج بعد. ابدأ اللعب!</td></tr>' :
+                  leaderboard.map((player, index) => `
+                    <tr class="leaderboard-row" style="border-bottom: 1px solid #4A0A1A; background: ${index % 2 === 0 ? 'rgba(107, 15, 42, 0.6)' : 'rgba(90, 13, 36, 0.6)'};">
+                      <td style="padding: 15px 3px; text-align: center; font-weight: bold; color: white;">${index + 1}</td>
+                      <td style="padding: 15px 3px; text-align: right; font-weight: bold; font-size: 16px; color: white;">${player.name}</td>
+                      <td style="padding: 15px 3px; text-align: center; color: white;">${player.games || 0}</td>
+                      <td style="padding: 15px 3px; text-align: center; color: #4CAF50; font-weight: bold;">${player.wins || 0}</td>
+                      <td style="padding: 15px 3px; text-align: center; color: #f44336; font-weight: bold;">${player.losses || 0}</td>
+                      <td style="padding: 15px 3px; text-align: center; font-weight: bold; color: white;">${player.winRate || 0}%</td>
+                      <td style="padding: 15px 3px; text-align: center; color: white; font-weight: bold; font-size: 16px;">${player.points || 0}</td>
+                    </tr>
+                  `).join('')
+                }
+              </tbody>
+            </table>
+          </div>
+          <div style="background: transparent; padding: 20px; text-align: center;">
+            <button id="closeLeaderboardBtn" style="background: #FFD700; color: #000; border: none; border-radius: 8px; padding: 12px 24px; font-size: 16px; font-weight: bold; cursor: pointer; font-family: 'Cairo', sans-serif; transition: all 0.3s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">إغلاق</button>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(overlay);
+      
+      document.getElementById('closeLeaderboardBtn').addEventListener('click', function() {
+        document.body.removeChild(overlay);
+      });
+      
+      const handleEscape = function(e) {
+        if (e.key === 'Escape') {
+          document.body.removeChild(overlay);
+          document.removeEventListener('keydown', handleEscape);
+        }
+      };
+      document.addEventListener('keydown', handleEscape);
+    }
+    
+    function getTournamentLeaderboard() {
+      const leaderboardData = localStorage.getItem('tournamentLeaderboard');
+      if (!leaderboardData) {
+        return [];
+      }
+      
+      const players = JSON.parse(leaderboardData);
+      return players.sort((a, b) => {
+        if (b.points !== a.points) return b.points - a.points;
+        if (b.winRate !== a.winRate) return b.winRate - a.winRate;
+        return b.wins - a.wins;
+      });
+    }
+  </script>
+</body>
+</html>
