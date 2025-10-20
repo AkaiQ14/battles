@@ -63,8 +63,72 @@ function loadGameData() {
   }
 }
 
+// Utility function for comprehensive data clearing
+function clearAllGameRelatedData() {
+  console.group('🧹 Comprehensive Game Data Clearing');
+  
+  // List of all keys to remove
+  const keysToRemove = [
+    // Strategic picks and orders
+    'player1StrategicPicks', 'player2StrategicPicks',
+    'player1StrategicOrdered', 'player2StrategicOrdered',
+    
+    // Card arrangements
+    'player1CardArrangement', 'player2CardArrangement',
+    'player1ArrangementCompleted', 'player2ArrangementCompleted',
+    
+    // Abilities
+    'player1Abilities', 'player2Abilities',
+    'player1UsedAbilities', 'player2UsedAbilities',
+    
+    // Game setup and state
+    'gameSetupProgress', 
+    'currentGameId', 
+    'currentMatchId', 
+    'currentMatchPlayers',
+    'usedAbilities', 
+    'abilityRequests', 
+    'currentRound', 
+    'rounds', 
+    'battleStarted', 
+    'gameStatus', 
+    'gameUpdate'
+  ];
+  
+  // Remove specific keys
+  keysToRemove.forEach(key => {
+    const value = localStorage.getItem(key);
+    localStorage.removeItem(key);
+    console.log(`🗑️ Removed key: ${key}, Previous value:`, value);
+  });
+  
+  // Remove any other localStorage keys related to the game
+  Object.keys(localStorage).forEach(key => {
+    const gameRelatedPatterns = [
+      'orderSubmitted_', 
+      'player1', 
+      'player2', 
+      'StrategicPicks', 
+      'CardArrangement', 
+      'ArrangementCompleted'
+    ];
+    
+    if (gameRelatedPatterns.some(pattern => key.includes(pattern))) {
+      const value = localStorage.getItem(key);
+      localStorage.removeItem(key);
+      console.log(`🗑️ Removed additional game-related key: ${key}, Previous value:`, value);
+    }
+  });
+  
+  console.log('✅ All game-related data cleared from localStorage');
+  console.groupEnd();
+}
+
 // Generate player links
 async function generatePlayerLinks() {
+  // Clear all game-related data before generating links
+  clearAllGameRelatedData();
+  
   const gameId = sessionStorage.getItem('currentGameId');
   
   // ✅ طور البطولة - نفس نظام التحدي تماماً
@@ -75,50 +139,44 @@ async function generatePlayerLinks() {
     const player1Name = gameData.player1.name;
     const player2Name = gameData.player2.name;
     
-    // ✅ قراءة البيانات من localStorage
-    const player1Cards = JSON.parse(localStorage.getItem('player1StrategicPicks') || '[]');
-    const player2Cards = JSON.parse(localStorage.getItem('player2StrategicPicks') || '[]');
-    const player1Abilities = JSON.parse(localStorage.getItem('player1Abilities') || '[]');
-    const player2Abilities = JSON.parse(localStorage.getItem('player2Abilities') || '[]');
+    console.log('🔍 Tournament Game Data Before Creation:', {
+      player1Name,
+      player2Name,
+      rounds: gameData.rounds
+    });
     
-    // ✅ إنشاء اللعبة في Firebase (مثل طور التحدي تماماً)
-    try {
-      console.log('📡 Creating tournament game in Firebase:', matchId);
-      
-      const tournamentGameData = {
-        player1: {
-          name: player1Name,
-          cards: player1Cards,
-          abilities: player1Abilities,
-          cardOrder: [],
-          isReady: false
-        },
-        player2: {
-          name: player2Name,
-          cards: player2Cards,
-          abilities: player2Abilities,
-          cardOrder: [],
-          isReady: false
-        },
-        rounds: gameData.rounds,
-        isTournament: true,
-        matchId: matchId,
-        status: 'waiting',
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
-      
-      // استخدام setDoc لإعادة الكتابة في كل مرة (تنظيف تلقائي)
-      await GameService.createTournamentGame(matchId, tournamentGameData);
-      
-      console.log('✅ Tournament game created in Firebase');
-    } catch (e) {
-      console.error('❌ Error creating tournament game:', e);
-      alert('حدث خطأ في إنشاء اللعبة. يرجى المحاولة مرة أخرى.');
-      return { player1Link: '', player2Link: '', player1Name: '', player2Name: '' };
-    }
+    // إنشاء بيانات جديدة تماماً
+    const tournamentGameData = {
+      player1: {
+        name: player1Name,
+        cards: [],  // تأكيد مسح البطاقات
+        abilities: [],  // تأكيد مسح القدرات
+        cardOrder: [],
+        isReady: false
+      },
+      player2: {
+        name: player2Name,
+        cards: [],  // تأكيد مسح البطاقات
+        abilities: [],  // تأكيد مسح القدرات
+        cardOrder: [],
+        isReady: false
+      },
+      rounds: gameData.rounds,
+      isTournament: true,
+      matchId: matchId,
+      status: 'waiting',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
     
-    // ✅ إنشاء روابط بسيطة (مثل طور التحدي تماماً - بدون base64)
+    console.log('🔍 Tournament Game Data After Creation:', tournamentGameData);
+    
+    // استخدام setDoc لإعادة الكتابة في كل مرة (تنظيف تلقائي)
+    await GameService.createTournamentGame(matchId, tournamentGameData);
+    
+    console.log('✅ Tournament game created in Firebase');
+    
+    // إنشاء روابط بسيطة (مثل طور التحدي تماماً - بدون base64)
     let baseUrl = window.location.origin + window.location.pathname;
     baseUrl = baseUrl.replace('final-setup.html', '');
     if (!baseUrl.endsWith('/')) {
@@ -171,6 +229,12 @@ async function generatePlayerLinks() {
       player2Name = gameData.player2Name;
     }
     
+    console.log('🔍 Challenge Game Data:', {
+      player1Name,
+      player2Name,
+      rounds: gameData.rounds
+    });
+    
     // Generate proper URLs with gameId
     const player1Link = `${baseUrl}player-cards.html?gameId=${gameId}&player=1`;
     const player2Link = `${baseUrl}player-cards.html?gameId=${gameId}&player=2`;
@@ -201,11 +265,17 @@ async function copyPlayerLink(player) {
       return;
     }
     
+    // Clear previous game data to ensure fresh links
+    localStorage.removeItem(`${player}StrategicOrdered`);
+    localStorage.removeItem(`${player}StrategicPicks`);
+    localStorage.removeItem(`${player}CardArrangement`);
+    localStorage.removeItem(`${player}ArrangementCompleted`);
+    
     // Show loading state
     const button = document.querySelector(`.${player}-btn`);
     if (button) {
       const originalText = button.textContent;
-      button.textContent = 'جاري التحضير...';
+      // Remove "جاري التحضير" text
       button.disabled = true;
     }
     

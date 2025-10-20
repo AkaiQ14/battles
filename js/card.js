@@ -36,7 +36,9 @@ let voiceSystem = {
       'Hashirama', 'Hawks', 'Hinata', 'Hisoka', 'jiraya', 'joker', 'KaidoCard', 'KaitoKidCard', 'KankiCard',
       'killua', 'law', 'Lelouch', 'LuffyGear5Card', 'madara', 'MeruemCard', 'naruto', 'Neiji', 'NietroCard', 'obito',
       'QG14', 'queen', 'SakamotoCard', 'shikamaru', 'ShanksCard', 'SilverCard', 'smith', 'UmibozoCard',
-      'Vegetto', 'whitebeard', 'zoro', 'Zenitsu', 'ZenoCard', 'RockLee', 'AlocardCard', 'alocard', 'alucard', 'AloCard' // إضافة جميع الأسماء المحتملة
+      'Vegetto', 'whitebeard', 'zoro', 'Zenitsu', 'ZenoCard', 'RockLee', 'AlocardCard', 'alocard', 'alucard', 'AloCard', // إضافة جميع الأسماء المحتملة
+      // New voice files added
+      'All-For-One', 'Goku Black', 'Yoriichi'
     ];
     
     const cardName = cardPath.split('/').pop().split('.')[0].toLowerCase();
@@ -123,7 +125,11 @@ let voiceSystem = {
       'Alocard': 'AlocardCard',
       'alocard': 'AlocardCard',
       'AloCard': 'AlocardCard',
-      'alucard': 'AlocardCard'
+      'alucard': 'AlocardCard',
+      // New voice files added
+      'All-For-One': 'All-For-One',
+      'Goku Black': 'Goku Black',
+      'Yoriichi': 'Yoriichi'
     };
     
     // Check for exact match first
@@ -767,6 +773,37 @@ function loadPlayerPicks() {
   let picks = {};
   
   try {
+    // Aggressive data clearing before loading
+    const gameId = sessionStorage.getItem('currentGameId');
+    const matchId = localStorage.getItem('currentMatchId');
+    
+    if (!gameId && !matchId) {
+      console.log('🧹 No active game found. Clearing ALL game-related localStorage data');
+      Object.keys(localStorage).forEach(key => {
+        const gameRelatedPatterns = [
+          'StrategicPicks', 
+          'StrategicOrdered', 
+          'CardArrangement', 
+          'ArrangementCompleted',
+          'player1', 
+          'player2',
+          'orderSubmitted_',
+          'gameCardSelection'
+        ];
+        
+        if (gameRelatedPatterns.some(pattern => key.includes(pattern))) {
+          console.log(`🗑️ Removing stale game-related key: ${key}`);
+          localStorage.removeItem(key);
+        }
+      });
+      
+      // Return empty picks
+      return {
+        player1: [],
+        player2: []
+      };
+    }
+    
     // First priority: Load from StrategicOrdered (final arrangement from player-cards.html)
     const player1Order = localStorage.getItem('player1StrategicOrdered');
     const player2Order = localStorage.getItem('player2StrategicOrdered');
@@ -800,7 +837,7 @@ function loadPlayerPicks() {
     const player1Picks = localStorage.getItem('player1StrategicPicks');
     const player2Picks = localStorage.getItem('player2StrategicPicks');
     
-    if (player1Picks && player2Picks) {
+    if (player1Picks && player2Picks)
       try {
         const player1Cards = JSON.parse(player1Picks);
         const player2Cards = JSON.parse(player2Picks);
@@ -815,7 +852,6 @@ function loadPlayerPicks() {
       } catch (e) {
         console.warn('Error parsing StrategicPicks:', e);
       }
-    }
     
     // Third priority: Load from gameCardSelection
     const cardSelection = localStorage.getItem('gameCardSelection');
@@ -3273,13 +3309,48 @@ function checkArrangementStatus(playerParam) {
 // Command to reset arrangement (for new games)
 function resetArrangement(playerParam) {
   try {
-    localStorage.removeItem(`${playerParam}ArrangementCompleted`);
-    localStorage.removeItem(`${playerParam}StrategicOrdered`);
-    localStorage.removeItem(`${playerParam}CardArrangement`);
+    // Comprehensive clearing of all card-related localStorage keys
+    const keysToRemove = [
+      `${playerParam}StrategicPicks`,
+      `${playerParam}StrategicOrdered`,
+      `${playerParam}CardArrangement`,
+      `${playerParam}ArrangementCompleted`,
+      'gameCardSelection',
+      'currentGameId',
+      'currentMatchId'
+    ];
     
-    console.log(`Arrangement reset for ${playerParam}`);
+    keysToRemove.forEach(key => {
+      console.log(`🗑️ Removing key: ${key}, Previous value:`, localStorage.getItem(key));
+      localStorage.removeItem(key);
+    });
+    
+    // Additional comprehensive clearing of any remaining game-related keys
+    Object.keys(localStorage).forEach(key => {
+      const gameRelatedPatterns = [
+        'orderSubmitted_', 
+        'player1', 
+        'player2', 
+        'StrategicPicks', 
+        'CardArrangement', 
+        'ArrangementCompleted'
+      ];
+      
+      if (gameRelatedPatterns.some(pattern => key.includes(pattern))) {
+        console.log(`🗑️ Removing additional game-related key: ${key}, Previous value:`, localStorage.getItem(key));
+        localStorage.removeItem(key);
+      }
+    });
+    
+    console.log(`✅ Completely reset arrangement for ${playerParam}`);
+    
+    // Reset global picks variable
+    picks = {
+      player1: [],
+      player2: []
+    };
   } catch (error) {
-    console.error('Error resetting arrangement:', error);
+    console.error(`Error resetting arrangement for ${playerParam}:`, error);
   }
 }
 

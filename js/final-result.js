@@ -438,68 +438,65 @@ function saveLeaderboardData(players) {
 // Start new game
 function startNewGame() {
     try {
-        console.log('🔄 Starting new game - clearing game data (keeping saved abilities)...');
+        console.log('🔄 Starting new game - comprehensive data clearing...');
         
-        // Clear all game data for complete restart
-        localStorage.removeItem('scores');
-        localStorage.removeItem('currentRound');
-        localStorage.removeItem('usedAbilities');
-        localStorage.removeItem('abilityRequests');
-        localStorage.removeItem('gameSetupProgress');
-        localStorage.removeItem('gameStatus');
-        localStorage.removeItem('gameUpdate');
-        localStorage.removeItem('player1Abilities');
-        localStorage.removeItem('player2Abilities');
-        localStorage.removeItem('player1StrategicPicks');
-        localStorage.removeItem('player2StrategicPicks');
-        localStorage.removeItem('player1StrategicOrdered');
-        localStorage.removeItem('player2StrategicOrdered');
-        // ✅ لا نمسح savedAbilities - القدرات تبقى محفوظة دائماً
+        // Comprehensive clearing of ALL game-related localStorage keys
+        const gameRelatedKeys = [
+            // Game state and progress
+            'scores', 'currentRound', 'gameSetupProgress', 'gameStatus', 'gameUpdate',
+            
+            // Player-specific data
+            'player1StrategicPicks', 'player2StrategicPicks',
+            'player1StrategicOrdered', 'player2StrategicOrdered',
+            'player1Abilities', 'player2Abilities',
+            'player1UsedAbilities', 'player2UsedAbilities',
+            
+            // Card arrangement and selection
+            'player1ArrangementCompleted', 'player2ArrangementCompleted',
+            'player1CardArrangement', 'player2CardArrangement',
+            'gameCardSelection', 'gameCardsGenerated', 'gameCardsData',
+            
+            // Swap deck related
+            'swapDeckUsageData', 'swapDeckData',
+            'player1SwapDeckCards', 'player2SwapDeckCards',
+            'generatedCards',
+            
+            // Notes
+            'notes:' + player1, 'notes:' + player2,
+            
+            // Tournament and match data
+            'currentMatchId', 'currentMatchPlayers', 
+            'tournamentRounds', 'tournamentData', 'matchWinner'
+        ];
         
-        // ✅ Clear swap deck related data
-        localStorage.removeItem('swapDeckUsageData');
-        localStorage.removeItem('swapDeckData');
-        localStorage.removeItem('player1SwapDeckCards');
-        localStorage.removeItem('player2SwapDeckCards');
-        localStorage.removeItem('generatedCards');
+        // Remove all game-related keys
+        gameRelatedKeys.forEach(key => {
+            console.log(`🗑️ Removing key: ${key}, Previous value:`, localStorage.getItem(key));
+            localStorage.removeItem(key);
+        });
+        
+        // Remove any remaining game-related keys
+        Object.keys(localStorage).forEach(key => {
+            const gameRelatedPatterns = [
+                'StrategicPicks', 'StrategicOrdered', 
+                'CardArrangement', 'ArrangementCompleted',
+                'SwapDeck', 'notes:', 
+                'player1', 'player2'
+            ];
+            
+            if (gameRelatedPatterns.some(pattern => key.includes(pattern))) {
+                console.log(`🗑️ Removing additional game-related key: ${key}`);
+                localStorage.removeItem(key);
+            }
+        });
         
         // Clear swap deck round keys
         for (let i = 0; i < 20; i++) {
             localStorage.removeItem(`player1SwapRound${i}`);
             localStorage.removeItem(`player2SwapRound${i}`);
-        }
-        
-        // Clear game card selection data
-        localStorage.removeItem('gameCardSelection');
-        localStorage.removeItem('gameCardsGenerated');
-        localStorage.removeItem('gameCardsData');
-        
-        // Clear player used abilities
-        localStorage.removeItem('player1UsedAbilities');
-        localStorage.removeItem('player2UsedAbilities');
-        
-        // Clear card arrangement data
-        localStorage.removeItem('player1ArrangementCompleted');
-        localStorage.removeItem('player2ArrangementCompleted');
-        localStorage.removeItem('player1CardArrangement');
-        localStorage.removeItem('player2CardArrangement');
-        
-        // Clear notes
-        const player1Notes = localStorage.getItem('notes:' + player1);
-        const player2Notes = localStorage.getItem('notes:' + player2);
-        if (player1Notes) localStorage.removeItem('notes:' + player1);
-        if (player2Notes) localStorage.removeItem('notes:' + player2);
-        
-        // Clear all notes keys
-        for (let i = 0; i < 20; i++) {
             localStorage.removeItem(`notes:${player1}:round${i}`);
             localStorage.removeItem(`notes:${player2}:round${i}`);
         }
-        // ✅ امسح محتوى مربعات الملاحظات أيضاً إذا كانت موجودة في الصفحة مباشرة
-        const player1NotesBox = document.getElementById('player1Notes');
-        const player2NotesBox = document.getElementById('player2Notes');
-        if(player1NotesBox) player1NotesBox.value = '';
-        if(player2NotesBox) player2NotesBox.value = '';
         
         // Reset global variables if they exist
         if (window.swapDeckUsageData) {
@@ -521,19 +518,16 @@ function startNewGame() {
             window.gameCardsData = null;
         }
         
-        console.log('✅ Game data cleared successfully (saved abilities preserved)');
+        // Clear notes boxes if they exist
+        const player1NotesBox = document.getElementById('player1Notes');
+        const player2NotesBox = document.getElementById('player2Notes');
+        if(player1NotesBox) player1NotesBox.value = '';
+        if(player2NotesBox) player2NotesBox.value = '';
         
-        // Also clear any lingering tournament state to ensure challenge mode
-        localStorage.removeItem('currentMatchId');
-        localStorage.removeItem('currentMatchPlayers');
-        localStorage.removeItem('tournamentRounds');
-        localStorage.removeItem('tournamentData');
-        localStorage.removeItem('matchWinner');
+        console.log('✅ Game data cleared successfully');
         
         // Redirect to main page
         window.location.href = 'index.html';
-        
-        console.log('🎮 Starting new game...');
         
     } catch (error) {
         console.error('❌ Error starting new game:', error);
