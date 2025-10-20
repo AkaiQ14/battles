@@ -29,16 +29,24 @@ let voiceSystem = {
   // Check if card is legendary by name patterns - Updated with all voice files
   isLegendaryByName: function(cardPath) {
     // All legendary cards that have voice files in voice/ directory
-    // ✅ Added Beerus-card voice support
     const legendaryPatterns = [
-      'aizen', 'AizenVoCrowCard', 'Akai', 'AllForOneCard', 'AyanokojiCard', 'Asta', 'Beerus-card', 'Beru', 'CellCard',
-      'DioCard', 'ErenCard', 'Fubuki', 'GinCard', 'Giyuu', 'Gogeta', 'GohanBeastCard', 'GojoCard', 'Goku UI',
-      'Hashirama', 'Hawks', 'Hinata', 'Hisoka', 'jiraya', 'joker', 'KaidoCard', 'KaitoKidCard', 'KankiCard',
+      'aizen', 'AizenVoCrowCard', 'Akai', 'AllForOneCard', 'AyanokojiCard', 
+      // Removed: 'Asta', 
+      'Beerus-card', 'Beru', 'CellCard',
+      'Dio', 'ErenCard', 'Fubuki', 'GinCard', 'Giyuu', 'Gogeta', 'GohanBeastCard', 'GojoCard', 
+      // Removed: 'Goku UI', 
+      'Hashirama', 'Hawks', 'Hinata', 'Hisoka', 'jiraya', 
+      // Changed: 'joker' to 'Joker'
+      'Joker', 'KaidoCard', 'KaitoKid', 'KankiCard',
       'killua', 'law', 'Lelouch', 'LuffyGear5Card', 'madara', 'MeruemCard', 'naruto', 'Neiji', 'NietroCard', 'obito',
       'QG14', 'queen', 'SakamotoCard', 'shikamaru', 'ShanksCard', 'SilverCard', 'smith', 'UmibozoCard',
-      'Vegetto', 'whitebeard', 'zoro', 'Zenitsu', 'ZenoCard', 'RockLee', 'AlocardCard', 'alocard', 'alucard', 'AloCard', // إضافة جميع الأسماء المحتملة
+      // Removed: 'Vegetto', 
+      'whitebeard', 'zoro', 'Zenitsu', 'ZenoCard', 'RockLee', 'AlocardCard', 'alocard', 'alucard', 'AloCard', // إضافة جميع الأسماء المحتملة
       // New voice files added
-      'All-For-One', 'Goku Black', 'Yoriichi'
+      'All-For-One', 'Goku Black', 'Yoriichi', 
+      // Additional new voices
+      'Goku-SSJ4', 'Goku-UI', 'Rengoku', 'Beerus', 
+      'Goku-SSJG', 'Goku-SSJB', 'Gogeta', 'Vegito-Blue'
     ];
     
     const cardName = cardPath.split('/').pop().split('.')[0].toLowerCase();
@@ -66,16 +74,15 @@ let voiceSystem = {
     
     // Exact mapping to voice file names (case-sensitive)
     const voiceFileMappings = {
-      // Direct matches
+      // Existing mappings...
       'aizen': 'aizen',
       'AizenVoCrowCard': 'AizenVoCrowCard',
       'Akai': 'Akai',
       'AllForOneCard': 'AllForOneCard',
       'AyanokojiCard': 'AyanokojiCard',
-      'Asta': 'Asta',
       'Beru': 'Beru',
       'CellCard': 'CellCard',
-      'DioCard': 'DioCard',
+      'Dio': 'Dio',
       'ErenCard': 'ErenCard',
       'Fubuki': 'Fubuki',
       'GinCard': 'GinCard',
@@ -83,15 +90,15 @@ let voiceSystem = {
       'Gogeta': 'Gogeta',
       'GohanBeastCard': 'GohanBeastCard',
       'GojoCard': 'GojoCard',
-      'Goku UI': 'Goku UI',
       'Hashirama': 'Hashirama',
       'Hawks': 'Hawks',
       'Hinata': 'Hinata',
       'Hisoka': 'Hisoka',
       'jiraya': 'jiraya',
-      'joker': 'joker',
+      // Changed: 'joker': 'joker' to 'Joker': 'Joker'
+      'Joker': 'Joker',
       'KaidoCard': 'KaidoCard',
-      'KaitoKidCard': 'KaitoKidCard',
+      'KaitoKid': 'KaitoKid',
       'KankiCard': 'KankiCard',
       'killua': 'killua',
       'law': 'law',
@@ -109,7 +116,6 @@ let voiceSystem = {
       'ShanksCard': 'ShanksCard',
       'SilverCard': 'SilverCard',
       'UmibozoCard': 'UmibozoCard',
-      'Vegetto': 'Vegetto',
       'whitebeard': 'whitebeard',
       'zabuza': 'zabuza',
       'zoro': 'Zoro',
@@ -129,7 +135,16 @@ let voiceSystem = {
       // New voice files added
       'All-For-One': 'All-For-One',
       'Goku Black': 'Goku Black',
-      'Yoriichi': 'Yoriichi'
+      'Yoriichi': 'Yoriichi',
+      // Additional new voices
+      'Goku-SSJ4': 'Goku-SSJ4',
+      'Goku-UI': 'Goku-UI',
+      'Rengoku': 'Rengoku',
+      'Beerus': 'Beerus',
+      'Goku-SSJG': 'Goku-SSJG',
+      'Goku-SSJB': 'Goku-SSJB',
+      'Gogeta': 'Gogeta',
+      'Vegito-Blue': 'Vegito-Blue'
     };
     
     // Check for exact match first
@@ -508,8 +523,8 @@ function createVoiceControls() {
   const volumeSlider = document.createElement('input');
   volumeSlider.type = 'range';
   volumeSlider.min = '0';
-  volumeSlider.max = '100';
-  volumeSlider.value = Math.round(voiceSystem.volume * 100);
+  volumeSlider.max = '200';  // Changed from '100' to '200'
+  volumeSlider.value = Math.round(voiceSystem.volume * 200);  // Adjust calculation to match new range
   volumeSlider.style.cssText = `
     position: absolute;
     top: 0;
@@ -536,12 +551,12 @@ function createVoiceControls() {
   }
   
   // Set initial position
-  updateVolumeDisplay(voiceSystem.volume * 100);
+  updateVolumeDisplay(voiceSystem.volume * 200);
   
   // Volume control events
   volumeSlider.oninput = function() {
     const value = parseInt(this.value);
-    voiceSystem.setVolume(value / 100);
+    voiceSystem.setVolume(value / 200);  // Adjust calculation to match new range
     updateVolumeDisplay(value);
   };
   
