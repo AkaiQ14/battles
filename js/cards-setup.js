@@ -102,40 +102,33 @@ function loadExistingData() {
 
 // Dynamic card distribution with precise percentage allocation
 function generateDynamicDistribution() {
+  // Total cards per player
   const totalCardsPerPlayer = 20;
+  
+  // Base distribution percentages
   const baseDistribution = {
-    common: 0.45,      // 45%
-    rare: 0.25,        // 25%
-    epic: 0.15,        // 15%
-    legendary: 0.08,   // 8%
-    ultimate: 0.05,    // 5%
-    cursed: 0.02       // 2%
+    common: 0.47,     // 47%
+    rare: 0.25,       // 25%
+    epic: 0.15,       // 15%
+    legendary: 0.07,  // 7%
+    ultimate: 0.03,   // 3%
+    cursed: 0.03      // 3% - تم تعديل النسبة
   };
   
-  // Precise card count calculation
-  const cardDistribution = {};
-  let remainingCards = totalCardsPerPlayer;
+  // Verify total distribution
+  const totalPercentage = Object.values(baseDistribution).reduce((a, b) => a + b, 0);
+  console.assert(Math.abs(totalPercentage - 1) < 0.001, 
+    `Card distribution error: total ${totalPercentage} !== 1`);
   
-  // First pass: calculate base card counts
-  for (const [category, percentage] of Object.entries(baseDistribution)) {
-    const cardCount = Math.floor(totalCardsPerPlayer * percentage);
-    cardDistribution[category] = cardCount;
-    remainingCards -= cardCount;
-  }
-  
-  // Distribute any remaining cards to the most frequent categories
-  const prioritizedCategories = [
-    'common', 'rare', 'epic', 'legendary', 'ultimate', 'cursed'
-  ];
-  
-  for (const category of prioritizedCategories) {
-    while (remainingCards > 0) {
-      cardDistribution[category]++;
-      remainingCards--;
-    }
-    
-    if (remainingCards === 0) break;
-  }
+  // Calculate card counts based on percentages
+  const cardDistribution = {
+    common: Math.round(totalCardsPerPlayer * baseDistribution.common),
+    rare: Math.round(totalCardsPerPlayer * baseDistribution.rare),
+    epic: Math.round(totalCardsPerPlayer * baseDistribution.epic),
+    legendary: Math.round(totalCardsPerPlayer * baseDistribution.legendary),
+    ultimate: Math.round(totalCardsPerPlayer * baseDistribution.ultimate),
+    cursed: Math.round(totalCardsPerPlayer * baseDistribution.cursed)
+  };
   
   // Verify total card count
   const totalDistributed = Object.values(cardDistribution).reduce((a, b) => a + b, 0);
@@ -147,28 +140,206 @@ function generateDynamicDistribution() {
   return cardDistribution;
 }
 
-// Modify card generation to use precise distribution
+// دالة متقدمة للخلط العشوائي مع بذور متغيرة
+function seededRandom(seed) {
+  const x = Math.sin(seed) * 10000;
+  return x - Math.floor(x);
+}
+
+// دالة خلط متقدمة مع بذور متغيرة
+function advancedShuffle(array, seed = null) {
+  // استخدام وقت النظام كبذرة إذا لم يتم توفير بذرة محددة
+  const useSeed = seed !== null ? seed : Date.now();
+  
+  // نسخ المصفوفة للحفاظ على الأصل
+  const shuffledArray = [...array];
+  
+  // خوارزميات خلط متعددة
+  const shuffleMethods = [
+    // طريقة الخلط الأساسية
+    (arr, seed) => {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(seededRandom(seed + i) * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    },
+    
+    // طريقة خلط فيشر-ييتس المعدلة
+    (arr, seed) => {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(seededRandom(seed * (i + 1)) * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    },
+    
+    // طريقة الخلط المتدرج
+    (arr, seed) => {
+      const segments = Math.ceil(arr.length / 3);
+      for (let segment = 0; segment < segments; segment++) {
+        const start = segment * 3;
+        const end = Math.min(start + 3, arr.length);
+        const segmentSlice = arr.slice(start, end);
+        
+        // خلط الشريحة
+        for (let i = segmentSlice.length - 1; i > 0; i--) {
+          const j = Math.floor(seededRandom(seed + start + i) * (i + 1));
+          [segmentSlice[i], segmentSlice[j]] = [segmentSlice[j], segmentSlice[i]];
+        }
+        
+        // استبدال الشريحة في المصفوفة الأصلية
+        arr.splice(start, segmentSlice.length, ...segmentSlice);
+      }
+      return arr;
+    }
+  ];
+  
+  // اختيار طريقة خلط عشوائية باستخدام البذرة
+  const shuffleMethod = shuffleMethods[Math.floor(seededRandom(useSeed) * shuffleMethods.length)];
+  
+  return shuffleMethod(shuffledArray, useSeed);
+}
+
+// تعديل دالة getRandomCards لتكون أكثر عشوائية
+function getRandomCards(cards, count, seed = null) {
+  if (!cards || cards.length === 0) return [];
+  
+  // خلط الكروت بشكل متقدم
+  const shuffledCards = advancedShuffle(cards, seed);
+  
+  // اختيار العدد المطلوب من الكروت المخلوطة
+  return shuffledCards.slice(0, Math.min(count, cards.length));
+}
+
+// دالة شاملة للتحقق من توزيع الكروت
+function validateCardDistribution(player1Cards, player2Cards) {
+  console.group('🔍 التحقق الشامل من توزيع الكروت');
+  
+  // فئات الكروت
+  const cardCategories = [
+    'common', 'rare', 'epic', 'legendary', 'ultimate', 'cursed'
+  ];
+  
+  // دالة لحساب توزيع الكروت
+  const calculateDistribution = (cards) => {
+    const allAvailableCards = {
+      common: window.cardManager.getAllCardsByCategory('common'),
+      rare: window.cardManager.getAllCardsByCategory('rare'),
+      epic: window.cardManager.getAllCardsByCategory('epic'),
+      legendary: window.cardManager.getAllCardsByCategory('legendary'),
+      ultimate: window.cardManager.getAllCardsByCategory('ultimate'),
+      cursed: window.cardManager.getAllCardsByCategory('cursed')
+    };
+    
+    const typeCount = {};
+    const typePercentage = {};
+    
+    for (const category of cardCategories) {
+      typeCount[category] = cards.filter(card => 
+        allAvailableCards[category].includes(card)
+      ).length;
+      
+      typePercentage[category] = (typeCount[category] / cards.length) * 100;
+    }
+    
+    return { typeCount, typePercentage };
+  };
+  
+  // حساب التوزيع للاعب الأول
+  const player1Distribution = calculateDistribution(player1Cards);
+  console.log('توزيع كروت اللاعب الأول:', player1Distribution);
+  
+  // حساب التوزيع للاعب الثاني
+  const player2Distribution = calculateDistribution(player2Cards);
+  console.log('توزيع كروت اللاعب الثاني:', player2Distribution);
+  
+  // التوزيع المتوقع من generateDynamicDistribution()
+  const expectedDistribution = {
+    common: 47,
+    rare: 25,
+    epic: 15,
+    legendary: 7,
+    ultimate: 3,
+    cursed: 3
+  };
+  
+  // التحقق من التوزيع
+  const validatePercentages = (distribution, expectedDist) => {
+    const results = {};
+    
+    for (const category of cardCategories) {
+      const actualPercentage = distribution.typePercentage[category];
+      const expectedPercentage = expectedDist[category];
+      const difference = Math.abs(actualPercentage - expectedPercentage);
+      
+      results[category] = {
+        actual: actualPercentage.toFixed(2) + '%',
+        expected: expectedPercentage + '%',
+        difference: difference.toFixed(2) + '%',
+        isWithinTolerance: difference <= 2 // تسمح بتفاوت 2%
+      };
+    }
+    
+    return results;
+  };
+  
+  // التحقق من توزيع اللاعب الأول
+  const player1Validation = validatePercentages(player1Distribution, expectedDistribution);
+  console.log('التحقق من توزيع كروت اللاعب الأول:', player1Validation);
+  
+  // التحقق من توزيع اللاعب الثاني
+  const player2Validation = validatePercentages(player2Distribution, expectedDistribution);
+  console.log('التحقق من توزيع كروت اللاعب الثاني:', player2Validation);
+  
+  // التحقق من عدم تكرار الكروت بين اللاعبين
+  const duplicateCards = player1Cards.filter(card => player2Cards.includes(card));
+  console.log('الكروت المكررة بين اللاعبين:', duplicateCards);
+  
+  // التحقق من العدد الإجمالي للكروت
+  console.log('عدد كروت اللاعب الأول:', player1Cards.length);
+  console.log('عدد كروت اللاعب الثاني:', player2Cards.length);
+  
+  // التحقق من صحة التوزيع
+  const isPlayer1Valid = Object.values(player1Validation).every(result => result.isWithinTolerance);
+  const isPlayer2Valid = Object.values(player2Validation).every(result => result.isWithinTolerance);
+  
+  console.log('حالة التوزيع:', {
+    player1: isPlayer1Valid ? '✅ صحيح' : '❌ غير صحيح',
+    player2: isPlayer2Valid ? '✅ صحيح' : '❌ غير صحيح'
+  });
+  
+  console.groupEnd();
+  
+  return {
+    player1: isPlayer1Valid,
+    player2: isPlayer2Valid,
+    duplicateCards: duplicateCards.length
+  };
+}
+
+// تعديل generateRandomCards للتحقق من التوزيع
 function generateRandomCards() {
-  // Check if cards are already generated using global variables
+  // التحقق من وجود بطاقات مولدة مسبقًا
   if (window.gameCardsGenerated && window.gameCardsData.player1Cards.length > 0) {
     console.log('🎴 Using existing generated cards from global variables');
     
     gameState.player1Cards = window.gameCardsData.player1Cards;
     gameState.player2Cards = window.gameCardsData.player2Cards;
     
-    // Set available cards for current player
+    // تحديد البطاقات المتاحة للاعب الحالي
     if (gameState.currentPlayer === 'player1') {
       gameState.availableCards = gameState.player1Cards;
     } else {
       gameState.availableCards = gameState.player2Cards;
     }
     
-    return; // Use existing cards, don't generate new ones
+    return; // استخدام البطاقات الموجودة
   }
   
   console.log('🎴 Generating new random cards');
   
-  // Use CardManager to get all available cards
+  // جلب جميع الكروت من الفئات المختلفة
   const commonCards = window.cardManager.getAllCardsByCategory('common');
   const rareCards = window.cardManager.getAllCardsByCategory('rare');
   const epicCards = window.cardManager.getAllCardsByCategory('epic');
@@ -176,47 +347,26 @@ function generateRandomCards() {
   const ultimateCards = window.cardManager.getAllCardsByCategory('ultimate');
   const cursedCards = window.cardManager.getAllCardsByCategory('cursed');
   
-  // Total cards per player
+  // العدد الإجمالي للبطاقات لكل لاعب
   const totalCardsPerPlayer = 20;
   
-  // Generate precise card distribution
+  // توليد توزيع البطاقات
   const cardDistribution = generateDynamicDistribution();
   
-  // Function to get random cards from a specific category with more randomness
-  function getRandomCards(cards, count) {
-    if (!cards || cards.length === 0) return [];
-    
-    // Multiple shuffling techniques
-    const shuffleMethods = [
-      (arr) => arr.sort(() => Math.random() - 0.5),
-      (arr) => {
-        for (let i = arr.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [arr[i], arr[j]] = [arr[j], arr[i]];
-        }
-        return arr;
-      },
-      (arr) => arr.slice().sort((a, b) => Math.random() - 0.5)
-    ];
-    
-    // Randomly choose a shuffle method
-    const shuffleMethod = shuffleMethods[Math.floor(Math.random() * shuffleMethods.length)];
-    
-    const shuffled = shuffleMethod([...cards]);
-    return shuffled.slice(0, Math.min(count, cards.length));
-  }
+  // بذرة عشوائية فريدة لكل لعبة
+  const gameSeed = Date.now();
   
-  // Generate cards for player 1
+  // توليد بطاقات اللاعب الأول
   let player1Cards = [
-    ...getRandomCards(commonCards, cardDistribution.common),
-    ...getRandomCards(rareCards, cardDistribution.rare),
-    ...getRandomCards(epicCards, cardDistribution.epic),
-    ...getRandomCards(legendaryCards, cardDistribution.legendary),
-    ...getRandomCards(ultimateCards, cardDistribution.ultimate),
-    ...getRandomCards(cursedCards, cardDistribution.cursed)
+    ...getRandomCards(commonCards, cardDistribution.common, gameSeed + 1),
+    ...getRandomCards(rareCards, cardDistribution.rare, gameSeed + 2),
+    ...getRandomCards(epicCards, cardDistribution.epic, gameSeed + 3),
+    ...getRandomCards(legendaryCards, cardDistribution.legendary, gameSeed + 4),
+    ...getRandomCards(ultimateCards, cardDistribution.ultimate, gameSeed + 5),
+    ...getRandomCards(cursedCards, cardDistribution.cursed, gameSeed + 6)
   ];
   
-  // Ensure exactly 20 cards for player 1
+  // التأكد من وجود 20 بطاقة بالضبط
   while (player1Cards.length < totalCardsPerPlayer) {
     const allAvailableCards = [
       ...commonCards, 
@@ -229,45 +379,51 @@ function generateRandomCards() {
     
     const extraCards = getRandomCards(
       allAvailableCards.filter(card => !player1Cards.includes(card)), 
-      totalCardsPerPlayer - player1Cards.length
+      totalCardsPerPlayer - player1Cards.length,
+      gameSeed + 7
     );
     
     player1Cards.push(...extraCards);
   }
   
-  // Final shuffle and trim for player 1
-  const finalPlayer1Cards = player1Cards.slice(0, totalCardsPerPlayer)
-    .sort(() => Math.random() - 0.5);
+  // الخلط النهائي للبطاقات للاعب الأول
+  const finalPlayer1Cards = advancedShuffle(player1Cards.slice(0, totalCardsPerPlayer), gameSeed + 8);
   
-  // Generate cards for player 2 with similar dynamic randomness
+  // توليد بطاقات اللاعب الثاني مع استبعاد بطاقات اللاعب الأول
   let player2Cards = [
     ...getRandomCards(
       commonCards.filter(c => !finalPlayer1Cards.includes(c)), 
-      cardDistribution.common
+      cardDistribution.common,
+      gameSeed + 9
     ),
     ...getRandomCards(
       rareCards.filter(c => !finalPlayer1Cards.includes(c)), 
-      cardDistribution.rare
+      cardDistribution.rare,
+      gameSeed + 10
     ),
     ...getRandomCards(
       epicCards.filter(c => !finalPlayer1Cards.includes(c)), 
-      cardDistribution.epic
+      cardDistribution.epic,
+      gameSeed + 11
     ),
     ...getRandomCards(
       legendaryCards.filter(c => !finalPlayer1Cards.includes(c)), 
-      cardDistribution.legendary
+      cardDistribution.legendary,
+      gameSeed + 12
     ),
     ...getRandomCards(
       ultimateCards.filter(c => !finalPlayer1Cards.includes(c)), 
-      cardDistribution.ultimate
+      cardDistribution.ultimate,
+      gameSeed + 13
     ),
     ...getRandomCards(
       cursedCards.filter(c => !finalPlayer1Cards.includes(c)), 
-      cardDistribution.cursed
+      cardDistribution.cursed,
+      gameSeed + 14
     )
   ];
   
-  // Ensure exactly 20 cards for player 2
+  // التأكد من وجود 20 بطاقة للاعب الثاني
   while (player2Cards.length < totalCardsPerPlayer) {
     const allAvailableCards = [
       ...commonCards, 
@@ -283,17 +439,17 @@ function generateRandomCards() {
         !finalPlayer1Cards.includes(c) && 
         !player2Cards.includes(c)
       ), 
-      totalCardsPerPlayer - player2Cards.length
+      totalCardsPerPlayer - player2Cards.length,
+      gameSeed + 15
     );
     
     player2Cards.push(...extraCards);
   }
   
-  // Final shuffle and trim for player 2
-  const finalPlayer2Cards = player2Cards.slice(0, totalCardsPerPlayer)
-    .sort(() => Math.random() - 0.5);
+  // الخلط النهائي للبطاقات للاعب الثاني
+  const finalPlayer2Cards = advancedShuffle(player2Cards.slice(0, totalCardsPerPlayer), gameSeed + 16);
   
-  // Verify card types for both players
+  // التحقق من توزيع البطاقات
   const verifyCardTypes = (cards) => {
     const allAvailableCards = {
       common: window.cardManager.getAllCardsByCategory('common'),
@@ -321,31 +477,30 @@ function generateRandomCards() {
   console.log('🎴 Player 2 Card Distribution:');
   verifyCardTypes(finalPlayer2Cards);
   
-  // Save to game state
+  // حفظ البطاقات في حالة اللعبة
   gameState.player1Cards = finalPlayer1Cards;
   gameState.player2Cards = finalPlayer2Cards;
   
-  // Set available cards for current player
+  // تحديد البطاقات المتاحة للاعب الحالي
   if (gameState.currentPlayer === 'player1') {
     gameState.availableCards = finalPlayer1Cards;
   } else {
     gameState.availableCards = finalPlayer2Cards;
   }
   
-  // Save to global variables to prevent regeneration
+  // حفظ في المتغيرات العامة لمنع إعادة التوليد
   window.gameCardsData.player1Cards = finalPlayer1Cards;
   window.gameCardsData.player2Cards = finalPlayer2Cards;
   window.gameCardsGenerated = true;
   
-  // Save to localStorage
-  try { 
-    localStorage.setItem('player1StrategicPicks', JSON.stringify(finalPlayer1Cards)); 
-  } catch {}
-  try { 
-    localStorage.setItem('player2StrategicPicks', JSON.stringify(finalPlayer2Cards)); 
-  } catch {}
+  // بعد توليد البطاقات، أضف التحقق
+  const validationResult = validateCardDistribution(finalPlayer1Cards, finalPlayer2Cards);
   
-  console.log('💾 Saved generated cards to global variables and localStorage');
+  // إذا كان هناك مشكلة في التوزيع، أعد التوليد
+  if (!validationResult.player1 || !validationResult.player2 || validationResult.duplicateCards > 0) {
+    console.warn('❌ مشكلة في توزيع الكروت، إعادة التوليد...');
+    return generateRandomCards(); // إعادة التوليد
+  }
 }
 
 function createCardsGrid() {

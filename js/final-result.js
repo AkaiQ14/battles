@@ -440,89 +440,12 @@ function startNewGame() {
     try {
         console.log('🔄 Starting new game - comprehensive data clearing...');
         
-        // Comprehensive clearing of ALL game-related localStorage keys
-        const gameRelatedKeys = [
-            // Game state and progress
-            'scores', 'currentRound', 'gameSetupProgress', 'gameStatus', 'gameUpdate',
-            
-            // Player-specific data
-            'player1StrategicPicks', 'player2StrategicPicks',
-            'player1StrategicOrdered', 'player2StrategicOrdered',
-            'player1Abilities', 'player2Abilities',
-            'player1UsedAbilities', 'player2UsedAbilities',
-            
-            // Card arrangement and selection
-            'player1ArrangementCompleted', 'player2ArrangementCompleted',
-            'player1CardArrangement', 'player2CardArrangement',
-            'gameCardSelection', 'gameCardsGenerated', 'gameCardsData',
-            
-            // Swap deck related
-            'swapDeckUsageData', 'swapDeckData',
-            'player1SwapDeckCards', 'player2SwapDeckCards',
-            'generatedCards',
-            
-            // Notes
-            'notes:' + player1, 'notes:' + player2,
-            
-            // Tournament and match data
-            'currentMatchId', 'currentMatchPlayers', 
-            'tournamentRounds', 'tournamentData', 'matchWinner'
-        ];
-        
-        // Remove all game-related keys
-        gameRelatedKeys.forEach(key => {
-            console.log(`🗑️ Removing key: ${key}, Previous value:`, localStorage.getItem(key));
-            localStorage.removeItem(key);
-        });
-        
-        // Remove any remaining game-related keys
-        Object.keys(localStorage).forEach(key => {
-            const gameRelatedPatterns = [
-                'StrategicPicks', 'StrategicOrdered', 
-                'CardArrangement', 'ArrangementCompleted',
-                'SwapDeck', 'notes:', 
-                'player1', 'player2'
-            ];
-            
-            if (gameRelatedPatterns.some(pattern => key.includes(pattern))) {
-                console.log(`🗑️ Removing additional game-related key: ${key}`);
-                localStorage.removeItem(key);
-            }
-        });
-        
-        // Clear swap deck round keys
-        for (let i = 0; i < 20; i++) {
-            localStorage.removeItem(`player1SwapRound${i}`);
-            localStorage.removeItem(`player2SwapRound${i}`);
-            localStorage.removeItem(`notes:${player1}:round${i}`);
-            localStorage.removeItem(`notes:${player2}:round${i}`);
+        // استخدام الدالة المركزية من card.js
+        if (window.clearGameData) {
+            window.clearGameData();
+        } else {
+            console.warn('⚠️ clearGameData function not found');
         }
-        
-        // Reset global variables if they exist
-        if (window.swapDeckUsageData) {
-            window.swapDeckUsageData = { player1: false, player2: false };
-        }
-        if (window.swapDeckCardsGenerated) {
-            window.swapDeckCardsGenerated = false;
-        }
-        if (window.swapDeckCardsData) {
-            window.swapDeckCardsData = {
-                player1: { cards: [], used: false },
-                player2: { cards: [], used: false }
-            };
-        }
-        if (window.gameCardsGenerated) {
-            window.gameCardsGenerated = false;
-        }
-        if (window.gameCardsData) {
-            window.gameCardsData = null;
-        }
-        
-        // Clear notes boxes if they exist
-        const player1NotesBox = document.getElementById('player1Notes');
-        const player2NotesBox = document.getElementById('player2Notes');
-        if(player1NotesBox) player1NotesBox.value = '';
-        if(player2NotesBox) player2NotesBox.value = '';
         
         console.log('✅ Game data cleared successfully');
         

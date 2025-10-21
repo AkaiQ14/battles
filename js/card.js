@@ -29,16 +29,24 @@ let voiceSystem = {
   // Check if card is legendary by name patterns - Updated with all voice files
   isLegendaryByName: function(cardPath) {
     // All legendary cards that have voice files in voice/ directory
-    // ✅ Added Beerus-card voice support
     const legendaryPatterns = [
-      'aizen', 'AizenVoCrowCard', 'Akai', 'AllForOneCard', 'AyanokojiCard', 'Asta', 'Beerus-card', 'Beru', 'CellCard',
-      'DioCard', 'ErenCard', 'Fubuki', 'GinCard', 'Giyuu', 'Gogeta', 'GohanBeastCard', 'GojoCard', 'Goku UI',
-      'Hashirama', 'Hawks', 'Hinata', 'Hisoka', 'jiraya', 'joker', 'KaidoCard', 'KaitoKidCard', 'KankiCard',
+      'aizen', 'AizenVoCrowCard', 'Akai', 'AllForOneCard', 'AyanokojiCard', 
+      // Removed: 'Asta', 
+      'Beerus-card', 'Beru', 'CellCard',
+      'Dio', 'ErenCard', 'Fubuki', 'GinCard', 'Giyuu', 'Gogeta', 'GohanBeastCard', 'GojoCard', 
+      // Removed: 'Goku UI', 
+      'Hashirama', 'Hawks', 'Hinata', 'Hisoka', 'jiraya', 
+      // Changed: 'joker' to 'Joker'
+      'Joker', 'KaidoCard', 'KaitoKid', 'KankiCard',
       'killua', 'law', 'Lelouch', 'LuffyGear5Card', 'madara', 'MeruemCard', 'naruto', 'Neiji', 'NietroCard', 'obito',
       'QG14', 'queen', 'SakamotoCard', 'shikamaru', 'ShanksCard', 'SilverCard', 'smith', 'UmibozoCard',
-      'Vegetto', 'whitebeard', 'zoro', 'Zenitsu', 'ZenoCard', 'RockLee', 'AlocardCard', 'alocard', 'alucard', 'AloCard', // إضافة جميع الأسماء المحتملة
+      // Removed: 'Vegetto', 
+      'whitebeard', 'zoro', 'Zenitsu', 'ZenoCard', 'RockLee', 'AlocardCard', 'alocard', 'alucard', 'AloCard', // إضافة جميع الأسماء المحتملة
       // New voice files added
-      'All-For-One', 'Goku Black', 'Yoriichi'
+      'All-For-One', 'Goku Black', 'Yoriichi', 
+      // Additional new voices
+      'Goku-SSJ4', 'Goku-UI', 'Rengoku', 'Beerus', 
+      'Goku-SSJG', 'Goku-SSJB', 'Gogeta', 'Vegito-Blue'
     ];
     
     const cardName = cardPath.split('/').pop().split('.')[0].toLowerCase();
@@ -66,16 +74,15 @@ let voiceSystem = {
     
     // Exact mapping to voice file names (case-sensitive)
     const voiceFileMappings = {
-      // Direct matches
+      // Existing mappings...
       'aizen': 'aizen',
       'AizenVoCrowCard': 'AizenVoCrowCard',
       'Akai': 'Akai',
       'AllForOneCard': 'AllForOneCard',
       'AyanokojiCard': 'AyanokojiCard',
-      'Asta': 'Asta',
       'Beru': 'Beru',
       'CellCard': 'CellCard',
-      'DioCard': 'DioCard',
+      'Dio': 'Dio',
       'ErenCard': 'ErenCard',
       'Fubuki': 'Fubuki',
       'GinCard': 'GinCard',
@@ -83,15 +90,15 @@ let voiceSystem = {
       'Gogeta': 'Gogeta',
       'GohanBeastCard': 'GohanBeastCard',
       'GojoCard': 'GojoCard',
-      'Goku UI': 'Goku UI',
       'Hashirama': 'Hashirama',
       'Hawks': 'Hawks',
       'Hinata': 'Hinata',
       'Hisoka': 'Hisoka',
       'jiraya': 'jiraya',
-      'joker': 'joker',
+      // Changed: 'joker': 'joker' to 'Joker': 'Joker'
+      'Joker': 'Joker',
       'KaidoCard': 'KaidoCard',
-      'KaitoKidCard': 'KaitoKidCard',
+      'KaitoKid': 'KaitoKid',
       'KankiCard': 'KankiCard',
       'killua': 'killua',
       'law': 'law',
@@ -109,7 +116,6 @@ let voiceSystem = {
       'ShanksCard': 'ShanksCard',
       'SilverCard': 'SilverCard',
       'UmibozoCard': 'UmibozoCard',
-      'Vegetto': 'Vegetto',
       'whitebeard': 'whitebeard',
       'zabuza': 'zabuza',
       'zoro': 'Zoro',
@@ -129,7 +135,16 @@ let voiceSystem = {
       // New voice files added
       'All-For-One': 'All-For-One',
       'Goku Black': 'Goku Black',
-      'Yoriichi': 'Yoriichi'
+      'Yoriichi': 'Yoriichi',
+      // Additional new voices
+      'Goku-SSJ4': 'Goku-SSJ4',
+      'Goku-UI': 'Goku-UI',
+      'Rengoku': 'Rengoku',
+      'Beerus': 'Beerus',
+      'Goku-SSJG': 'Goku-SSJG',
+      'Goku-SSJB': 'Goku-SSJB',
+      'Gogeta': 'Gogeta',
+      'Vegito-Blue': 'Vegito-Blue'
     };
     
     // Check for exact match first
@@ -508,8 +523,8 @@ function createVoiceControls() {
   const volumeSlider = document.createElement('input');
   volumeSlider.type = 'range';
   volumeSlider.min = '0';
-  volumeSlider.max = '100';
-  volumeSlider.value = Math.round(voiceSystem.volume * 100);
+  volumeSlider.max = '200';  // Changed from '100' to '200'
+  volumeSlider.value = Math.round(voiceSystem.volume * 200);  // Adjust calculation to match new range
   volumeSlider.style.cssText = `
     position: absolute;
     top: 0;
@@ -536,12 +551,12 @@ function createVoiceControls() {
   }
   
   // Set initial position
-  updateVolumeDisplay(voiceSystem.volume * 100);
+  updateVolumeDisplay(voiceSystem.volume * 200);
   
   // Volume control events
   volumeSlider.oninput = function() {
     const value = parseInt(this.value);
-    voiceSystem.setVolume(value / 100);
+    voiceSystem.setVolume(value / 200);  // Adjust calculation to match new range
     updateVolumeDisplay(value);
   };
   
@@ -3309,50 +3324,113 @@ function checkArrangementStatus(playerParam) {
 // Command to reset arrangement (for new games)
 function resetArrangement(playerParam) {
   try {
-    // Comprehensive clearing of all card-related localStorage keys
-    const keysToRemove = [
-      `${playerParam}StrategicPicks`,
-      `${playerParam}StrategicOrdered`,
-      `${playerParam}CardArrangement`,
-      `${playerParam}ArrangementCompleted`,
-      'gameCardSelection',
-      'currentGameId',
-      'currentMatchId'
+    console.log(`🔄 إعادة تعيين ترتيب اللاعب ${playerParam}`);
+    
+    // استدعاء clearGameData
+    clearGameData();
+    
+    // إعادة تعيين المتغيرات الخاصة بالترتيب
+    if (typeof picks !== 'undefined') {
+      picks = {
+        player1: [],
+        player2: []
+      };
+    }
+    
+    console.log(`✅ تم إعادة تعيين ترتيب اللاعب ${playerParam}`);
+  } catch (error) {
+    console.error(`خطأ في إعادة تعيين ترتيب اللاعب ${playerParam}:`, error);
+  }
+}
+
+// دالة شاملة لمسح بيانات اللعبة
+function clearGameData(playerParam = null) {
+  try {
+    console.log('🧹 مسح شامل لبيانات اللعبة');
+    
+    // قائمة شاملة بالمفاتيح للمسح
+    const gameRelatedKeys = [
+      // بيانات اللعبة الأساسية
+      'scores', 'currentRound', 'gameSetupProgress', 'gameStatus', 'gameUpdate',
+      
+      // بيانات اللاعبين
+      'player1', 'player2',
+      'player1Name', 'player2Name',
+      
+      // بيانات البطاقات والترتيب
+      'player1Picks', 'player2Picks',
+      'player1Order', 'player2Order',
+      'player1StrategicPicks', 'player2StrategicPicks',
+      'player1StrategicOrdered', 'player2StrategicOrdered',
+      'player1CardArrangement', 'player2CardArrangement',
+      'player1ArrangementCompleted', 'player2ArrangementCompleted',
+      
+      // القدرات
+      'player1Abilities', 'player2Abilities',
+      'player1UsedAbilities', 'player2UsedAbilities',
+      
+      // بيانات اللعبة العامة
+      'gameCardSelection', 'gameCardsGenerated', 'gameCardsData',
+      'currentGameId', 'currentMatchId',
+      
+      // بيانات أخرى
+      'swapDeckUsageData', 'swapDeckData',
+      'generatedCards',
+      'tournamentRounds', 'tournamentData', 'matchWinner'
     ];
     
-    keysToRemove.forEach(key => {
+    // مسح المفاتيح المحددة
+    gameRelatedKeys.forEach(key => {
       console.log(`🗑️ Removing key: ${key}, Previous value:`, localStorage.getItem(key));
       localStorage.removeItem(key);
     });
     
-    // Additional comprehensive clearing of any remaining game-related keys
+    // مسح أي مفاتيح متبقية متعلقة باللعبة
     Object.keys(localStorage).forEach(key => {
       const gameRelatedPatterns = [
-        'orderSubmitted_', 
-        'player1', 
-        'player2', 
-        'StrategicPicks', 
-        'CardArrangement', 
-        'ArrangementCompleted'
+        'StrategicPicks', 'StrategicOrdered', 
+        'CardArrangement', 'ArrangementCompleted',
+        'SwapDeck', 'notes:', 
+        'player1', 'player2',
+        'Order', 'Picks',
+        'Abilities', 'UsedAbilities'
       ];
       
       if (gameRelatedPatterns.some(pattern => key.includes(pattern))) {
-        console.log(`🗑️ Removing additional game-related key: ${key}, Previous value:`, localStorage.getItem(key));
+        console.log(`🗑️ Removing additional game-related key: ${key}`);
         localStorage.removeItem(key);
       }
     });
     
-    console.log(`✅ Completely reset arrangement for ${playerParam}`);
+    // إعادة تعيين المتغيرات العامة
+    if (window.swapDeckUsageData) {
+      window.swapDeckUsageData = { player1: false, player2: false };
+    }
+    if (window.swapDeckCardsGenerated) {
+      window.swapDeckCardsGenerated = false;
+    }
+    if (window.swapDeckCardsData) {
+      window.swapDeckCardsData = {
+        player1: { cards: [], used: false },
+        player2: { cards: [], used: false }
+      };
+    }
+    if (window.gameCardsGenerated) {
+      window.gameCardsGenerated = false;
+    }
+    if (window.gameCardsData) {
+      window.gameCardsData = null;
+    }
     
-    // Reset global picks variable
-    picks = {
-      player1: [],
-      player2: []
-    };
+    console.log('✅ تم مسح بيانات اللعبة بنجاح');
+    
   } catch (error) {
-    console.error(`Error resetting arrangement for ${playerParam}:`, error);
+    console.error('❌ خطأ في مسح بيانات اللعبة:', error);
   }
 }
+
+// تعريف دالة clearGameData كدالة عامة
+window.clearGameData = clearGameData;
 
 // ================== Ability Request System ================== //
 // Handle ability requests from players
