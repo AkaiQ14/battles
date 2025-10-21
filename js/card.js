@@ -38,7 +38,7 @@ let voiceSystem = {
       'Hashirama', 'Hawks', 'Hinata', 'Hisoka', 'jiraya', 
       // Changed: 'joker' to 'Joker'
       'Joker', 'KaidoCard', 'KaitoKid', 'Kanki',
-      'killua', 'law', 'Lelouch', 'LuffyGear5Card', 'madara', 'MeruemCard', 'naruto', 'Neiji', 'NietroCard', 'obito',
+      'killua', 'law', 'Lelouch', 'LuffyGear5', 'madara', 'MeruemCard', 'naruto', 'Neiji', 'NietroCard', 'obito',
       'QG14', 'queen', 'SakamotoCard', 'shikamaru', 'ShanksCard', 'SilverCard', 'smith', 'UmibozoCard',
       // Removed: 'Vegetto', 
       'whitebeard', 'zoro', 'Zenitsu', 'ZenoCard', 'RockLee', 'AlocardCard', 'alocard', 'alucard', 'AloCard', // إضافة جميع الأسماء المحتملة
@@ -103,7 +103,7 @@ let voiceSystem = {
       'killua': 'killua',
       'law': 'law',
       'Lelouch': 'Lelouch',
-      'LuffyGear5Card': 'LuffyGear5Card',
+      'LuffyGear5': 'LuffyGear5',
       'madara': 'madara',
       'MeruemCard': 'MeruemCard',
       'naruto': 'naruto',
