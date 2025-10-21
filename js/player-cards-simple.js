@@ -1725,44 +1725,57 @@ function loadOpponentAbilities() {
   const gameSetup = localStorage.getItem('gameSetupProgress');
   console.log('gameSetupProgress:', gameSetup);
   
-  if (savedAbilities) {
-    try {
-      const abilities = JSON.parse(savedAbilities);
-      console.log('القدرات المحللة:', abilities);
-      
-      // التحقق من الجولة الحالية
-      const currentRound = parseInt(localStorage.getItem('currentRound') || '0');
-      console.log('الجولة الحالية:', currentRound);
-      
-      let usedSet = new Set();
-      
-      // جلب القدرات المستخدمة إذا كنا في لعبة
-      if (currentRound > 0) {
-        const usedAbilitiesKey = `${opponentParam}UsedAbilities`;
-        const usedAbilities = JSON.parse(localStorage.getItem(usedAbilitiesKey) || '[]');
-        usedSet = new Set(usedAbilities);
-        console.log('القدرات المستخدمة للخصم:', usedAbilities);
+  try {
+    let opponentAbilities = [];
+    
+    // 1. محاولة جلب القدرات من localStorage
+    if (savedAbilities) {
+      try {
+        const abilities = JSON.parse(savedAbilities);
+        console.log('القدرات من localStorage:', abilities);
+        
+        opponentAbilities = abilities.map(ability => {
+          const text = typeof ability === 'string' ? ability : (ability.text || ability);
+          return { 
+            text, 
+            used: false  // عدم تمييز القدرات كمستخدمة في بداية اللعبة
+          };
+        });
+      } catch (e) {
+        console.error('خطأ في تحليل القدرات من localStorage:', e);
       }
-      
-      // معالجة القدرات
-      const opponentAbilities = abilities.map(ability => {
-        const text = typeof ability === 'string' ? ability : (ability.text || ability);
-        const isUsed = currentRound > 0 && usedSet.has(text);
-        return { 
-          text, 
-          used: isUsed
-        };
-      });
-      
+    }
+    
+    // 2. محاولة جلب القدرات من gameSetupProgress
+    if (opponentAbilities.length === 0 && gameSetup) {
+      try {
+        const setupData = JSON.parse(gameSetup);
+        const opponentKey = opponentParam === 'player1' ? 'player1' : 'player2';
+        const opponentData = setupData[opponentKey];
+        
+        if (opponentData && opponentData.abilities) {
+          console.log('محاولة جلب القدرات من gameSetupProgress');
+          opponentAbilities = normalizeAbilityList(opponentData.abilities).map(ability => ({
+            text: ability.text,
+            used: false
+          }));
+        }
+      } catch (e) {
+        console.error('خطأ في تحليل gameSetupProgress:', e);
+      }
+    }
+    
+    // 3. التحقق من وجود قدرات
+    if (opponentAbilities.length > 0) {
       console.log('القدرات النهائية للخصم:', opponentAbilities);
       
       // التأكد من وجود العناصر DOM
       console.log('عناصر DOM:', {
         oppWrap: !!oppWrap,
-        oppPanel: !!oppPanel,
-        submittedOrder: submittedOrder
+        oppPanel: !!oppPanel
       });
       
+      // عرض القدرات
       if (oppWrap) {
         oppWrap.innerHTML = ''; // مسح المحتوى الحالي
         renderBadges(oppWrap, opponentAbilities, { clickable: false });
@@ -1771,42 +1784,21 @@ function loadOpponentAbilities() {
         console.error('oppWrap غير موجود');
       }
       
-      // إظهار لوحة الخصم إذا لم يتم إرسال الترتيب
-      if (oppPanel && !submittedOrder) {
+      // إظهار لوحة الخصم دائمًا
+      if (oppPanel) {
         oppPanel.classList.remove("hidden");
         console.log('تم إظهار لوحة الخصم');
       }
+    } else {
+      console.warn('⚠️ لم يتم العثور على قدرات للخصم');
       
-    } catch (e) {
-      console.error('خطأ في تحميل قدرات الخصم:', e);
-    }
-  } else {
-    console.warn('⚠️ لم يتم العثور على قدرات للخصم');
-    
-    // محاولة جلب القدرات من gameSetupProgress
-    if (gameSetup) {
-      try {
-        const setupData = JSON.parse(gameSetup);
-        const opponentKey = opponentParam === 'player1' ? 'player1' : 'player2';
-        const opponentData = setupData[opponentKey];
-        
-        if (opponentData && opponentData.abilities) {
-          console.log('محاولة جلب القدرات من gameSetupProgress');
-          const opponentAbilities = normalizeAbilityList(opponentData.abilities);
-          
-          if (oppWrap) {
-            oppWrap.innerHTML = '';
-            renderBadges(oppWrap, opponentAbilities, { clickable: false });
-          }
-          
-          if (oppPanel) {
-            oppPanel.classList.remove("hidden");
-          }
-        }
-      } catch (e) {
-        console.error('خطأ في تحليل gameSetupProgress:', e);
+      // إخفاء لوحة الخصم إذا لم توجد قدرات
+      if (oppPanel) {
+        oppPanel.classList.add("hidden");
       }
     }
+  } catch (error) {
+    console.error('خطأ في تحميل قدرات الخصم:', error);
   }
   
   console.groupEnd();
@@ -1830,5 +1822,266 @@ document.addEventListener('DOMContentLoaded', () => {
   // إضافة استدعاء احتياطي
   setTimeout(ensureOpponentAbilities, 1000);
 });
+
+// دالة مساعدة للتشخيص الشامل
+function debugAbilityLoading() {
+  console.group('🔍 تشخيص شامل لتحميل القدرات');
+  
+  try {
+    // فحص المتغيرات الأساسية
+    console.log('gameId:', gameId);
+    console.log('playerParam:', playerParam);
+    console.log('player:', player);
+    console.log('playerName:', playerName);
+    
+    // فحص العناصر DOM
+    console.log('abilitiesWrap:', document.getElementById('playerAbilities'));
+    console.log('oppWrap:', document.getElementById('opponentAbilities'));
+    console.log('abilityStatus:', document.getElementById('abilityStatus'));
+    
+    // فحص localStorage
+    const playerAbilitiesKey = `${playerParam}Abilities`;
+    const opponentParam = playerParam === 'player1' ? 'player2' : 'player1';
+    const opponentAbilitiesKey = `${opponentParam}Abilities`;
+    
+    console.log('مفتاح قدرات اللاعب:', playerAbilitiesKey);
+    console.log('مفتاح قدرات الخصم:', opponentAbilitiesKey);
+    
+    console.log('قدرات اللاعب:', localStorage.getItem(playerAbilitiesKey));
+    console.log('قدرات الخصم:', localStorage.getItem(opponentAbilitiesKey));
+    
+    // فحص gameSetupProgress
+    const gameSetup = localStorage.getItem('gameSetupProgress');
+    console.log('gameSetupProgress:', gameSetup);
+    
+    if (gameSetup) {
+      try {
+        const setupData = JSON.parse(gameSetup);
+        console.log('بيانات اللاعب 1:', setupData.player1);
+        console.log('بيانات اللاعب 2:', setupData.player2);
+      } catch (e) {
+        console.error('خطأ في تحليل gameSetupProgress:', e);
+      }
+    }
+    
+    // فحص حالة abilityRequestManager
+    console.log('abilityRequestManager:', typeof window.AbilityRequestManager);
+    
+  } catch (error) {
+    console.error('خطأ في التشخيص:', error);
+  } finally {
+    console.groupEnd();
+  }
+}
+
+// تعديل loadPlayerAbilities للتأكد من تحميل القدرات
+function loadPlayerAbilities() {
+  console.group('🔍 تحميل قدرات اللاعب - تشخيص مفصل');
+  
+  // إضافة التشخيص الشامل
+  debugAbilityLoading();
+  
+  const abilitiesKey = `${playerParam}Abilities`;
+  const savedAbilities = localStorage.getItem(abilitiesKey);
+  
+  console.log('مفتاح القدرات:', abilitiesKey);
+  console.log('القدرات المحفوظة:', savedAbilities);
+  
+  // محاولة جلب القدرات من مصادر مختلفة
+  let loadedAbilities = [];
+  
+  // 1. محاولة جلب القدرات من localStorage
+  if (savedAbilities) {
+    try {
+      loadedAbilities = JSON.parse(savedAbilities);
+      console.log('القدرات من localStorage:', loadedAbilities);
+    } catch (e) {
+      console.error('خطأ في تحليل القدرات من localStorage:', e);
+    }
+  }
+  
+  // 2. محاولة جلب القدرات من gameSetupProgress
+  if (loadedAbilities.length === 0) {
+    const gameSetup = localStorage.getItem('gameSetupProgress');
+    if (gameSetup) {
+      try {
+        const setupData = JSON.parse(gameSetup);
+        const playerKey = playerParam === 'player1' ? 'player1' : 'player2';
+        const playerData = setupData[playerKey];
+        
+        if (playerData && playerData.abilities) {
+          loadedAbilities = normalizeAbilityList(playerData.abilities);
+          console.log('القدرات من gameSetupProgress:', loadedAbilities);
+        }
+      } catch (e) {
+        console.error('خطأ في تحليل gameSetupProgress:', e);
+      }
+    }
+  }
+  
+  // 3. محاولة جلب القدرات من Firebase (إذا كان gameId متاحًا)
+  if (loadedAbilities.length === 0 && gameId) {
+    try {
+      const gameData = GameService.getGame(gameId);
+      const playerData = gameData[`player${player}`];
+      
+      if (playerData && playerData.abilities) {
+        loadedAbilities = normalizeAbilityList(playerData.abilities);
+        console.log('القدرات من Firebase:', loadedAbilities);
+      }
+    } catch (e) {
+      console.error('خطأ في جلب القدرات من Firebase:', e);
+    }
+  }
+  
+  // معالجة القدرات المحملة
+  if (loadedAbilities.length > 0) {
+    // التحقق من حالة القدرات المستخدمة
+    const usedAbilitiesKey = `${playerParam}UsedAbilities`;
+    const usedAbilities = JSON.parse(localStorage.getItem(usedAbilitiesKey) || '[]');
+    
+    myAbilities = loadedAbilities.map(ability => {
+      const text = typeof ability === 'string' ? ability : (ability.text || ability);
+      
+      // التحقق من حالة القدرة
+      const isUsedInStorage = usedAbilities.includes(text);
+      const originalUsedState = typeof ability === 'object' ? ability.used : false;
+      
+      const finalUsedState = isArranging ? false : (isUsedInStorage ? false : originalUsedState);
+      
+      return { 
+        text, 
+        used: finalUsedState || false
+      };
+    });
+    
+    // حفظ القدرات في localStorage
+    localStorage.setItem(abilitiesKey, JSON.stringify(myAbilities));
+    
+    console.log('القدرات النهائية:', myAbilities);
+    
+    // عرض القدرات
+    const abilitiesWrap = document.getElementById('playerAbilities');
+    if (abilitiesWrap) {
+      abilitiesWrap.innerHTML = ''; // مسح المحتوى الحالي
+      renderBadges(abilitiesWrap, myAbilities, { 
+        clickable: true,  // تفعيل القدرات للنقر
+        onClick: (abilityText) => {
+          console.log('محاولة طلب القدرة:', abilityText);
+          if (abilityRequestManager) {
+            abilityRequestManager.requestAbility(abilityText)
+              .then(result => {
+                console.log('نتيجة طلب القدرة:', result);
+              })
+              .catch(error => {
+                console.error('خطأ في طلب القدرة:', error);
+              });
+          } else {
+            console.warn('abilityRequestManager غير مهيأ');
+          }
+        }
+      });
+      
+      console.log('تم عرض القدرات في abilitiesWrap');
+    } else {
+      console.error('abilitiesWrap غير موجود');
+    }
+    
+    const abilityStatus = document.getElementById('abilityStatus');
+    if (abilityStatus) {
+      abilityStatus.textContent = "اضغط على القدرة لطلب استخدامها.";
+      abilityStatus.style.color = "#10b981";
+    }
+  } else {
+    // لا توجد قدرات
+    console.warn('⚠️ لم يتم العثور على قدرات');
+    const abilityStatus = document.getElementById('abilityStatus');
+    if (abilityStatus) {
+      abilityStatus.textContent = "⏳ في انتظار تحميل القدرات...";
+      abilityStatus.style.color = "#f59e0b";
+    }
+  }
+  
+  console.groupEnd();
+}
+
+// إضافة دالة مساعدة للتأكد من تحميل القدرات
+function ensureAbilitiesLoaded() {
+  console.log('🔄 محاولة التأكد من تحميل القدرات');
+  
+  // محاولة تحميل القدرات مرة أخرى بعد تأخير قصير
+  setTimeout(() => {
+    loadPlayerAbilities();
+    loadOpponentAbilities();
+  }, 500);
+}
+
+// إضافة استدعاء عند تحميل الصفحة
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('🔄 محاولة تحميل القدرات عند تحميل الصفحة');
+  
+  // محاولة تهيئة نظام طلبات القدرات
+  if (typeof window.AbilityRequestManager !== 'undefined') {
+    window.abilityRequestManager = new window.AbilityRequestManager();
+  }
+  
+  // تحميل القدرات
+  loadPlayerAbilities();
+  loadOpponentAbilities();
+  
+  // إضافة استدعاء احتياطي
+  setTimeout(ensureAbilitiesLoaded, 1000);
+});
+
+// دالة للطباعة المباشرة للتشخيصات
+function printAbilityDiagnostics() {
+  console.log('🔍 تشخيصات القدرات - طباعة مباشرة');
+  
+  // مفاتيح التخزين
+  const playerAbilitiesKey = `${playerParam}Abilities`;
+  const opponentParam = playerParam === 'player1' ? 'player2' : 'player1';
+  const opponentAbilitiesKey = `${opponentParam}Abilities`;
+  
+  // طباعة محتويات localStorage
+  console.log('محتويات localStorage:');
+  console.log('-------------------');
+  console.log('gameSetupProgress:', localStorage.getItem('gameSetupProgress'));
+  console.log(`قدرات اللاعب (${playerAbilitiesKey}):`, localStorage.getItem(playerAbilitiesKey));
+  console.log(`قدرات الخصم (${opponentAbilitiesKey}):`, localStorage.getItem(opponentAbilitiesKey));
+  
+  // فحص عناصر DOM
+  console.log('\nعناصر DOM:');
+  console.log('------------');
+  const domElements = [
+    'playerAbilities', 
+    'opponentAbilities', 
+    'abilityStatus'
+  ];
+  
+  domElements.forEach(elementId => {
+    const element = document.getElementById(elementId);
+    console.log(`${elementId}:`, element ? 'موجود' : 'غير موجود');
+    if (element) {
+      console.log(`محتوى ${elementId}:`, element.innerHTML);
+    }
+  });
+  
+  // فحص المتغيرات العامة
+  console.log('\nمتغيرات عامة:');
+  console.log('---------------');
+  console.log('gameId:', gameId);
+  console.log('playerParam:', playerParam);
+  console.log('player:', player);
+  console.log('playerName:', playerName);
+  
+  // فحص حالة abilityRequestManager
+  console.log('\nحالة نظام القدرات:');
+  console.log('-------------------');
+  console.log('AbilityRequestManager:', typeof window.AbilityRequestManager);
+  console.log('abilityRequestManager:', window.abilityRequestManager);
+}
+
+// إضافة دالة للطباعة المباشرة كدالة عامة
+window.printAbilityDiagnostics = printAbilityDiagnostics;
 
 

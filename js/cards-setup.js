@@ -102,40 +102,33 @@ function loadExistingData() {
 
 // Dynamic card distribution with precise percentage allocation
 function generateDynamicDistribution() {
+  // Total cards per player
   const totalCardsPerPlayer = 20;
+  
+  // Base distribution percentages
   const baseDistribution = {
-    common: 0.45,      // 45%
-    rare: 0.25,        // 25%
-    epic: 0.15,        // 15%
-    legendary: 0.08,   // 8%
-    ultimate: 0.05,    // 5%
-    cursed: 0.02       // 2%
+    common: 0.40,     // 40%
+    rare: 0.25,       // 25%
+    epic: 0.15,       // 15%
+    legendary: 0.07,  // 7%
+    ultimate: 0.03,   // 3%
+    cursed: 0.10      // 10% - تم تعديل النسبة
   };
   
-  // Precise card count calculation
-  const cardDistribution = {};
-  let remainingCards = totalCardsPerPlayer;
+  // Verify total distribution
+  const totalPercentage = Object.values(baseDistribution).reduce((a, b) => a + b, 0);
+  console.assert(Math.abs(totalPercentage - 1) < 0.001, 
+    `Card distribution error: total ${totalPercentage} !== 1`);
   
-  // First pass: calculate base card counts
-  for (const [category, percentage] of Object.entries(baseDistribution)) {
-    const cardCount = Math.floor(totalCardsPerPlayer * percentage);
-    cardDistribution[category] = cardCount;
-    remainingCards -= cardCount;
-  }
-  
-  // Distribute any remaining cards to the most frequent categories
-  const prioritizedCategories = [
-    'common', 'rare', 'epic', 'legendary', 'ultimate', 'cursed'
-  ];
-  
-  for (const category of prioritizedCategories) {
-    while (remainingCards > 0) {
-      cardDistribution[category]++;
-      remainingCards--;
-    }
-    
-    if (remainingCards === 0) break;
-  }
+  // Calculate card counts based on percentages
+  const cardDistribution = {
+    common: Math.round(totalCardsPerPlayer * baseDistribution.common),
+    rare: Math.round(totalCardsPerPlayer * baseDistribution.rare),
+    epic: Math.round(totalCardsPerPlayer * baseDistribution.epic),
+    legendary: Math.round(totalCardsPerPlayer * baseDistribution.legendary),
+    ultimate: Math.round(totalCardsPerPlayer * baseDistribution.ultimate),
+    cursed: Math.round(totalCardsPerPlayer * baseDistribution.cursed)
+  };
   
   // Verify total card count
   const totalDistributed = Object.values(cardDistribution).reduce((a, b) => a + b, 0);
