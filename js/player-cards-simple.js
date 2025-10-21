@@ -1717,88 +1717,108 @@ function loadOpponentAbilities() {
     opponentAbilitiesKey
   });
   
-  // فحص محتويات localStorage للخصم
-  const savedAbilities = localStorage.getItem(opponentAbilitiesKey);
-  console.log('القدرات المحفوظة للخصم:', savedAbilities);
-  
-  // فحص gameSetupProgress
-  const gameSetup = localStorage.getItem('gameSetupProgress');
-  console.log('gameSetupProgress:', gameSetup);
-  
-  try {
-    let opponentAbilities = [];
-    
-    // 1. محاولة جلب القدرات من localStorage
-    if (savedAbilities) {
-      try {
-        const abilities = JSON.parse(savedAbilities);
-        console.log('القدرات من localStorage:', abilities);
-        
-        opponentAbilities = abilities.map(ability => {
-          const text = typeof ability === 'string' ? ability : (ability.text || ability);
-          return { 
-            text, 
-            used: false  // عدم تمييز القدرات كمستخدمة في بداية اللعبة
-          };
-        });
-      } catch (e) {
-        console.error('خطأ في تحليل القدرات من localStorage:', e);
-      }
-    }
-    
-    // 2. محاولة جلب القدرات من gameSetupProgress
-    if (opponentAbilities.length === 0 && gameSetup) {
-      try {
-        const setupData = JSON.parse(gameSetup);
-        const opponentKey = opponentParam === 'player1' ? 'player1' : 'player2';
-        const opponentData = setupData[opponentKey];
-        
-        if (opponentData && opponentData.abilities) {
-          console.log('محاولة جلب القدرات من gameSetupProgress');
-          opponentAbilities = normalizeAbilityList(opponentData.abilities).map(ability => ({
-            text: ability.text,
-            used: false
-          }));
+  // مصادر محتملة للقدرات
+  const abilitySources = [
+    {
+      name: 'localStorage',
+      getData: () => localStorage.getItem(opponentAbilitiesKey)
+    },
+    {
+      name: 'gameSetupProgress',
+      getData: () => {
+        const gameSetup = localStorage.getItem('gameSetupProgress');
+        if (gameSetup) {
+          const setupData = JSON.parse(gameSetup);
+          const opponentKey = opponentParam === 'player1' ? 'player1' : 'player2';
+          return setupData[opponentKey]?.abilities;
         }
-      } catch (e) {
-        console.error('خطأ في تحليل gameSetupProgress:', e);
+        return null;
       }
+    },
+    {
+      name: 'gameSetupBackup (localStorage)',
+      getData: () => {
+        const backup = localStorage.getItem('gameSetupBackup');
+        if (backup) {
+          const backupData = JSON.parse(backup);
+          const opponentKey = opponentParam === 'player1' ? 'player1' : 'player2';
+          return backupData[opponentKey]?.abilities;
+        }
+        return null;
+      }
+    },
+    {
+      name: 'gameSetupBackup (sessionStorage)',
+      getData: () => {
+        const backup = sessionStorage.getItem('gameSetupBackup');
+        if (backup) {
+          const backupData = JSON.parse(backup);
+          const opponentKey = opponentParam === 'player1' ? 'player1' : 'player2';
+          return backupData[opponentKey]?.abilities;
+        }
+        return null;
+      }
+    }
+  ];
+  
+  // محاولة جلب القدرات من المصادر المختلفة
+  let opponentAbilities = [];
+  
+  for (const source of abilitySources) {
+    try {
+      const data = source.getData();
+      
+      if (data) {
+        console.log(`محاولة جلب القدرات من: ${source.name}`);
+        
+        // تحويل القدرات إلى التنسيق الموحد
+        opponentAbilities = normalizeAbilityList(data).map(ability => ({
+          text: ability.text,
+          used: false  // عدم تمييز القدرات كمستخدمة في بداية اللعبة
+        }));
+        
+        if (opponentAbilities.length > 0) {
+          console.log(`تم جلب ${opponentAbilities.length} قدرة من ${source.name}`);
+          break;
+        }
+      }
+    } catch (e) {
+      console.warn(`خطأ في جلب القدرات من ${source.name}:`, e);
+    }
+  }
+  
+  // التأكد من وجود القدرات وعرضها
+  if (opponentAbilities.length > 0) {
+    console.log('القدرات النهائية للخصم:', opponentAbilities);
+    
+    // حفظ القدرات في localStorage
+    localStorage.setItem(opponentAbilitiesKey, JSON.stringify(opponentAbilities));
+    
+    // التأكد من وجود العناصر DOM
+    const oppWrap = document.getElementById('opponentAbilities');
+    const oppPanel = document.getElementById('opponentAbilitiesPanel');
+    
+    if (oppWrap) {
+      oppWrap.innerHTML = ''; // مسح المحتوى الحالي
+      renderBadges(oppWrap, opponentAbilities, { clickable: false });
+      console.log('تم عرض قدرات الخصم');
+    } else {
+      console.error('oppWrap غير موجود');
     }
     
-    // 3. التحقق من وجود قدرات
-    if (opponentAbilities.length > 0) {
-      console.log('القدرات النهائية للخصم:', opponentAbilities);
-      
-      // التأكد من وجود العناصر DOM
-      console.log('عناصر DOM:', {
-        oppWrap: !!oppWrap,
-        oppPanel: !!oppPanel
-      });
-      
-      // عرض القدرات
-      if (oppWrap) {
-        oppWrap.innerHTML = ''; // مسح المحتوى الحالي
-        renderBadges(oppWrap, opponentAbilities, { clickable: false });
-        console.log('تم عرض قدرات الخصم');
-      } else {
-        console.error('oppWrap غير موجود');
-      }
-      
-      // إظهار لوحة الخصم دائمًا
-      if (oppPanel) {
-        oppPanel.classList.remove("hidden");
-        console.log('تم إظهار لوحة الخصم');
-      }
-    } else {
-      console.warn('⚠️ لم يتم العثور على قدرات للخصم');
-      
-      // إخفاء لوحة الخصم إذا لم توجد قدرات
-      if (oppPanel) {
-        oppPanel.classList.add("hidden");
-      }
+    // إظهار لوحة الخصم دائمًا
+    if (oppPanel) {
+      oppPanel.classList.remove("hidden");
+      console.log('تم إظهار لوحة الخصم');
     }
-  } catch (error) {
-    console.error('خطأ في تحميل قدرات الخصم:', error);
+  } else {
+    console.warn('⚠️ لم يتم العثور على قدرات للخصم');
+    
+    // إخفاء لوحة الخصم إذا لم توجد قدرات
+    const oppPanel = document.getElementById('opponentAbilitiesPanel');
+    if (oppPanel) {
+      oppPanel.classList.add("hidden");
+    }
   }
   
   console.groupEnd();
@@ -1817,6 +1837,8 @@ function ensureOpponentAbilities() {
 // إضافة استدعاء عند تحميل الصفحة
 document.addEventListener('DOMContentLoaded', () => {
   console.log('🔄 محاولة تحميل قدرات الخصم عند تحميل الصفحة');
+  
+  // تحميل القدرات
   loadOpponentAbilities();
   
   // إضافة استدعاء احتياطي

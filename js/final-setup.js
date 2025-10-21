@@ -753,42 +753,109 @@ function updatePlayerNames() {
   console.log('Updated player names:', { player1Name, player2Name });
 }
 
-// Load and display abilities for both players
+// تعديل دالة loadAbilities للتأكد من استعادة القدرات
 function loadAbilities() {
   try {
-    // Load player 1 abilities
-    const player1Abilities = JSON.parse(localStorage.getItem('player1Abilities') || '[]');
-    const player1AbilitiesList = document.getElementById('player1AbilitiesList');
+    console.group('🔍 تحميل القدرات - استعادة شاملة');
     
-    if (player1AbilitiesList) {
-      player1AbilitiesList.innerHTML = '';
-      player1Abilities.forEach(ability => {
-        const abilityText = typeof ability === 'string' ? ability : (ability.text || ability);
-        const abilityDiv = document.createElement('div');
-        abilityDiv.className = 'ability-item';
-        abilityDiv.textContent = abilityText;
-        player1AbilitiesList.appendChild(abilityDiv);
-      });
+    // محاولة جلب القدرات من مصادر مختلفة
+    const restoreAbilities = () => {
+      const restoreSources = [
+        { 
+          name: 'gameSetupBackup (sessionStorage)', 
+          getData: () => {
+            const backup = sessionStorage.getItem('gameSetupBackup');
+            return backup ? JSON.parse(backup) : null;
+          }
+        },
+        { 
+          name: 'gameSetupBackup (localStorage)', 
+          getData: () => {
+            const backup = localStorage.getItem('gameSetupBackup');
+            return backup ? JSON.parse(backup) : null;
+          }
+        },
+        { 
+          name: 'gameSetupProgress', 
+          getData: () => {
+            const progress = localStorage.getItem('gameSetupProgress');
+            return progress ? JSON.parse(progress) : null;
+          }
+        }
+      ];
+      
+      // محاولة استعادة القدرات من المصادر
+      for (const source of restoreSources) {
+        try {
+          const data = source.getData();
+          
+          if (data) {
+            console.log(`محاولة استعادة القدرات من: ${source.name}`);
+            
+            // التحقق من وجود قدرات للاعبين
+            const player1Abilities = data.player1?.abilities || data.player1Abilities || [];
+            const player2Abilities = data.player2?.abilities || data.player2Abilities || [];
+            
+            if (player1Abilities.length > 0 || player2Abilities.length > 0) {
+              console.log('✅ تم العثور على قدرات:', {
+                player1: player1Abilities.length,
+                player2: player2Abilities.length
+              });
+              
+              return { player1Abilities, player2Abilities };
+            }
+          }
+        } catch (e) {
+          console.warn(`خطأ في استعادة القدرات من ${source.name}:`, e);
+        }
+      }
+      
+      console.warn('❌ لم يتم العثور على قدرات');
+      return null;
+    };
+    
+    // محاولة استعادة القدرات
+    const restoredAbilities = restoreAbilities();
+    
+    if (restoredAbilities) {
+      // حفظ القدرات في localStorage
+      localStorage.setItem('player1Abilities', JSON.stringify(restoredAbilities.player1Abilities));
+      localStorage.setItem('player2Abilities', JSON.stringify(restoredAbilities.player2Abilities));
+      
+      // عرض القدرات
+      const player1AbilitiesList = document.getElementById('player1AbilitiesList');
+      const player2AbilitiesList = document.getElementById('player2AbilitiesList');
+      
+      if (player1AbilitiesList) {
+        player1AbilitiesList.innerHTML = '';
+        restoredAbilities.player1Abilities.forEach(ability => {
+          const abilityText = typeof ability === 'string' ? ability : (ability.text || ability);
+          const abilityDiv = document.createElement('div');
+          abilityDiv.className = 'ability-item';
+          abilityDiv.textContent = abilityText;
+          player1AbilitiesList.appendChild(abilityDiv);
+        });
+      }
+      
+      if (player2AbilitiesList) {
+        player2AbilitiesList.innerHTML = '';
+        restoredAbilities.player2Abilities.forEach(ability => {
+          const abilityText = typeof ability === 'string' ? ability : (ability.text || ability);
+          const abilityDiv = document.createElement('div');
+          abilityDiv.className = 'ability-item';
+          abilityDiv.textContent = abilityText;
+          player2AbilitiesList.appendChild(abilityDiv);
+        });
+      }
+      
+      console.log('✅ تم عرض القدرات بنجاح');
+    } else {
+      console.warn('⚠️ لم يتم العثور على قدرات للعرض');
     }
-    
-    // Load player 2 abilities
-    const player2Abilities = JSON.parse(localStorage.getItem('player2Abilities') || '[]');
-    const player2AbilitiesList = document.getElementById('player2AbilitiesList');
-    
-    if (player2AbilitiesList) {
-      player2AbilitiesList.innerHTML = '';
-      player2Abilities.forEach(ability => {
-        const abilityText = typeof ability === 'string' ? ability : (ability.text || ability);
-        const abilityDiv = document.createElement('div');
-        abilityDiv.className = 'ability-item';
-        abilityDiv.textContent = abilityText;
-        player2AbilitiesList.appendChild(abilityDiv);
-      });
-    }
-    
-    console.log('Loaded abilities:', { player1: player1Abilities, player2: player2Abilities });
   } catch (e) {
-    console.error('Error loading abilities:', e);
+    console.error('خطأ في تحميل القدرات:', e);
+  } finally {
+    console.groupEnd();
   }
 }
 
@@ -836,10 +903,69 @@ function clearOldData() {
   }
 }
 
-// Initialize page
+// دالة شاملة لاستعادة البيانات مع حماية أكثر
+function restoreGameData() {
+  console.group('🔍 استعادة بيانات اللعبة');
+  
+  // مصادر استعادة البيانات بترتيب أولوية
+  const restoreSources = [
+    { 
+      name: 'sessionStorage', 
+      getData: () => sessionStorage.getItem('gameSetupBackup'),
+      priority: 1 
+    },
+    { 
+      name: 'localStorage', 
+      getData: () => localStorage.getItem('gameSetupBackup'),
+      priority: 2 
+    },
+    { 
+      name: 'gameSetupProgress', 
+      getData: () => localStorage.getItem('gameSetupProgress'),
+      priority: 3 
+    }
+  ];
+  
+  // محاولة استعادة البيانات من المصادر المختلفة
+  for (const source of restoreSources) {
+    try {
+      const data = source.getData();
+      if (data) {
+        const parsedData = JSON.parse(data);
+        
+        // التحقق من صحة البيانات
+        if (parsedData && 
+            (parsedData.player1 || parsedData.player1Name) && 
+            (parsedData.player2 || parsedData.player2Name)) {
+          
+          console.log(`✅ استعادة البيانات من ${source.name}:`, parsedData);
+          
+          // حفظ البيانات في جميع المصادر للتأكيد
+          sessionStorage.setItem('gameSetupBackup', JSON.stringify(parsedData));
+          localStorage.setItem('gameSetupBackup', JSON.stringify(parsedData));
+          localStorage.setItem('gameSetupProgress', JSON.stringify(parsedData));
+          
+          console.groupEnd();
+          return parsedData;
+        }
+      }
+    } catch (e) {
+      console.warn(`خطأ في تحليل بيانات من ${source.name}:`, e);
+    }
+  }
+  
+  console.warn('❌ لم يتم العثور على بيانات صالحة للاستعادة');
+  console.groupEnd();
+  return null;
+}
+
+// تعديل دالة init للاستفادة من restoreGameData
 async function init() {
   try {
     console.log('Initializing final-setup page...');
+    
+    // محاولة استعادة البيانات
+    const restoredData = restoreGameData();
     
     // Clear old data first
     clearOldData();
@@ -847,17 +973,42 @@ async function init() {
     // Reset battle status for new game setup
     resetBattleStatus();
     
-    loadGameData();
+    // محاولة استعادة البيانات المحفوظة
+    if (restoredData) {
+      // استعادة البيانات المحفوظة
+      gameData = restoredData;
+      console.log('✅ تمت استعادة بيانات اللعبة', gameData);
+    } else {
+      // إذا لم يتم العثور على بيانات محفوظة، قم بتحميل البيانات
+      loadGameData();
+    }
+    
+    // تحديث أسماء اللاعبين
     updatePlayerNames();
+    
+    // تحميل القدرات
     loadAbilities();
+    
+    // التحقق من حالة اللاعبين
     await checkPlayerStatus();
     
-    // Setup real-time listening
+    // إعداد الاستماع المباشر
     setupRealTimeListening();
+    
+    // حفظ البيانات للاستعادة في حالة التحديث
+    sessionStorage.setItem('gameSetupBackup', JSON.stringify(gameData));
+    localStorage.setItem('gameSetupBackup', JSON.stringify(gameData));
     
     console.log('Final-setup page initialized successfully');
   } catch (e) {
     console.error('Error initializing page:', e);
+    
+    // محاولة استعادة البيانات في حالة الخطأ
+    const restoredData = restoreGameData();
+    if (restoredData) {
+      gameData = restoredData;
+      console.log('✅ تمت استعادة بيانات اللعبة بعد الخطأ', gameData);
+    }
   }
 }
 
@@ -880,7 +1031,7 @@ function setupRealTimeListening() {
   }
 }
 
-// Update player status from Firebase data (Unified system)
+// تعديل دالة updatePlayerStatus لتغيير نص الزر
 function updatePlayerStatus(gameData) {
   const player1Ready = gameData.player1?.isReady || false;
   const player2Ready = gameData.player2?.isReady || false;
@@ -926,7 +1077,7 @@ function updatePlayerStatus(gameData) {
       battleBtn.textContent = 'بدء المعركة';
     } else {
       battleBtn.disabled = true;
-      battleBtn.textContent = 'انتظر اكمال اللاعبين';
+      battleBtn.textContent = 'انتظار تسليم اللاعبين';
     }
   }
   
@@ -986,7 +1137,7 @@ function updateTournamentPlayerStatus(gameData) {
       battleBtn.textContent = 'بدء المعركة';
     } else {
       battleBtn.disabled = true;
-      battleBtn.textContent = 'انتظر اكمال اللاعبين';
+      battleBtn.textContent = 'انتظار اكمال اللاعبين';
     }
   }
   
@@ -1153,5 +1304,17 @@ document.addEventListener('DOMContentLoaded', () => {
       await startBattle();
     });
     console.log('✅ Battle button event listener attached');
+  }
+});
+
+// إضافة استماع لحدث قبل التحميل للاحتفاظ بالبيانات
+window.addEventListener('beforeunload', () => {
+  try {
+    // حفظ البيانات قبل إعادة التحميل
+    sessionStorage.setItem('gameSetupBackup', JSON.stringify(gameData));
+    localStorage.setItem('gameSetupBackup', JSON.stringify(gameData));
+    console.log('✅ حفظ البيانات قبل إعادة التحميل');
+  } catch (e) {
+    console.error('خطأ في حفظ البيانات قبل إعادة التحميل:', e);
   }
 });
