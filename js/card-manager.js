@@ -3,12 +3,7 @@ class CardManager {
   constructor() {
     this.cardDatabase = {
       common: [],
-      epic: [],
-      legendary: [],
-      cursed: [],
-      rare: [],
-      ultimate: [],
-      mythic: []
+      epic: []
     };
     this.initializeCardDatabase();
   }
@@ -102,7 +97,92 @@ class CardManager {
         'images/Yumeko-Jabami.png',
         'images/Yusaku.png',
         'images/Yuta.png',
-        'images/Zagred.png'
+        'images/Zagred.png',
+        'images/Goku-SSJ1.png',
+        'images/Goku-SSJ3.png',
+        'images/AizenCrow.webm',
+        'images/Akai.webm',
+        'images/AllMight.webm',
+        'images/Alocard.webm',
+        'images/Ayanokoji.webm',
+        'images/Bakugo.webm',
+        'images/Beru.webm',
+        'images/Beerus.webm',
+        'images/Broly.webm',
+        'images/Cell.webm',
+        'images/Chrollo.webm',
+        'images/ErenCard.webm',
+        'images/Garp.webm',
+        'images/Gilgamesh.webm',
+        'images/Gin.webm',
+        'images/Gintoki.webm',
+        'images/Gohan Beast.webm',
+        'images/Goku Black.webm',
+        'images/Goku-SSJ4.webm',
+        'images/Goku-SSJB.webm',
+        'images/Goku-SSJG.webm',
+        'images/Hawks.webm',
+        'images/Hinata.webm',
+        'images/Ippo.webm',
+        'images/Itachi.webm',
+        'images/Jiraya.webm',
+        'images/Joker.webm',
+        'images/Kaido.webm',
+        'images/KaitoKid.webm',
+        'images/Kakashi.webm',
+        'images/Kanki.webm',
+        'images/Kyurak.webm',
+        'images/Law.webm',
+        'images/Lecht.webm',
+        'images/Lelouch.webm',
+        'images/Makima.webm',
+        'images/Meliodas.webm',
+        'images/Meruem.webm',
+        'images/Midoriya.webm',
+        'images/Naruto.webm',
+        'images/Obito.webm',
+        'images/Ouki.webm',
+        'images/PrinceHata.webm',
+        'images/Ranpo.webm',
+        'images/Rengoku.webm',
+        'images/Riboku.webm',
+        'images/Rimuru Tempest.webm',
+        'images/Roger.webm',
+        'images/SSJ2.webm',
+        'images/Sanji.webm',
+        'images/Sakamoto.webm',
+        'images/Smiley.webm',
+        'images/Sung-Jinwoo.webm',
+        'images/Takamura.webm',
+        'images/Toji.webm',
+        'images/Todo.webm',
+        'images/UmibozoCard.webm',
+        'images/Ulquiorra.webm',
+        'images/Utsuro.webm',
+        'images/Vegito-Blue.webm',
+        'images/Vermoth.webm',
+        'images/Walker.webm',
+        'images/Yamamoto.webm',
+        'images/Yamato.webm',
+        'images/Yhwach.webm',
+        'images/Zaraki.webm',
+        'images/Zeno.webm',
+        'images/Zenon.webm',
+        'images/zabuza.webm',
+        'images/Aizen.webm',
+        'images/AllForOne.webm',
+        'images/Dio.webm',
+        'images/Escanor.webm',
+        'images/Gogeta.webm',
+        'images/Goku-UI.webm',
+        'images/Hashirama.webm',
+        'images/LuffyGear5.webm',
+        'images/Madara.webm',
+        'images/Queen.webm',
+        'images/Saitama.webm',
+        'images/Yoriichi.webm',
+        'images/ZORO.webm',
+         'images/QG14.webm'
       ].filter((card, index, self) => 
         self.indexOf(card) === index
       )
@@ -396,16 +476,28 @@ class CardManager {
         'images/Zeff.png',
         'images/Zeno-kingdom.png',
         'images/Zohakuten.png',
-        'images/Zora.png'
-      ].filter((card, index, self) => 
-        self.indexOf(card) === index
-      )
-    ];
-
-    // Rare Cards
-    this.cardDatabase.rare = [
-      // Remove duplicates and keep unique entries
-      ...[
+        'images/Zora.png',
+        'images/Syn-Shenron.png',
+        'images/Super-Android-17.png',
+        'images/Sidra.png',
+        'images/Roasie.png',
+        'images/Ribrianne.png',
+        'images/Nuova-Shenron.png',
+        'images/Majin-Kuu.png',
+        'images/Majin-Duu.png',
+        'images/Liquiir.png',
+        'images/Lavender.png',
+        'images/Kakunsa.png',
+        'images/Heles.png',
+        'images/Gomah.png',
+        'images/Glorio.png',
+        'images/Eis-Shenron.png',
+        'images/Champa.png',
+        'images/Bergamo.png',
+        'images/Belmod.png',
+        'images/Basil.png',
+        'images/Anilaza.png',
+        'images/Monaka.png',
         'images/Asta.png',
         'images/Akiko-Yosano.png',
         'images/Best-Jeanist.png',
@@ -482,132 +574,17 @@ class CardManager {
         'images/Nagomo.png',
         'images/Endou.png',
         'images/Ranma.png',
-        'images/Haku.png'
-      ].filter((card, index, self) => 
-        self.indexOf(card) === index
-      )
-    ];
-
-    // Legendary Cards
-    this.cardDatabase.legendary = [
-      // Remove duplicates and keep unique entries
-      ...[
-        'images/AizenCrow.webm',
-        'images/Akai.webm',
-        'images/AllMight.webm',
-        'images/Alocard.webm',
-        'images/Ayanokoji.webm',
-        'images/Bakugo.webm',
-        'images/Beru.webm',
-        'images/Beerus.webm',
-        'images/Broly.webm',
-        'images/Cell.webm',
-        'images/Chrollo.webm',
-        'images/ErenCard.webm',
-        'images/Garp.webm',
-        'images/Gilgamesh.webm',
-        'images/Gin.webm',
-        'images/Gintoki.webm',
-        'images/Gohan Beast.webm',
-        'images/Goku Black.webm',
-        'images/Goku-SSJ4.webm',
-        'images/Goku-SSJB.webm',
-        'images/Goku-SSJG.webm',
-        'images/Hawks.webm',
-        'images/Hinata.webm',
-        'images/Ippo.webm',
-        'images/Itachi.webm',
-        'images/Jiraya.webm',
-        'images/Joker.webm',
-        'images/Kaido.webm',
-        'images/KaitoKid.webm',
-        'images/Kakashi.webm',
-        'images/Kanki.webm',
-        'images/Kyurak.webm',
-        'images/Law.webm',
-        'images/Lecht.webm',
-        'images/Lelouch.webm',
-        'images/Makima.webm',
-        'images/Meliodas.webm',
-        'images/Meruem.webm',
-        'images/Midoriya.webm',
-        'images/Naruto.webm',
-        'images/Obito.webm',
-        'images/Ouki.webm',
-        'images/PrinceHata.webm',
-        'images/Ranpo.webm',
-        'images/Rengoku.webm',
-        'images/Riboku.webm',
-        'images/Rimuru Tempest.webm',
-        'images/Roger.webm',
-        'images/SSJ2.webm',
-        'images/Sanji.webm',
-        'images/Sakamoto.webm',
-        'images/Smiley.webm',
-        'images/Sung-Jinwoo.webm',
-        'images/Takamura.webm',
-        'images/Toji.webm',
-        'images/Todo.webm',
-        'images/UmibozoCard.webm',
-        'images/Ulquiorra.webm',
-        'images/Utsuro.webm',
-        'images/Vegito-Blue.webm',
-        'images/Vermoth.webm',
-        'images/Walker.webm',
-        'images/Yamamoto.webm',
-        'images/Yamato.webm',
-        'images/Yhwach.webm',
-        'images/Zaraki.webm',
-        'images/Zeno.webm',
-        'images/Zenon.webm',
-        'images/zabuza.webm'
-      ].filter((card, index, self) => 
-        self.indexOf(card) === index
-      )
-    ];
-
-    // Ultimate Cards
-    this.cardDatabase.ultimate = [
-      // Remove duplicates and keep unique entries
-      ...[
-        'images/Aizen.webm',
-        'images/AllForOne.webm',
-        'images/Dio.webm',
-        'images/Escanor.webm',
-        'images/Gogeta.webm',
-        'images/Goku-UI.webm',
-        'images/Hashirama.webm',
-        'images/LuffyGear5.webm',
-        'images/Madara.webm',
-        'images/Queen.webm',
-        'images/Saitama.webm',
-        'images/Yoriichi.webm',
-        'images/ZORO.webm'
-      ].filter((card, index, self) => 
-        self.indexOf(card) === index
-      )
-    ];
-
-    // Cursed Cards
-    this.cardDatabase.cursed = [
-      // Remove duplicates and keep unique entries
-      ...[
+        'images/Haku.png',
+        'images/Dyspo.png',
+        'images/Vados.png',
+        'images/Baby.png',
+        'images/Marcarita.png',
         'images/Adult-Gon.png',
         'images/Chopper.png',
         'images/Kenjaku.png',
         'images/Kokushibo.png',
         'images/Konohamaru.png',
         'images/Luffy-Nightmare.png'
-      ].filter((card, index, self) => 
-        self.indexOf(card) === index
-      )
-    ];
-
-    // Mythic Cards
-    this.cardDatabase.mythic = [
-      // Remove duplicates and keep unique entries
-      ...[
-        'images/QG14.webm'
       ].filter((card, index, self) => 
         self.indexOf(card) === index
       )
@@ -628,12 +605,12 @@ class CardManager {
 
     // Dynamic card distribution with updated percentages
     const baseDistribution = {
-      common: 0.45,      // 45%
-      rare: 0.25,        // 25%
-      epic: 0.15,        // 15%
-      legendary: 0.08,   // 8%
-      ultimate: 0.05,    // 5%
-      cursed: 0.02       // 2%
+      common: 0.60,      // 60%
+      epic: 0.40,        // 40%
+      rare: 0.00,        // 0%
+      legendary: 0.00,   // 0%
+      ultimate: 0.00,    // 0%
+      cursed: 0.00       // 0%
     };
 
     // Add small random variations to percentages
@@ -653,10 +630,14 @@ class CardManager {
     }
 
     // Convert to card counts
-    const cardDistribution = {};
-    for (const [category, percentage] of Object.entries(dynamicDistribution)) {
-      cardDistribution[category] = Math.floor(totalCards * percentage);
-    }
+    const cardDistribution = {
+      common: Math.floor(totalCards * 0.60),     // 60%
+      epic: Math.floor(totalCards * 0.40),       // 40%
+      rare: 0,       // 0%
+      legendary: 0,  // 0%
+      ultimate: 0,   // 0%
+      cursed: 0      // 0%
+    };
 
     // Adjust for rounding errors
     const totalDistributed = Object.values(cardDistribution).reduce((a, b) => a + b, 0);
@@ -869,12 +850,7 @@ class CardManager {
   getAllCards() {
     return [
       ...this.cardDatabase.common,
-      ...this.cardDatabase.epic,
-      ...this.cardDatabase.legendary,
-      ...this.cardDatabase.cursed,
-      ...this.cardDatabase.rare,
-      ...this.cardDatabase.ultimate,
-      ...this.cardDatabase.mythic
+      ...this.cardDatabase.epic
     ];
   }
 }
