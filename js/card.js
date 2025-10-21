@@ -37,7 +37,7 @@ let voiceSystem = {
       // Removed: 'Goku UI', 
       'Hashirama', 'Hawks', 'Hinata', 'Hisoka', 'jiraya', 
       // Changed: 'joker' to 'Joker'
-      'Joker', 'KaidoCard', 'KaitoKid', 'KankiCard',
+      'Joker', 'KaidoCard', 'KaitoKid', 'Kanki',
       'killua', 'law', 'Lelouch', 'LuffyGear5Card', 'madara', 'MeruemCard', 'naruto', 'Neiji', 'NietroCard', 'obito',
       'QG14', 'queen', 'SakamotoCard', 'shikamaru', 'ShanksCard', 'SilverCard', 'smith', 'UmibozoCard',
       // Removed: 'Vegetto', 
@@ -99,7 +99,7 @@ let voiceSystem = {
       'Joker': 'Joker',
       'KaidoCard': 'KaidoCard',
       'KaitoKid': 'KaitoKid',
-      'KankiCard': 'KankiCard',
+      'Kanki': 'Kanki',
       'killua': 'killua',
       'law': 'law',
       'Lelouch': 'Lelouch',
