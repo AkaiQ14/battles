@@ -3324,50 +3324,113 @@ function checkArrangementStatus(playerParam) {
 // Command to reset arrangement (for new games)
 function resetArrangement(playerParam) {
   try {
-    // Comprehensive clearing of all card-related localStorage keys
-    const keysToRemove = [
-      `${playerParam}StrategicPicks`,
-      `${playerParam}StrategicOrdered`,
-      `${playerParam}CardArrangement`,
-      `${playerParam}ArrangementCompleted`,
-      'gameCardSelection',
-      'currentGameId',
-      'currentMatchId'
+    console.log(`🔄 إعادة تعيين ترتيب اللاعب ${playerParam}`);
+    
+    // استدعاء clearGameData
+    clearGameData();
+    
+    // إعادة تعيين المتغيرات الخاصة بالترتيب
+    if (typeof picks !== 'undefined') {
+      picks = {
+        player1: [],
+        player2: []
+      };
+    }
+    
+    console.log(`✅ تم إعادة تعيين ترتيب اللاعب ${playerParam}`);
+  } catch (error) {
+    console.error(`خطأ في إعادة تعيين ترتيب اللاعب ${playerParam}:`, error);
+  }
+}
+
+// دالة شاملة لمسح بيانات اللعبة
+function clearGameData(playerParam = null) {
+  try {
+    console.log('🧹 مسح شامل لبيانات اللعبة');
+    
+    // قائمة شاملة بالمفاتيح للمسح
+    const gameRelatedKeys = [
+      // بيانات اللعبة الأساسية
+      'scores', 'currentRound', 'gameSetupProgress', 'gameStatus', 'gameUpdate',
+      
+      // بيانات اللاعبين
+      'player1', 'player2',
+      'player1Name', 'player2Name',
+      
+      // بيانات البطاقات والترتيب
+      'player1Picks', 'player2Picks',
+      'player1Order', 'player2Order',
+      'player1StrategicPicks', 'player2StrategicPicks',
+      'player1StrategicOrdered', 'player2StrategicOrdered',
+      'player1CardArrangement', 'player2CardArrangement',
+      'player1ArrangementCompleted', 'player2ArrangementCompleted',
+      
+      // القدرات
+      'player1Abilities', 'player2Abilities',
+      'player1UsedAbilities', 'player2UsedAbilities',
+      
+      // بيانات اللعبة العامة
+      'gameCardSelection', 'gameCardsGenerated', 'gameCardsData',
+      'currentGameId', 'currentMatchId',
+      
+      // بيانات أخرى
+      'swapDeckUsageData', 'swapDeckData',
+      'generatedCards',
+      'tournamentRounds', 'tournamentData', 'matchWinner'
     ];
     
-    keysToRemove.forEach(key => {
+    // مسح المفاتيح المحددة
+    gameRelatedKeys.forEach(key => {
       console.log(`🗑️ Removing key: ${key}, Previous value:`, localStorage.getItem(key));
       localStorage.removeItem(key);
     });
     
-    // Additional comprehensive clearing of any remaining game-related keys
+    // مسح أي مفاتيح متبقية متعلقة باللعبة
     Object.keys(localStorage).forEach(key => {
       const gameRelatedPatterns = [
-        'orderSubmitted_', 
-        'player1', 
-        'player2', 
-        'StrategicPicks', 
-        'CardArrangement', 
-        'ArrangementCompleted'
+        'StrategicPicks', 'StrategicOrdered', 
+        'CardArrangement', 'ArrangementCompleted',
+        'SwapDeck', 'notes:', 
+        'player1', 'player2',
+        'Order', 'Picks',
+        'Abilities', 'UsedAbilities'
       ];
       
       if (gameRelatedPatterns.some(pattern => key.includes(pattern))) {
-        console.log(`🗑️ Removing additional game-related key: ${key}, Previous value:`, localStorage.getItem(key));
+        console.log(`🗑️ Removing additional game-related key: ${key}`);
         localStorage.removeItem(key);
       }
     });
     
-    console.log(`✅ Completely reset arrangement for ${playerParam}`);
+    // إعادة تعيين المتغيرات العامة
+    if (window.swapDeckUsageData) {
+      window.swapDeckUsageData = { player1: false, player2: false };
+    }
+    if (window.swapDeckCardsGenerated) {
+      window.swapDeckCardsGenerated = false;
+    }
+    if (window.swapDeckCardsData) {
+      window.swapDeckCardsData = {
+        player1: { cards: [], used: false },
+        player2: { cards: [], used: false }
+      };
+    }
+    if (window.gameCardsGenerated) {
+      window.gameCardsGenerated = false;
+    }
+    if (window.gameCardsData) {
+      window.gameCardsData = null;
+    }
     
-    // Reset global picks variable
-    picks = {
-      player1: [],
-      player2: []
-    };
+    console.log('✅ تم مسح بيانات اللعبة بنجاح');
+    
   } catch (error) {
-    console.error(`Error resetting arrangement for ${playerParam}:`, error);
+    console.error('❌ خطأ في مسح بيانات اللعبة:', error);
   }
 }
+
+// تعريف دالة clearGameData كدالة عامة
+window.clearGameData = clearGameData;
 
 // ================== Ability Request System ================== //
 // Handle ability requests from players
