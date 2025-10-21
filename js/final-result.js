@@ -451,10 +451,16 @@ function startNewGame() {
             'player1Abilities', 'player2Abilities',
             'player1UsedAbilities', 'player2UsedAbilities',
             
-            // Card arrangement and selection
+            // Card arrangement and selection - توسيع نطاق المسح
             'player1ArrangementCompleted', 'player2ArrangementCompleted',
             'player1CardArrangement', 'player2CardArrangement',
             'gameCardSelection', 'gameCardsGenerated', 'gameCardsData',
+            
+            // إضافة مفاتيح جديدة للترتيب
+            'player1Order', 'player2Order',
+            'player1StrategicOrdered', 'player2StrategicOrdered',
+            'player1CardArrangement', 'player2CardArrangement',
+            'player1Picks', 'player2Picks',
             
             // Swap deck related
             'swapDeckUsageData', 'swapDeckData',
@@ -481,7 +487,8 @@ function startNewGame() {
                 'StrategicPicks', 'StrategicOrdered', 
                 'CardArrangement', 'ArrangementCompleted',
                 'SwapDeck', 'notes:', 
-                'player1', 'player2'
+                'player1', 'player2',
+                'Order', 'Picks'  // إضافة أنماط جديدة للمسح
             ];
             
             if (gameRelatedPatterns.some(pattern => key.includes(pattern))) {
