@@ -107,8 +107,8 @@ function generateDynamicDistribution() {
   
   // Base distribution percentages
   const baseDistribution = {
-    common: 0.60,     // 60%
-    epic: 0.40,       // 40%
+    common: 0.70,     // 70%
+    epic: 0.30,       // 30%
     rare: 0.00,       // 0%
     legendary: 0.00,  // 0%
     ultimate: 0.00,   // 0%
@@ -140,76 +140,53 @@ function generateDynamicDistribution() {
   return cardDistribution;
 }
 
-// دالة متقدمة للخلط العشوائي مع بذور متغيرة
-function seededRandom(seed) {
-  const x = Math.sin(seed) * 10000;
-  return x - Math.floor(x);
+// دالة متقدمة لاختيار بطاقات عشوائية بشكل أكثر دقة
+function getRandomCards(cardPool, count, seed = null) {
+  // التأكد من وجود بطاقات كافية
+  if (cardPool.length < count) {
+    console.warn(`Not enough cards in pool. Requested: ${count}, Available: ${cardPool.length}`);
+    return cardPool.slice(); // إرجاع كل البطاقات المتاحة
+  }
+
+  // نسخ مصفوفة البطاقات للحفاظ على الأصل
+  const availableCards = [...cardPool];
+  const selectedCards = [];
+
+  // استخدام توليد أرقام عشوائية أكثر أمانًا
+  const getSecureRandom = (max) => {
+    // استخدام crypto.getRandomValues للحصول على رقم عشوائي
+    const randomBuffer = new Uint32Array(1);
+    crypto.getRandomValues(randomBuffer);
+    return randomBuffer[0] % max;
+  };
+
+  // اختيار البطاقات بشكل عشوائي دون تكرار
+  while (selectedCards.length < count && availableCards.length > 0) {
+    const randomIndex = getSecureRandom(availableCards.length);
+    const selectedCard = availableCards.splice(randomIndex, 1)[0];
+    selectedCards.push(selectedCard);
+  }
+
+  return selectedCards;
 }
 
-// دالة خلط متقدمة مع بذور متغيرة
+// دالة متقدمة للخلط العشوائي مع تحسين الأمان
 function advancedShuffle(array, seed = null) {
-  // استخدام وقت النظام كبذرة إذا لم يتم توفير بذرة محددة
-  const useSeed = seed !== null ? seed : Date.now();
-  
-  // نسخ المصفوفة للحفاظ على الأصل
   const shuffledArray = [...array];
   
-  // خوارزميات خلط متعددة
-  const shuffleMethods = [
-    // طريقة الخلط الأساسية
-    (arr, seed) => {
-      for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(seededRandom(seed + i) * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
-      }
-      return arr;
-    },
+  // استخدام خوارزمية فيشر-ييتس للخلط
+  for (let i = shuffledArray.length - 1; i > 0; i--) {
+    const getSecureRandom = (max) => {
+      const randomBuffer = new Uint32Array(1);
+      crypto.getRandomValues(randomBuffer);
+      return randomBuffer[0] % max;
+    };
     
-    // طريقة خلط فيشر-ييتس المعدلة
-    (arr, seed) => {
-      for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(seededRandom(seed * (i + 1)) * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
-      }
-      return arr;
-    },
-    
-    // طريقة الخلط المتدرج
-    (arr, seed) => {
-      const segments = Math.ceil(arr.length / 3);
-      for (let segment = 0; segment < segments; segment++) {
-        const start = segment * 3;
-        const end = Math.min(start + 3, arr.length);
-        const segmentSlice = arr.slice(start, end);
-        
-        // خلط الشريحة
-        for (let i = segmentSlice.length - 1; i > 0; i--) {
-          const j = Math.floor(seededRandom(seed + start + i) * (i + 1));
-          [segmentSlice[i], segmentSlice[j]] = [segmentSlice[j], segmentSlice[i]];
-        }
-        
-        // استبدال الشريحة في المصفوفة الأصلية
-        arr.splice(start, segmentSlice.length, ...segmentSlice);
-      }
-      return arr;
-    }
-  ];
+    const j = getSecureRandom(i + 1);
+    [shuffledArray[i], shuffledArray[j]] = [shuffledArray[j], shuffledArray[i]];
+  }
   
-  // اختيار طريقة خلط عشوائية باستخدام البذرة
-  const shuffleMethod = shuffleMethods[Math.floor(seededRandom(useSeed) * shuffleMethods.length)];
-  
-  return shuffleMethod(shuffledArray, useSeed);
-}
-
-// تعديل دالة getRandomCards لتكون أكثر عشوائية
-function getRandomCards(cards, count, seed = null) {
-  if (!cards || cards.length === 0) return [];
-  
-  // خلط الكروت بشكل متقدم
-  const shuffledCards = advancedShuffle(cards, seed);
-  
-  // اختيار العدد المطلوب من الكروت المخلوطة
-  return shuffledCards.slice(0, Math.min(count, cards.length));
+  return shuffledArray;
 }
 
 // دالة شاملة للتحقق من توزيع الكروت
@@ -373,8 +350,8 @@ function generateRandomCards() {
     
     // Strict validation
     console.assert(
-      Math.abs(typePercentage.common - 60) < 1 && 
-      Math.abs(typePercentage.epic - 40) < 1, 
+      Math.abs(typePercentage.common - 70) < 1 && 
+      Math.abs(typePercentage.epic - 30) < 1, 
       'Card distribution does not match expected percentages'
     );
     
@@ -383,8 +360,8 @@ function generateRandomCards() {
   
   // توليد بطاقات اللاعب الأول
   let player1Cards = [
-    ...getRandomCards(commonCards, Math.floor(totalCardsPerPlayer * 0.60), gameSeed + 1),
-    ...getRandomCards(epicCards, Math.floor(totalCardsPerPlayer * 0.40), gameSeed + 2)
+    ...getRandomCards(commonCards, Math.floor(totalCardsPerPlayer * 0.70)),
+    ...getRandomCards(epicCards, Math.floor(totalCardsPerPlayer * 0.30))
   ];
   
   // التأكد من وجود 20 بطاقة بالضبط
@@ -396,15 +373,14 @@ function generateRandomCards() {
     
     const extraCards = getRandomCards(
       allAvailableCards.filter(card => !player1Cards.includes(card)), 
-      totalCardsPerPlayer - player1Cards.length,
-      gameSeed + 7
+      totalCardsPerPlayer - player1Cards.length
     );
     
     player1Cards.push(...extraCards);
   }
   
   // الخلط النهائي للبطاقات للاعب الأول
-  const finalPlayer1Cards = advancedShuffle(player1Cards.slice(0, totalCardsPerPlayer), gameSeed + 8);
+  const finalPlayer1Cards = advancedShuffle(player1Cards.slice(0, totalCardsPerPlayer));
   
   // توليد بطاقات اللاعب الثاني مع استبعاد بطاقات اللاعب الأول
   let player2Cards = [
@@ -855,8 +831,8 @@ function initializeTournamentCards() {
     
     // حساب عدد البطاقات من كل فئة
     const cardDistribution = {
-      common: Math.floor(cardsPerPlayer * 0.60),     // 60%
-      epic: Math.floor(cardsPerPlayer * 0.40)        // 40%
+      common: Math.floor(cardsPerPlayer * 0.70),     // 70%
+      epic: Math.floor(cardsPerPlayer * 0.30)        // 30%
     };
     
     // تعديل التوزيع للتأكد من وصول العدد الكلي إلى 20
@@ -884,7 +860,7 @@ function initializeTournamentCards() {
       player1Cards = [...player1Cards, ...extra];
       if (player1Cards.length >= cardsPerPlayer) break;
     }
-    player1Cards = player1Cards.slice(0, cardsPerPlayer).sort(() => Math.random() - 0.5);
+    player1Cards = advancedShuffle(player1Cards.slice(0, cardsPerPlayer));
     
     // بناء بطاقات اللاعب الثاني (بطاقات مختلفة)
     let player2Cards = [
@@ -914,7 +890,7 @@ function initializeTournamentCards() {
       player2Cards = [...player2Cards, ...extra];
       if (player2Cards.length >= cardsPerPlayer) break;
     }
-    player2Cards = player2Cards.slice(0, cardsPerPlayer).sort(() => Math.random() - 0.5);
+    player2Cards = advancedShuffle(player2Cards.slice(0, cardsPerPlayer));
     
     gameState.player1Cards = player1Cards;
     gameState.player2Cards = player2Cards;
