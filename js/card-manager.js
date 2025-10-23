@@ -143,7 +143,7 @@ class CardManager {
         'images/Obito.webm',
         'images/Ouki.webm',
         'images/PrinceHata.webm',
-        'images/Ranpo.webm',
+        'images/Ranppo.webm',
         'images/Rengoku.webm',
         'images/Riboku.webm',
         'images/Rimuru-Tempest.webm',
