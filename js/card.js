@@ -35,7 +35,7 @@ let voiceSystem = {
       'Beru', 'Cell',
       'Dio', 'ErenCard', 'Fubuki', 'GinCard', 'Giyuu', 'Gogeta', 'GohanBeastCard', 'GojoCard', 
       // Removed: 'Goku UI', 
-      'Hashirama', 'Hawks', 'Hinata', 'Hisoka', 'jiraya', 'Riboku', 'Lelouch', 'Utsuro',
+      'Hashirama', 'Hawks', 'Hinata', 'Hisoka', 'jiraya', 'Riboku', 'Lelouch', 'Utsuro', 'Kyurak',
       // Changed: 'joker' to 'Joker'
       'Joker', 'KaidoCard', 'KaitoKid', 'Kanki',
       'law', 'Lelouch', 'LuffyGear5', 'madara', 'MeruemCard', 'naruto', 'Neiji', 'NietroCard', 'obito',
@@ -103,6 +103,7 @@ let voiceSystem = {
       'KaidoCard': 'KaidoCard',
       'KaitoKid': 'KaitoKid',
       'Kanki': 'Kanki',
+      'Kyurak': 'Kyurak',
       'law': 'law',
       'Lelouch': 'Lelouch',
       'LuffyGear5': 'LuffyGear5',
