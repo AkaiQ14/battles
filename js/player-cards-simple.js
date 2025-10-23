@@ -1,22 +1,94 @@
 // Import Firebase GameService
 import { GameService } from './gameService.js';
+import { auth } from './firebase-init.js';
+import syncService from './sync-service.js';
+
+// ========== حماية من التداخل بين اللاعبين ==========
+// تم إضافة حماية لمنع إعادة تعيين ترتيب اللاعب الآخر عند تأكيد ترتيب أحد اللاعبين
+// كل لاعب يستخدم مفاتيح localStorage منفصلة: player1Order, player2Order
+// ويستمع فقط للتغييرات الخاصة به في storage events
 
 
 // ========== Extract Parameters ==========
 const params = new URLSearchParams(window.location.search);
 const gameId = params.get("gameId");
 const player = params.get("player");
+const isTournament = params.get("tournament") === "true";
+
+// Define player parameter for abilities first
+const playerParam = player === "2" ? "player2" : "player1";
+
+// Initialize player name from multiple sources
 let playerName = "اللاعب";
+
+// Try to get player name from localStorage first
+try {
+  // Try player1/player2 keys
+  const storedName = localStorage.getItem(playerParam) || 
+                     localStorage.getItem(player === "2" ? "player2" : "player1");
+  if (storedName && storedName !== "اللاعب") {
+    playerName = storedName;
+    console.log(`Player name from localStorage: ${playerName}`);
+  }
+  
+  // Try gameSetupProgress
+  if (!storedName || storedName === "اللاعب") {
+    const gameSetup = localStorage.getItem('gameSetupProgress');
+    if (gameSetup) {
+      const setupData = JSON.parse(gameSetup);
+      if (setupData[playerParam]?.name) {
+        playerName = setupData[playerParam].name;
+        console.log(`Player name from gameSetupProgress: ${playerName}`);
+      }
+    }
+  }
+} catch (e) {
+  console.error('Error loading player name:', e);
+}
 
 let currentPlayer = player === "2" ? 2 : 1;
 let rounds = 11; // Default rounds
 
-// Define player parameter for abilities
-const playerParam = player === "2" ? "player2" : "player1";
+// Tournament mode setup
+if (isTournament) {
+  console.log('Tournament mode detected');
+  const currentMatchPlayers = localStorage.getItem('currentMatchPlayers');
+  const tournamentRounds = localStorage.getItem('tournamentRounds');
+  
+  if (currentMatchPlayers) {
+    const players = JSON.parse(currentMatchPlayers);
+    playerName = players[currentPlayer - 1];
+    console.log(`Tournament player ${currentPlayer}: ${playerName}`);
+  }
+  
+  if (tournamentRounds) {
+    rounds = parseInt(tournamentRounds);
+    console.log(`Tournament rounds: ${rounds}`);
+  }
+}
 
-// Define storage keys
+console.log(`✅ Final player name: ${playerName} (${playerParam})`);
+
+// ✅ تهيئة المزامنة مع Firebase
+if (gameId) {
+  syncService.initSync(gameId).then(success => {
+    if (success) {
+      console.log('✅ Firebase sync initialized for player');
+    } else {
+      console.warn('⚠️ Firebase sync failed to initialize, using localStorage only');
+    }
+  });
+}
+
+// Define storage keys - مفاتيح تخزين مستقلة لكل لاعب
 const PICKS_LOCAL_KEY = `${playerParam}Picks`;
 const ORDER_LOCAL_KEY = `${playerParam}Order`;
+const GAME_SETUP_KEY = `${playerParam}_gameSetupProgress`;
+const GAME_STATE_KEY = `${playerParam}_gameState`;
+const CURRENT_GAME_ID_KEY = `${playerParam}_currentGameId`;
+const STRATEGIC_GAME_ID_KEY = `${playerParam}_StrategicGameId`;
+const LAST_LOAD_TIME_KEY = `${playerParam}_LastLoadTime`;
+const LAST_SUBMIT_TIME_KEY = `${playerParam}_LastSubmitTime`;
 
 const instruction = document.getElementById("instruction");
 const grid = document.getElementById("cardGrid");
@@ -44,8 +116,12 @@ if (!abilityStatus) {
 }
 
 let picks = [];
+let order = [];
 let submittedOrder = null;
 let opponentName = "الخصم";
+
+// متغير لمنع التحديثات الخارجية أثناء الترتيب
+let isArranging = true;
 
 // Initialize card manager
 let cardManager = null;
@@ -85,6 +161,13 @@ function renderBadges(container, abilities, { clickable = false, onClick } = {})
     return;
   }
   
+  // ✅ تحديث سلس بدون وميض
+  const wasEmpty = container.children.length === 0;
+  if (!wasEmpty) {
+    container.style.transition = 'opacity 0.15s ease';
+    container.style.opacity = '0.7';
+  }
+  
   container.innerHTML = "";
   const list = Array.isArray(abilities) ? abilities : [];
   console.log('Rendering badges:', { list, clickable });
@@ -100,6 +183,10 @@ function renderBadges(container, abilities, { clickable = false, onClick } = {})
             ? "bg-gray-500/60 text-black/60 border-gray-600 cursor-not-allowed"
             : "bg-yellow-400 hover:bg-yellow-300 text-black border-yellow-500")
         : "bg-gray-400/70 text-black border-gray-500");
+    
+    // ✅ إضافة transition للتغيير السلس
+    el.style.transition = 'all 0.2s ease';
+    
     if (clickable) {
       if (isUsed) { 
         el.disabled = true; 
@@ -113,6 +200,13 @@ function renderBadges(container, abilities, { clickable = false, onClick } = {})
     }
     container.appendChild(el);
   });
+  
+  // ✅ إعادة الشفافية بسرعة
+  if (!wasEmpty) {
+    setTimeout(() => {
+      container.style.opacity = '1';
+    }, 50);
+  }
   
   console.log('Badges rendered successfully');
 }
@@ -178,7 +272,7 @@ async function loadGameData() {
     }
     
     // مسح البيانات القديمة إذا كانت من لعبة مختلفة
-    const currentGameId = localStorage.getItem('currentGameId');
+    const currentGameId = localStorage.getItem(CURRENT_GAME_ID_KEY);
     if (currentGameId && currentGameId !== gameId) {
       clearOldGameData();
     }
@@ -193,6 +287,11 @@ async function loadGameData() {
     playerName = playerData.name || "اللاعب";
     rounds = gameData.rounds || 11;
     
+    // ✅ حفظ gameId مع البطاقات
+    localStorage.setItem(CURRENT_GAME_ID_KEY, gameId);
+    localStorage.setItem(PICKS_LOCAL_KEY, JSON.stringify(picks));
+    console.log(`✅ تم حفظ البطاقات للعبة ${gameId}`);
+    
     // تحديث النص
     if (instruction) {
       instruction.textContent = `اللاعب ${playerName} رتب بطاقاتك`;
@@ -204,9 +303,18 @@ async function loadGameData() {
     renderCards(picks);
     renderAbilities(myAbilities);
     
-    // الاستماع للتغييرات في الوقت الفعلي
+    // الاستماع للتغييرات في الوقت الفعلي - فقط للاعب الحالي
     GameService.listenToGame(gameId, (updatedData) => {
-      updateGameData(updatedData);
+      // تحقق من أن التحديث خاص باللاعب الحالي فقط
+      const currentPlayerParam = playerParam;
+      const updatedPlayerData = updatedData[`player${player}`];
+      
+      if (updatedPlayerData) {
+        console.log(`🔄 تحديث Firebase للاعب ${currentPlayerParam} فقط`);
+        updateGameData(updatedData);
+      } else {
+        console.log(`⚠️ تجاهل تحديث Firebase - ليس للاعب الحالي ${currentPlayerParam}`);
+      }
     });
     
     console.log('Game data loaded successfully:', { playerName, picks: picks.length, myAbilities: myAbilities.length, rounds });
@@ -225,7 +333,29 @@ async function loadGameData() {
 
 // Update game data from Firebase
 function updateGameData(gameData) {
+  // 🧠 الحل النهائي المضمون: تجاهل التحديثات الخارجية أثناء الترتيب
+  if (isArranging) {
+    console.log("⏸ تجاهل تحديث Firebase أثناء ترتيب اللاعب - الحل النهائي المضمون");
+    return;
+  }
+  
+  // ✅ تحقق إضافي: تأكد من أن التحديث للعبة الحالية فقط
+  const currentGameId = localStorage.getItem(CURRENT_GAME_ID_KEY);
+  if (currentGameId && gameId && currentGameId !== gameId) {
+    console.log(`⚠️ تجاهل تحديث Firebase - لعبة مختلفة (current: ${currentGameId}, update: ${gameId})`);
+    return;
+  }
+  
+  // تحقق من أن التحديث خاص باللاعب الحالي فقط
+  const currentPlayerParam = playerParam;
   const playerData = gameData[`player${player}`];
+  
+  if (!playerData) {
+    console.log(`⚠️ تجاهل تحديث Firebase - لا توجد بيانات للاعب ${currentPlayerParam}`);
+    return;
+  }
+  
+  console.log(`🔄 تحديث بيانات اللاعب ${currentPlayerParam} من Firebase`);
   
   // تحديث rounds
   if (gameData.rounds) {
@@ -246,23 +376,26 @@ function updateGameData(gameData) {
     renderAbilities(myAbilities);
   }
   
-  // تحديث البطاقات
+  // تحديث البطاقات - فقط للاعب الحالي
   if (playerData.cards) {
     picks = playerData.cards;
     
-    // التحقق من وجود ترتيب مرسل للعبة الحالية
+    // التحقق من وجود ترتيب مرسل للعبة الحالية - فقط للاعب الحالي
     const savedOrder = JSON.parse(localStorage.getItem(ORDER_LOCAL_KEY) || "[]");
-    const currentGameId = localStorage.getItem('currentGameId');
+    const currentGameId = localStorage.getItem(CURRENT_GAME_ID_KEY);
     
+    // تحقق إضافي للتأكد من أن التحديث خاص باللاعب الحالي
     if (currentGameId && gameId && currentGameId === gameId && 
         savedOrder && savedOrder.length === picks.length) {
       submittedOrder = savedOrder.slice();
       hideOpponentPanel();
       renderCards(submittedOrder, submittedOrder);
+      console.log(`✅ تم الحفاظ على ترتيب اللاعب ${playerParam} عند تحديث البيانات`);
     } else {
       submittedOrder = null;
       renderCards(picks, null);
       loadOpponentAbilities();
+      console.log(`🔄 تم تحديث البطاقات للاعب ${playerParam} بدون ترتيب محفوظ`);
     }
   }
   
@@ -291,7 +424,23 @@ function initializeCardManager() {
   // Wait for card manager to be available
   if (typeof window.cardManager !== 'undefined') {
     cardManager = window.cardManager;
-    loadGameData(); // Use Firebase instead of loadPlayerCards
+    
+    // Tournament mode - always load tournament cards
+    if (isTournament) {
+      console.log(`🔄 تحميل بطاقات البطولة للاعب ${playerParam}`);
+      loadPlayerCards();
+      return;
+    }
+    
+    // Regular challenge mode
+    const currentGameId = localStorage.getItem(CURRENT_GAME_ID_KEY);
+    if (currentGameId && currentGameId === gameId) {
+      console.log(`🔄 اللاعب ${playerParam} محمل بالفعل للعبة ${gameId}`);
+      loadPlayerCards(); // استخدم localStorage بدلاً من Firebase لتجنب التداخل
+    } else {
+      console.log(`🆕 تحميل جديد للاعب ${playerParam} للعبة ${gameId}`);
+      loadGameData(); // Use Firebase for new games
+    }
   } else {
     // Wait a bit and try again
     setTimeout(initializeCardManager, 100);
@@ -304,12 +453,42 @@ function loadPlayerCards() {
     return;
   }
 
-  // Try to load from localStorage first (like order.js)
+  if (isTournament) {
+    console.log(`🔄 تحميل بطاقات البطولة للاعب ${playerParam}`);
+    loadTournamentCards();
+    return;
+  }
+
+  console.log(`🔄 تحميل بطاقات اللاعب ${playerParam} للعبة ${gameId}`);
+
+  // حماية إضافية: تحقق من أن هذا اللاعب لم يتم تحميله بالفعل
+  const lastLoadTime = localStorage.getItem(LAST_LOAD_TIME_KEY);
+  const currentTime = Date.now();
+  if (lastLoadTime && (currentTime - parseInt(lastLoadTime)) < 1000) {
+    console.log(`⚠️ تجاهل تحميل متكرر للاعب ${playerParam} - تم التحميل مؤخراً`);
+    return;
+  }
+  localStorage.setItem(LAST_LOAD_TIME_KEY, currentTime.toString());
+
+  // ✅ التحقق من gameId قبل تحميل البطاقات من localStorage
+  const currentGameId = localStorage.getItem(CURRENT_GAME_ID_KEY);
+  
+  // إذا كانت اللعبة مختلفة، احذف البيانات القديمة واستخدم Firebase
+  if (currentGameId && currentGameId !== gameId) {
+    console.log(`🧹 لعبة جديدة - حذف البطاقات القديمة للاعب ${playerParam}`);
+    clearOldGameData();
+    
+    // تحميل من Firebase للعبة الجديدة
+    loadGameData();
+    return;
+  }
+  
+  // Try to load from localStorage first (only if same game)
   const localPicks = JSON.parse(localStorage.getItem(PICKS_LOCAL_KEY) || "[]");
   picks = Array.isArray(localPicks) ? localPicks : [];
 
   // Get rounds from game setup and limit cards accordingly
-  const gameSetup = localStorage.getItem('gameSetupProgress');
+  const gameSetup = localStorage.getItem(GAME_SETUP_KEY);
   if (gameSetup) {
     try {
       const setupData = JSON.parse(gameSetup);
@@ -325,20 +504,27 @@ function loadPlayerCards() {
     }
   }
 
-  // Check if we have a submitted order for the CURRENT game
+  // Check if we have a submitted order for the CURRENT game - فقط للاعب الحالي
   const savedOrder = JSON.parse(localStorage.getItem(ORDER_LOCAL_KEY) || "[]");
-  const currentGameId = localStorage.getItem('currentGameId');
   
   // Also check for StrategicOrdered format (for compatibility with card.js)
   const strategicOrder = JSON.parse(localStorage.getItem(`${playerParam}StrategicOrdered`) || "[]");
   
-  // Use the most recent order available
+  // Use the most recent order available - فقط للاعب الحالي مع تحقق إضافي
   let orderToUse = null;
   if (currentGameId && gameId && currentGameId === gameId && 
       Array.isArray(savedOrder) && savedOrder.length === picks.length) {
     orderToUse = savedOrder;
+    console.log(`✅ تم العثور على ترتيب محفوظ للاعب ${playerParam}:`, orderToUse.length, 'بطاقة');
   } else if (Array.isArray(strategicOrder) && strategicOrder.length === picks.length) {
-    orderToUse = strategicOrder;
+    // تحقق إضافي للتأكد من أن الترتيب الاستراتيجي للعبة الحالية
+    const strategicGameId = localStorage.getItem(STRATEGIC_GAME_ID_KEY);
+    if (!strategicGameId || strategicGameId === gameId) {
+      orderToUse = strategicOrder;
+      console.log(`✅ تم العثور على ترتيب استراتيجي للاعب ${playerParam}:`, orderToUse.length, 'بطاقة');
+    } else {
+      console.log(`⚠️ تجاهل الترتيب الاستراتيجي - ليس للعبة الحالية (${strategicGameId} != ${gameId})`);
+    }
   }
   
   if (orderToUse) {
@@ -350,12 +536,20 @@ function loadPlayerCards() {
     // Clear old order if it's from a different game
     if (currentGameId !== gameId) {
       localStorage.removeItem(ORDER_LOCAL_KEY);
+      localStorage.removeItem(`${playerParam}StrategicOrdered`);
+      console.log(`🧹 تم مسح الترتيب القديم للاعب ${playerParam} - لعبة مختلفة`);
     }
   }
 
   if (!picks.length) {
     grid.innerHTML = `<p class="text-red-500 text-lg">لم يتم العثور على بطاقات لهذا اللاعب.</p>`;
     return;
+  }
+  
+  // ✅ حفظ gameId الحالي للتأكد من تطابقه في المستقبل
+  if (gameId) {
+    localStorage.setItem(CURRENT_GAME_ID_KEY, gameId);
+    console.log(`✅ تم تأكيد gameId: ${gameId} للاعب ${playerParam}`);
   }
 
   if (submittedOrder && submittedOrder.length === picks.length) {
@@ -364,7 +558,22 @@ function loadPlayerCards() {
     console.log('Picks on load:', picks);
     console.log('Submitted order length:', submittedOrder.length);
     console.log('Picks length:', picks.length);
+    
+    // إضافة تأثير انتقال سلس لتقليل الوميض
+    if (grid) {
+      grid.style.transition = 'opacity 0.3s ease';
+      grid.style.opacity = '0.7';
+    }
+    
     renderCards(submittedOrder, submittedOrder);
+    
+    // إعادة تعيين الشفافية بعد الانتهاء
+    setTimeout(() => {
+      if (grid) {
+        grid.style.opacity = '1';
+      }
+    }, 100);
+    
     // تحديث حالة الزر عند وجود ترتيب مرسل
     if (continueBtn) {
       continueBtn.disabled = true;
@@ -373,7 +582,20 @@ function loadPlayerCards() {
   } else {
     // Ensure picks is valid before rendering
     if (Array.isArray(picks) && picks.length > 0) {
+      // إضافة تأثير انتقال سلس لتقليل الوميض
+      if (grid) {
+        grid.style.transition = 'opacity 0.3s ease';
+        grid.style.opacity = '0.7';
+      }
+      
       renderCards(picks, null);
+      
+      // إعادة تعيين الشفافية بعد الانتهاء
+      setTimeout(() => {
+        if (grid) {
+          grid.style.opacity = '1';
+        }
+      }, 100);
     } else {
       console.warn('No valid picks found, showing empty state');
       if (grid) {
@@ -468,12 +690,12 @@ if (socket) {
   });
 }
 
-function requestUseAbility(abilityText) {
-  console.log('Requesting ability:', abilityText);
+async function requestUseAbility(abilityText) {
+  console.log('🎯 Requesting ability:', abilityText);
   if (abilityStatus) {
-    abilityStatus.textContent = "تم إرسال طلب استخدام القدرة…";
+    abilityStatus.textContent = "⏳ تم إرسال طلب استخدام القدرة…";
   }
-  const requestId = `${playerName}:${Date.now()}`;
+  const requestId = `${playerParam}_${abilityText}_${Date.now()}`;
   tempUsed.add(abilityText);
   pendingRequests.set(requestId, abilityText);
   myAbilities = (myAbilities || []).map(a => a.text === abilityText ? { ...a, used: true } : a);
@@ -481,39 +703,96 @@ function requestUseAbility(abilityText) {
     renderBadges(abilitiesWrap, myAbilities, { clickable: true, onClick: requestUseAbility });
   }
   
-  // Create ability request for host
-  const request = {
+  // Create request object
+  const newRequest = {
     id: requestId,
-    playerName: playerName,
+    requestId: requestId,
     playerParam: playerParam,
+    playerName: playerName,
     abilityText: abilityText,
-    timestamp: Date.now(),
-    status: 'pending'
+    status: 'pending',
+    timestamp: Date.now()
   };
   
-  // Save request to localStorage for host to see
+  // ✅ PRIMARY: إضافة إلى Firebase (يعمل عبر جميع الأجهزة)
   try {
-    const requests = JSON.parse(localStorage.getItem('abilityRequests') || '[]');
-    requests.push(request);
-    localStorage.setItem('abilityRequests', JSON.stringify(requests));
-    
-    // Trigger storage event for host page
-    window.dispatchEvent(new StorageEvent('storage', {
-      key: 'abilityRequests',
-      newValue: localStorage.getItem('abilityRequests'),
-      oldValue: localStorage.getItem('abilityRequests'),
-      storageArea: localStorage
-    }));
-    
-    console.log('Ability request sent to host via localStorage:', request);
-  } catch (e) {
-    console.error('Error saving ability request:', e);
+    if (syncService.isReady()) {
+      const result = await syncService.addAbilityRequest(newRequest);
+      if (result) {
+        console.log('✅ Ability request added to Firebase (cross-device):', result);
+        
+        if (abilityStatus) {
+          abilityStatus.textContent = "⏳ في انتظار موافقة المستضيف...";
+          abilityStatus.style.color = "#f59e0b";
+        }
+        
+        return; // نجح Firebase، لا حاجة للمتابعة
+      }
+    }
+  } catch (error) {
+    console.error('⚠️ Firebase error, falling back to localStorage:', error);
   }
   
-  // Also try socket if available
+  // ✅ FALLBACK: localStorage (للتوافق مع الأنظمة القديمة أو إذا فشل Firebase)
+  try {
+    const abilityRequests = JSON.parse(localStorage.getItem('abilityRequests') || '[]');
+    
+    // Check if request already exists
+    const existingIndex = abilityRequests.findIndex(req => 
+      req.playerParam === playerParam && req.abilityText === abilityText && req.status === 'pending'
+    );
+    
+    if (existingIndex === -1) {
+      // Add new request
+      abilityRequests.push(newRequest);
+      localStorage.setItem('abilityRequests', JSON.stringify(abilityRequests));
+      
+      console.log('✅ Ability request added to localStorage (fallback):', newRequest);
+      
+      // Trigger events
+      window.dispatchEvent(new StorageEvent('storage', {
+        key: 'abilityRequests',
+        newValue: localStorage.getItem('abilityRequests'),
+        oldValue: localStorage.getItem('abilityRequests'),
+        storageArea: localStorage
+      }));
+      
+      window.dispatchEvent(new CustomEvent('abilityRequestAdded', {
+        detail: newRequest
+      }));
+      
+      if (abilityStatus) {
+        abilityStatus.textContent = "⏳ في انتظار موافقة المستضيف...";
+        abilityStatus.style.color = "#f59e0b";
+      }
+      
+    } else {
+      console.log('⚠️ Request already exists for this ability');
+      if (abilityStatus) {
+        abilityStatus.textContent = "⏳ الطلب قيد المراجعة بالفعل...";
+      }
+    }
+    
+  } catch (error) {
+    console.error('❌ Error adding ability request:', error);
+    
+    // Reset the ability state if everything fails
+    tempUsed.delete(abilityText);
+    pendingRequests.delete(requestId);
+    myAbilities = (myAbilities || []).map(a => a.text === abilityText ? { ...a, used: false } : a);
+    if (abilitiesWrap) {
+      renderBadges(abilitiesWrap, myAbilities, { clickable: true, onClick: requestUseAbility });
+    }
+    if (abilityStatus) {
+      abilityStatus.textContent = "❌ تعذر إرسال الطلب. حاول مرة أخرى.";
+      abilityStatus.style.color = "#dc2626";
+    }
+  }
+  
+  // ⚠️ ALSO send via socket if available (TERTIARY METHOD for backward compatibility)
   if (socket) {
     socket.emit("requestUseAbility", { gameID, playerName, abilityText, requestId });
-    console.log('Ability request sent via socket:', { gameID, playerName, abilityText, requestId });
+    console.log('📡 Ability request sent via socket (backup):', { gameID, playerName, abilityText, requestId });
   }
 }
 
@@ -740,15 +1019,34 @@ setTimeout(() => {
   loadOpponentAbilities();
 }, 100);
 
-// Check for ability updates every 2 seconds
+// ✅ نظام مراقبة سريع للقدرات (كل 300ms للتزامن الفوري)
+let lastAbilitiesUpdateTime = localStorage.getItem('abilitiesLastUpdate') || '0';
+
 setInterval(() => {
-  loadPlayerAbilities();
-  loadOpponentAbilities();
+  // ✅ فحص إشارة التحديث أولاً (أسرع طريقة)
+  const currentUpdateTime = localStorage.getItem('abilitiesLastUpdate') || '0';
+  if (currentUpdateTime !== lastAbilitiesUpdateTime) {
+    console.log('✅ Abilities update signal detected - Immediate refresh...');
+    loadPlayerAbilities();
+    loadOpponentAbilities();
+    lastAbilitiesUpdateTime = currentUpdateTime;
+  }
+  
+  // فحص طلبات القدرات
   checkAbilityRequests();
-}, 2000);
+}, 300); // ✅ التحقق كل 300ms للتزامن فائق السرعة
 
 // Simple storage change listener like order.js
 window.addEventListener('storage', function(e) {
+  // ✅ استماع لإشارة التحديث الصريحة (أسرع طريقة)
+  if (e.key === 'abilitiesLastUpdate') {
+    console.log('⚡ Immediate abilities update signal received!');
+    lastAbilitiesUpdateTime = e.newValue || '0';
+    loadPlayerAbilities();
+    loadOpponentAbilities();
+    return; // تم المعالجة، لا حاجة للمتابعة
+  }
+  
   if (e.key && e.key.includes('Abilities')) {
     console.log(`Storage change detected: ${e.key}`);
     loadPlayerAbilities();
@@ -763,9 +1061,11 @@ window.addEventListener('storage', function(e) {
 window.addEventListener('abilityToggled', function(e) {
   try {
     const { playerParam: changedPlayerParam, abilityText, isUsed } = e.detail;
-    console.log(`Ability toggled: ${abilityText} for ${changedPlayerParam}, isUsed: ${isUsed}`);
+    console.log(`🔔 Ability toggled event: ${abilityText} for ${changedPlayerParam}, isUsed: ${isUsed}`);
 
     if (changedPlayerParam === playerParam) {
+      console.log('✅ This is for current player - Applying immediate update...');
+      
       // ✅ مزامنة فورية
       forceImmediateAbilitySync(changedPlayerParam, abilityText, isUsed);
       
@@ -773,21 +1073,46 @@ window.addEventListener('abilityToggled', function(e) {
       const abilityIndex = myAbilities.findIndex(ab => ab.text === abilityText);
       if (abilityIndex !== -1) {
         myAbilities[abilityIndex].used = isUsed;
-        console.log(`Ability "${abilityText}" set to used: ${isUsed}`);
+        console.log(`✅ Ability "${abilityText}" set to used: ${isUsed}`);
         
-        // Re-render abilities
+        // ✅ تحديث فوري في localStorage
+        const abilitiesKey = `${playerParam}Abilities`;
+        const savedAbilities = JSON.parse(localStorage.getItem(abilitiesKey) || '[]');
+        savedAbilities.forEach(ability => {
+          const text = typeof ability === 'string' ? ability : ability.text;
+          if (text === abilityText && typeof ability === 'object') {
+            ability.used = isUsed;
+          }
+        });
+        localStorage.setItem(abilitiesKey, JSON.stringify(savedAbilities));
+        
+        // Re-render abilities with visual feedback
         if (abilitiesWrap) {
+          abilitiesWrap.style.transition = 'transform 0.2s ease';
+          abilitiesWrap.style.transform = 'scale(0.98)';
+          
           renderBadges(abilitiesWrap, myAbilities, { clickable: true, onClick: requestUseAbility });
+          
+          setTimeout(() => {
+            abilitiesWrap.style.transform = 'scale(1)';
+          }, 100);
         }
         
-        // Update status message
+        // Update status message with visual feedback
         if (abilityStatus) {
           if (isUsed) {
-            abilityStatus.textContent = "القدرة مستخدمة - انتظر إعادة التفعيل من المضيف";
+            abilityStatus.textContent = "❌ القدرة مستخدمة - انتظر إعادة التفعيل";
             abilityStatus.style.color = "#ff6b35";
           } else {
-            abilityStatus.textContent = "اضغط على القدرة لطلب استخدامها. سيتم إشعار المستضيف.";
+            abilityStatus.textContent = "✅ تم إعادة تفعيل القدرة - يمكنك استخدامها الآن!";
             abilityStatus.style.color = "#32c675";
+            
+            // إعادة النص الأصلي بعد 3 ثواني
+            setTimeout(() => {
+              if (abilityStatus) {
+                abilityStatus.textContent = "اضغط على القدرة لطلب استخدامها.";
+              }
+            }, 3000);
           }
         }
       }
@@ -804,11 +1129,11 @@ window.addEventListener('message', function(e) {
   try {
     if (e.data && e.data.type === 'ABILITY_TOGGLED') {
       const { playerParam: changedPlayerParam, abilityText, isUsed } = e.data;
-      console.log(`PostMessage: Ability toggled: ${abilityText} for ${changedPlayerParam}, isUsed: ${isUsed}`);
+      console.log(`📬 PostMessage: Ability toggled: ${abilityText} for ${changedPlayerParam}, isUsed: ${isUsed}`);
       
       // Check if this change affects the current player
       if (changedPlayerParam === playerParam) {
-        console.log(`Updating abilities for current player: ${playerParam}`);
+        console.log(`✅ Updating abilities for current player: ${playerParam}`);
         
         // Update myAbilities
         if (myAbilities) {
@@ -819,6 +1144,17 @@ window.addEventListener('message', function(e) {
           });
         }
         
+        // ✅ تحديث فوري في localStorage
+        const abilitiesKey = `${playerParam}Abilities`;
+        const savedAbilities = JSON.parse(localStorage.getItem(abilitiesKey) || '[]');
+        savedAbilities.forEach(ability => {
+          const text = typeof ability === 'string' ? ability : ability.text;
+          if (text === abilityText && typeof ability === 'object') {
+            ability.used = isUsed;
+          }
+        });
+        localStorage.setItem(abilitiesKey, JSON.stringify(savedAbilities));
+        
         // Update tempUsed
         if (isUsed) {
           tempUsed.add(abilityText);
@@ -826,9 +1162,19 @@ window.addEventListener('message', function(e) {
           tempUsed.delete(abilityText);
         }
         
-        // Force immediate re-render
-        loadPlayerAbilities();
-        console.log(`Abilities updated for ${playerParam}`);
+        // ✅ تحديث بصري فوري مع تأثير
+        if (abilitiesWrap) {
+          abilitiesWrap.style.transition = 'transform 0.2s ease';
+          abilitiesWrap.style.transform = 'scale(0.98)';
+          
+          renderBadges(abilitiesWrap, myAbilities, { clickable: true, onClick: requestUseAbility });
+          
+          setTimeout(() => {
+            abilitiesWrap.style.transform = 'scale(1)';
+          }, 100);
+        }
+        
+        console.log(`✅ Abilities updated visually for ${playerParam}`);
       }
       
       // Always re-render opponent abilities
@@ -974,12 +1320,23 @@ let isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.
 /* ================== Cards UI ================== */
 /* ============ Unique-number dropdown logic (from order.js) ============ */
 function buildOptions(select, N, forbiddenSet, currentValue) {
+  // حفظ القيمة الحالية قبل التعديل
+  const oldValue = select.value;
+  
+  // إضافة تأثير انتقال سلس لتقليل الوميض
+  select.style.transition = 'opacity 0.1s ease';
+  select.style.opacity = '0.8';
+  
+  // مسح المحتوى الحالي
   select.innerHTML = "";
+  
+  // إضافة الخيار الافتراضي
   const def = document.createElement("option"); 
   def.value = ""; 
   def.textContent = "-- الترتيب --"; 
   select.appendChild(def);
   
+  // إضافة الخيارات المتاحة
   for (let i = 1; i <= N; i++) {
     if (!forbiddenSet.has(String(i)) || String(i) === String(currentValue)) {
       const opt = document.createElement("option");
@@ -989,11 +1346,19 @@ function buildOptions(select, N, forbiddenSet, currentValue) {
     }
   }
   
+  // استعادة القيمة إذا كانت متاحة
   if (currentValue && Array.from(select.options).some(o => o.value === String(currentValue))) {
     select.value = String(currentValue);
+  } else if (oldValue && Array.from(select.options).some(o => o.value === oldValue)) {
+    select.value = oldValue;
   } else {
     select.value = "";
   }
+  
+  // إعادة تعيين الشفافية بعد الانتهاء
+  setTimeout(() => {
+    select.style.opacity = '1';
+  }, 50);
 }
 
 function snapshotChosen(selects) {
@@ -1003,9 +1368,23 @@ function snapshotChosen(selects) {
 }
 
 function refreshAllSelects(selects, N) {
+  // إضافة تأثير انتقال سلس لتقليل الوميض
+  selects.forEach(select => {
+    select.style.transition = 'opacity 0.1s ease';
+    select.style.opacity = '0.8';
+  });
+  
   const { chosenSet, values } = snapshotChosen(selects);
   selects.forEach((sel, idx) => buildOptions(sel, N, chosenSet, values[idx]));
   const allChosen = values.filter(Boolean).length === N && chosenSet.size === N;
+  
+  // إعادة تعيين الشفافية بعد الانتهاء
+  setTimeout(() => {
+    selects.forEach(select => {
+      select.style.opacity = '1';
+    });
+  }, 50);
+  
   if (continueBtn) {
     continueBtn.classList.toggle("hidden", !allChosen);
     continueBtn.disabled = !allChosen;
@@ -1015,7 +1394,13 @@ function refreshAllSelects(selects, N) {
 function renderCards(pickList, lockedOrder = null) {
   if (!grid) return;
   
+  // إضافة تأثير انتقال سلس لتقليل الوميض
+  grid.style.opacity = '0.7';
+  grid.style.transition = 'opacity 0.2s ease';
+  
+  // مسح المحتوى الحالي
   grid.innerHTML = "";
+  
   const display = (Array.isArray(lockedOrder) && lockedOrder.length === pickList.length) ? lockedOrder : pickList;
   const selects = [];
   
@@ -1057,6 +1442,11 @@ function renderCards(pickList, lockedOrder = null) {
     selects.push(select);
   });
 
+  // إعادة تعيين الشفافية بعد الانتهاء
+  setTimeout(() => {
+    grid.style.opacity = '1';
+  }, 50);
+
   if (Array.isArray(lockedOrder) && lockedOrder.length === pickList.length) {
     if (continueBtn) {
       continueBtn.classList.add("hidden");
@@ -1086,6 +1476,29 @@ async function submitPicks() {
   if (!picks.length) return;
 
   if (Array.isArray(submittedOrder) && submittedOrder.length === picks.length) {
+    console.log(`⚠️ اللاعب ${playerParam} حاول إرسال ترتيب مرسل بالفعل`);
+    return;
+  }
+
+  // Tournament mode - skip authentication
+  if (isTournament) {
+    console.log('Tournament mode - submitting picks without authentication');
+    await submitTournamentPicks();
+    return;
+  }
+
+  // Regular challenge mode - require authentication
+  const user = auth.currentUser;
+  if (!user) {
+    alert("الرجاء تسجيل الدخول أولاً");
+    return;
+  }
+
+  // حماية إضافية: تحقق من أن هذا اللاعب لم يرسل الترتيب مؤخراً
+  const lastSubmitTime = localStorage.getItem(LAST_SUBMIT_TIME_KEY);
+  const currentTime = Date.now();
+  if (lastSubmitTime && (currentTime - parseInt(lastSubmitTime)) < 2000) {
+    console.log(`⚠️ تجاهل إرسال متكرر للاعب ${playerParam} - تم الإرسال مؤخراً`);
     return;
   }
 
@@ -1142,7 +1555,8 @@ async function submitPicks() {
       continueBtn.textContent = 'جاري إرسال الترتيب...';
     }
     
-    // Store submitted order in localStorage (following order.js pattern)
+    // Store submitted order in localStorage (following order.js pattern) - فقط للاعب الحالي
+    console.log(`💾 حفظ ترتيب اللاعب ${playerParam} في localStorage`);
     localStorage.setItem(ORDER_LOCAL_KEY, JSON.stringify(ordered));
     
     // Store card arrangement for final-setup.html to detect (following order.js pattern)
@@ -1150,8 +1564,8 @@ async function submitPicks() {
     localStorage.setItem(`${playerKey}CardArrangement`, JSON.stringify(ordered));
     localStorage.setItem(`${playerKey}ArrangementCompleted`, 'true');
     
-    // Also store in the format expected by final-setup.html
-    const currentGameSetup = JSON.parse(localStorage.getItem('gameSetupProgress') || '{}');
+    // Also store in the format expected by final-setup.html - فقط للاعب الحالي
+    const currentGameSetup = JSON.parse(localStorage.getItem(GAME_SETUP_KEY) || '{}');
     const updatedGameSetup = {
       ...currentGameSetup,
       [playerKey]: {
@@ -1160,10 +1574,11 @@ async function submitPicks() {
         arrangementCompleted: true
       }
     };
-    localStorage.setItem('gameSetupProgress', JSON.stringify(updatedGameSetup));
+    // تحديث فقط بيانات اللاعب الحالي دون التأثير على اللاعب الآخر
+    localStorage.setItem(GAME_SETUP_KEY, JSON.stringify(updatedGameSetup));
     
     // Store in gameState format as well
-    const currentGameState = JSON.parse(localStorage.getItem('gameState') || '{}');
+    const currentGameState = JSON.parse(localStorage.getItem(GAME_STATE_KEY) || '{}');
     const updatedGameState = {
       ...currentGameState,
       [playerKey]: {
@@ -1172,10 +1587,12 @@ async function submitPicks() {
         arrangementCompleted: true
       }
     };
-    localStorage.setItem('gameState', JSON.stringify(updatedGameState));
+    localStorage.setItem(GAME_STATE_KEY, JSON.stringify(updatedGameState));
     
     // Store in StrategicOrdered format (for compatibility with card.js)
     localStorage.setItem(`${playerParam}StrategicOrdered`, JSON.stringify(ordered));
+    localStorage.setItem(STRATEGIC_GAME_ID_KEY, gameId || 'default');
+    localStorage.setItem(LAST_SUBMIT_TIME_KEY, Date.now().toString());
     
     // Dispatch custom event for host to listen (following order.js pattern)
     window.dispatchEvent(new CustomEvent('orderSubmitted', { 
@@ -1186,20 +1603,20 @@ async function submitPicks() {
     if (gameId) {
       try {
         await GameService.saveCardOrder(gameId, player, ordered);
-        localStorage.setItem('currentGameId', gameId);
+        localStorage.setItem(CURRENT_GAME_ID_KEY, gameId);
       } catch (e) {
         console.warn('Firebase save failed, but localStorage saved:', e);
       }
     }
     
-    // Update submittedOrder immediately (like order.js)
+    // Update submittedOrder immediately (like order.js) - فقط للاعب الحالي
     submittedOrder = ordered.slice();
     
     hideOpponentPanel();
     
     // Re-render cards immediately with submitted order (like order.js)
     // Ensure the order is displayed correctly
-    console.log('Rendering submitted order:', submittedOrder);
+    console.log(`🎯 عرض ترتيب اللاعب ${playerParam}:`, submittedOrder);
     console.log('Submitted order length:', submittedOrder.length);
     console.log('Picks length:', picks.length);
     renderCards(submittedOrder, submittedOrder);
@@ -1230,9 +1647,17 @@ async function submitPicks() {
     
     // Success - no alert message needed
     
+    // 🧠 الحل النهائي المضمون: إعادة تعيين isArranging بعد إرسال الترتيب
+    isArranging = false;
+    console.log("✅ تم إرسال الترتيب - السماح بالتحديثات الخارجية مرة أخرى");
+    
   } catch (error) {
     console.error('Error saving card order:', error);
     alert('حدث خطأ في حفظ ترتيب البطاقات: ' + error.message);
+    
+    // 🧠 الحل النهائي المضمون: إعادة تعيين isArranging في حالة الخطأ أيضاً
+    isArranging = false;
+    console.log("❌ حدث خطأ - السماح بالتحديثات الخارجية مرة أخرى");
     
     // إعادة تفعيل الزر
     if (continueBtn) {
@@ -1277,8 +1702,10 @@ window.getArrangementStatus = function() {
   };
 };
 
-// Function to reset arrangement (for new games)
+// Function to reset arrangement (for new games) - فقط للاعب الحالي
 window.resetArrangement = function() {
+  console.log(`🔄 إعادة تعيين ترتيب اللاعب ${playerParam} فقط`);
+  
   submittedOrder = null;
   picks = [];
   if (grid) {
@@ -1290,13 +1717,18 @@ window.resetArrangement = function() {
     continueBtn.textContent = 'متابعة';
   }
   
-  // Clear localStorage
+  // 🧠 الحل النهائي المضمون: إعادة تعيين isArranging عند إعادة تعيين الترتيب
+  isArranging = true;
+  console.log("🔄 إعادة تعيين isArranging = true للعبة جديدة");
+  
+  // Clear localStorage - فقط للاعب الحالي
   localStorage.removeItem(ORDER_LOCAL_KEY);
   localStorage.removeItem(`${playerParam}StrategicOrdered`);
+  localStorage.removeItem(STRATEGIC_GAME_ID_KEY);
   localStorage.removeItem(`${playerParam}CardArrangement`);
   localStorage.removeItem(`${playerParam}ArrangementCompleted`);
   
-  console.log('Arrangement reset for', playerParam);
+  console.log(`✅ تم إعادة تعيين ترتيب اللاعب ${playerParam} فقط`);
 };
 
 // Clear used abilities for new game
@@ -1339,17 +1771,24 @@ function clearUsedAbilities() {
 // Clear old game data when starting a new game
 function clearOldGameData() {
   try {
-    // Clear old card orders
-    localStorage.removeItem('player1Order');
-    localStorage.removeItem('player2Order');
+    // Clear old card orders - فقط للاعب الحالي
+    localStorage.removeItem(ORDER_LOCAL_KEY);
+    localStorage.removeItem(`${playerParam}StrategicOrdered`);
+    localStorage.removeItem(STRATEGIC_GAME_ID_KEY);
+    localStorage.removeItem(LAST_LOAD_TIME_KEY);
+    localStorage.removeItem(LAST_SUBMIT_TIME_KEY);
     
     // Clear old game ID
-    localStorage.removeItem('currentGameId');
+    localStorage.removeItem(CURRENT_GAME_ID_KEY);
     
     // Reset submitted order
     submittedOrder = null;
     
-    console.log('Cleared old game data');
+    // 🧠 الحل النهائي المضمون: إعادة تعيين isArranging عند مسح البيانات القديمة
+    isArranging = true;
+    console.log("🔄 إعادة تعيين isArranging = true عند مسح البيانات القديمة");
+    
+    console.log(`🧹 تم مسح البيانات القديمة للاعب ${playerParam}`);
   } catch (error) {
     console.error('Error clearing old game data:', error);
   }
@@ -1357,6 +1796,13 @@ function clearOldGameData() {
 
 // Initialize card manager when page loads
 document.addEventListener('DOMContentLoaded', function() {
+  // Show home button in tournament mode
+  const isTournament = localStorage.getItem('currentMatchId') !== null;
+  const homeBtn = document.getElementById('homeBtn');
+  if (homeBtn && isTournament) {
+    homeBtn.style.display = 'flex';
+  }
+  
   initializeCardManager();
   
   // Check for ability requests every 1 second for faster response
@@ -1526,12 +1972,39 @@ document.addEventListener('DOMContentLoaded', function() {
   }, 1000);
 });
 
-// ✅ مزامنة فورية لتغييرات ترتيب البطاقات والاختيارات
+// ✅ مزامنة فورية لتغييرات ترتيب البطاقات والاختيارات - فقط للاعب الحالي
 window.addEventListener('storage', function(e) {
   try {
+    // فقط استمع للتغييرات الخاصة باللاعب الحالي
     if (e.key === ORDER_LOCAL_KEY || e.key === PICKS_LOCAL_KEY) {
-      console.log(`🔄 فوراً: تغيير في ${e.key}, إعادة تحميل البطاقات`);
-      loadPlayerCards();
+      console.log(`🔄 فوراً: تغيير في ${e.key} للاعب الحالي ${playerParam}, إعادة تحميل البطاقات`);
+      
+      // تحقق إضافي للتأكد من أن التغيير خاص باللاعب الحالي
+      const currentGameId = localStorage.getItem(CURRENT_GAME_ID_KEY);
+      if (currentGameId && gameId && currentGameId === gameId) {
+        // تأخير صغير لتجنب التداخل
+        setTimeout(() => {
+          loadPlayerCards();
+        }, 100);
+      } else {
+        console.log(`⚠️ تجاهل التغيير في ${e.key} - ليس للعبة الحالية`);
+      }
+    }
+    
+    // تجاهل أي تغييرات أخرى في localStorage - حماية شاملة
+    if (e.key && (e.key.includes('StrategicOrdered') || e.key.includes('CardArrangement') || e.key.includes('ArrangementCompleted'))) {
+      // تحقق من أن التغيير ليس للاعب الحالي
+      if (!e.key.includes(playerParam)) {
+        console.log(`🚫 تجاهل التغيير في ${e.key} - ليس للاعب الحالي ${playerParam}`);
+        return;
+      }
+    }
+    
+    // تجاهل أي تغييرات في مفاتيح اللاعب الآخر
+    const otherPlayerParam = playerParam === 'player1' ? 'player2' : 'player1';
+    if (e.key && e.key.includes(otherPlayerParam)) {
+      console.log(`🚫 تجاهل التغيير في ${e.key} - للاعب الآخر ${otherPlayerParam}`);
+      return;
     }
   } catch (err) {
     console.error("Error in immediate picks/order sync:", err);
@@ -1852,8 +2325,289 @@ function showToast(message, type = 'info') {
   }
 }
 
+// Tournament mode card loading - متطابق مع التحدي العادي
+function loadTournamentCards() {
+  console.log('🏆 Loading tournament cards - UNIFIED SYSTEM...');
+  
+  // Load cards from localStorage - البطولة تستخدم StrategicPicks
+  const picksKey = `${playerParam}StrategicPicks`;
+  const localPicks = JSON.parse(localStorage.getItem(picksKey) || "[]");
+  picks = Array.isArray(localPicks) ? localPicks : [];
+  
+  // حفظ في PICKS_LOCAL_KEY أيضاً للتوافق
+  if (picks.length > 0) {
+    localStorage.setItem(PICKS_LOCAL_KEY, JSON.stringify(picks));
+  }
+  
+  console.log(`Tournament picks loaded for ${playerParam}:`, picks.length, 'cards');
+  
+  // If no picks found, show error message
+  if (picks.length === 0) {
+    console.error('No tournament picks found!');
+    if (instruction) {
+      instruction.innerText = 'لم يتم العثور على البطاقات. يرجى العودة لاختيار البطاقات.';
+    }
+    if (grid) {
+      grid.innerHTML = '<div style="color:#fff;padding:20px;text-align:center;">لم يتم العثور على البطاقات</div>';
+    }
+    return;
+  }
+  
+  // Limit to tournament rounds
+  if (picks.length > rounds) {
+    picks = picks.slice(0, rounds);
+    console.log(`Limited to ${rounds} cards for tournament rounds`);
+  }
+  
+  // Check if we have a submitted order for the CURRENT tournament - نفس النظام
+  const savedOrder = JSON.parse(localStorage.getItem(ORDER_LOCAL_KEY) || "[]");
+  const strategicOrder = JSON.parse(localStorage.getItem(`${playerParam}StrategicOrdered`) || "[]");
+  
+  // Use the most recent order available
+  let orderToUse = null;
+  if (Array.isArray(savedOrder) && savedOrder.length === picks.length) {
+    orderToUse = savedOrder;
+    console.log(`✅ Found saved order for tournament ${playerParam}:`, orderToUse.length, 'cards');
+  } else if (Array.isArray(strategicOrder) && strategicOrder.length === picks.length) {
+    orderToUse = strategicOrder;
+    console.log(`✅ Found strategic order for tournament ${playerParam}:`, orderToUse.length, 'cards');
+  }
+  
+  if (orderToUse) {
+    submittedOrder = orderToUse.slice();
+    picks = orderToUse.slice(); // Update picks to match the ordered arrangement
+    console.log('Loaded existing tournament order:', submittedOrder);
+    hideOpponentPanel();
+    renderCards(submittedOrder, submittedOrder);
+    
+    // Update button state
+    if (continueBtn) {
+      continueBtn.disabled = true;
+      continueBtn.textContent = '✅ تم إرسال الترتيب';
+    }
+  } else {
+    submittedOrder = null;
+    renderCards(picks, null);
+    loadOpponentAbilities();
+    
+    // Reset button state
+    if (continueBtn) {
+      continueBtn.disabled = false;
+      continueBtn.textContent = 'متابعة';
+    }
+  }
+  
+  // Update instruction
+  if (instruction) {
+    instruction.innerText = `${playerName} رتب بطاقاتك (${rounds} جولة)`;
+  }
+  
+  // Load player abilities
+  loadPlayerAbilities();
+  
+  // Show tournament indicator
+  showTournamentIndicator();
+}
+
+function showTournamentIndicator() {
+  const header = document.querySelector('.game-header');
+  if (header && !document.getElementById('tournament-indicator')) {
+    const indicator = document.createElement('div');
+    indicator.id = 'tournament-indicator';
+    indicator.style.cssText = `
+      font-size: 48px;
+      text-align: center;
+      margin-bottom: 10px;
+      filter: drop-shadow(0 2px 8px rgba(255, 152, 0, 0.3));
+    `;
+    indicator.textContent = '🏆';
+    header.appendChild(indicator);
+  }
+}
+
+// Tournament mode submit function - متطابق تماماً مع التحدي العادي
+async function submitTournamentPicks() {
+  console.log('🏆 Submitting tournament picks - UNIFIED SYSTEM...');
+  
+  if (!picks.length) return;
+
+  if (Array.isArray(submittedOrder) && submittedOrder.length === picks.length) {
+    console.log(`⚠️ اللاعب ${playerParam} حاول إرسال ترتيب مرسل بالفعل`);
+    return;
+  }
+
+  // حماية إضافية: تحقق من أن هذا اللاعب لم يرسل الترتيب مؤخراً
+  const lastSubmitTime = localStorage.getItem(LAST_SUBMIT_TIME_KEY);
+  const currentTime = Date.now();
+  if (lastSubmitTime && (currentTime - parseInt(lastSubmitTime)) < 2000) {
+    console.log(`⚠️ تجاهل إرسال متكرر للاعب ${playerParam} - تم الإرسال مؤخراً`);
+    return;
+  }
+
+  // Process ordering based on device type - نفس المنطق بالضبط
+  let ordered = [];
+  
+  if (isMobile) {
+    // For mobile, use dropdown selection (same as desktop for consistency)
+    const dropdowns = document.querySelectorAll(".orderSelect");
+    const values = dropdowns.length
+      ? Array.from(dropdowns).map((s) => parseInt(s.value, 10))
+      : [];
+
+    const inRange = values.every(v => Number.isInteger(v) && v >= 1 && v <= picks.length);
+    if (!inRange || new Set(values).size !== picks.length) {
+      alert("يرجى ترتيب كل البطاقات بدون تكرار وضمن النطاق الصحيح.");
+      return;
+    }
+
+    // Create ordered array based on dropdown selections
+    ordered = new Array(picks.length);
+    for (let i = 0; i < values.length; i++) {
+      const orderIndex = values[i] - 1;
+      ordered[orderIndex] = picks[i];
+      console.log(`Card ${i + 1} (${picks[i]}) placed at position ${orderIndex + 1}`);
+    }
+    console.log('Final ordered array:', ordered);
+  } else {
+    // For desktop dropdown selection, validate and process dropdowns
+    const dropdowns = document.querySelectorAll(".orderSelect");
+    const values = dropdowns.length
+      ? Array.from(dropdowns).map((s) => parseInt(s.value, 10))
+      : [];
+
+    const inRange = values.every(v => Number.isInteger(v) && v >= 1 && v <= picks.length);
+    if (!inRange || new Set(values).size !== picks.length) {
+      alert("يرجى ترتيب كل البطاقات بدون تكرار وضمن النطاق الصحيح.");
+      return;
+    }
+
+    ordered = new Array(picks.length);
+    for (let i = 0; i < values.length; i++) {
+      const orderIndex = values[i] - 1;
+      ordered[orderIndex] = picks[i];
+      console.log(`Card ${i + 1} (${picks[i]}) placed at position ${orderIndex + 1}`);
+    }
+    console.log('Final ordered array (desktop):', ordered);
+  }
+
+  try {
+    // إظهار loading
+    if (continueBtn) {
+      continueBtn.disabled = true;
+      continueBtn.textContent = 'جاري إرسال الترتيب...';
+    }
+    
+    // Store submitted order in localStorage (following same pattern as challenge mode)
+    console.log(`💾 حفظ ترتيب البطولة للاعب ${playerParam} في localStorage`);
+    localStorage.setItem(ORDER_LOCAL_KEY, JSON.stringify(ordered));
+    
+    // Store card arrangement for card.html to detect (following same pattern)
+    const playerKey = currentPlayer === 1 ? 'player1' : 'player2';
+    localStorage.setItem(`${playerKey}CardArrangement`, JSON.stringify(ordered));
+    localStorage.setItem(`${playerKey}ArrangementCompleted`, 'true');
+    
+    // Also store in the format expected by card.html
+    const currentGameSetup = JSON.parse(localStorage.getItem(GAME_SETUP_KEY) || '{}');
+    const updatedGameSetup = {
+      ...currentGameSetup,
+      [playerKey]: {
+        ...currentGameSetup[playerKey],
+        selectedCards: ordered,
+        arrangementCompleted: true
+      }
+    };
+    localStorage.setItem(GAME_SETUP_KEY, JSON.stringify(updatedGameSetup));
+    
+    // Store in gameState format as well
+    const currentGameState = JSON.parse(localStorage.getItem(GAME_STATE_KEY) || '{}');
+    const updatedGameState = {
+      ...currentGameState,
+      [playerKey]: {
+        ...currentGameState[playerKey],
+        selectedCards: ordered,
+        arrangementCompleted: true
+      }
+    };
+    localStorage.setItem(GAME_STATE_KEY, JSON.stringify(updatedGameState));
+    
+    // Store in StrategicOrdered format (for compatibility with card.js)
+    localStorage.setItem(`${playerParam}StrategicOrdered`, JSON.stringify(ordered));
+    localStorage.setItem(LAST_SUBMIT_TIME_KEY, Date.now().toString());
+    
+    // Dispatch custom event for host to listen (same pattern as challenge)
+    window.dispatchEvent(new CustomEvent('orderSubmitted', { 
+      detail: { playerName, ordered, isTournament: true } 
+    }));
+    
+    // ✅ إرسال إشعار عبر localStorage لضمان وصول التحديث بين النوافذ
+    const notificationKey = `orderSubmitted_${playerParam}_${Date.now()}`;
+    localStorage.setItem(notificationKey, JSON.stringify({
+      playerParam,
+      playerName,
+      ordered: ordered.length,
+      timestamp: Date.now(),
+      isTournament: true
+    }));
+    
+    // حذف الإشعار بعد ثانية (للتنظيف)
+    setTimeout(() => {
+      localStorage.removeItem(notificationKey);
+    }, 1000);
+    
+    // Update submittedOrder immediately
+    submittedOrder = ordered.slice();
+    
+    hideOpponentPanel();
+    
+    // Re-render cards immediately with submitted order
+    console.log(`🎯 عرض ترتيب البطولة للاعب ${playerParam}:`, submittedOrder);
+    renderCards(submittedOrder, submittedOrder);
+    
+    // Update button state
+    if (continueBtn) {
+      continueBtn.disabled = true;
+      continueBtn.textContent = '✅ تم إرسال الترتيب';
+      continueBtn.classList.remove('hidden');
+    }
+    
+    // Hide mobile instructions after submission
+    const mobileInstructions = document.querySelector('.mobile-instructions');
+    if (mobileInstructions) {
+      mobileInstructions.remove();
+    }
+    
+    // Show success message
+    console.log('Tournament order submitted successfully:', ordered);
+    showToast('تم حفظ ترتيب البطاقات بنجاح!', 'success');
+    
+    // Reset isArranging flag
+    isArranging = false;
+    console.log("✅ تم إرسال ترتيب البطولة - السماح بالتحديثات الخارجية مرة أخرى");
+    
+  } catch (error) {
+    console.error('Error saving tournament card order:', error);
+    alert('حدث خطأ في حفظ ترتيب البطاقات: ' + error.message);
+    
+    // Reset isArranging flag on error
+    isArranging = false;
+    console.log("❌ حدث خطأ في البطولة - السماح بالتحديثات الخارجية مرة أخرى");
+    
+    // إعادة تفعيل الزر
+    if (continueBtn) {
+      continueBtn.disabled = false;
+      continueBtn.textContent = 'متابعة';
+    }
+  }
+}
+
+// الدالتان updateSubmitButton و checkTournamentReady تم دمجهما في submitTournamentPicks
+
 // Make functions available globally
 window.submitPicks = submitPicks;
 window.clearOldGameData = clearOldGameData;
 window.clearUsedAbilities = clearUsedAbilities;
 window.openBattleView = openBattleView;
+window.loadTournamentCards = loadTournamentCards;
+window.submitTournamentPicks = submitTournamentPicks;
+
+
