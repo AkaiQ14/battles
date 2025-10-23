@@ -857,3 +857,4 @@ class CardManager {
 
 // Create global instance
 window.cardManager = new CardManager();
+

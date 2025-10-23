@@ -32,20 +32,20 @@ let voiceSystem = {
     const legendaryPatterns = [
       'aizen', 'AizenVoCrowCard', 'Akai', 'AllForOneCard', 'AyanokojiCard', 
       // Removed: 'Asta', 
-      'Beerus-card', 'Beru', 'CellCard',
+      'Beru', 'Cell',
       'Dio', 'ErenCard', 'Fubuki', 'GinCard', 'Giyuu', 'Gogeta', 'GohanBeastCard', 'GojoCard', 
       // Removed: 'Goku UI', 
-      'Hashirama', 'Hawks', 'Hinata', 'Hisoka', 'jiraya', 
+      'Hashirama', 'Hawks', 'Hinata', 'Hisoka', 'jiraya', 'Riboku', 'Lelouch', 'Utsuro',
       // Changed: 'joker' to 'Joker'
       'Joker', 'KaidoCard', 'KaitoKid', 'Kanki',
-      'killua', 'law', 'Lelouch', 'LuffyGear5', 'madara', 'MeruemCard', 'naruto', 'Neiji', 'NietroCard', 'obito',
-      'QG14', 'queen', 'SakamotoCard', 'shikamaru', 'ShanksCard', 'SilverCard', 'smith', 'UmibozoCard',
+      'law', 'Lelouch', 'LuffyGear5', 'madara', 'MeruemCard', 'naruto', 'Neiji', 'NietroCard', 'obito',
+      'QG14', 'queen', 'Sakamoto', 'shikamaru', 'ShanksCard', 'SilverCard', 'smith', 'UmibozoCard',
       // Removed: 'Vegetto', 
       'whitebeard', 'zoro', 'Zenitsu', 'ZenoCard', 'RockLee', 'AlocardCard', 'alocard', 'alucard', 'AloCard', // إضافة جميع الأسماء المحتملة
       // New voice files added
-      'All-For-One', 'Goku Black', 'Yoriichi', 
+      'All-For-One', 'Goku Black', 'Yoriichi', 'Sanji', 'Bakugo', 'Itachi', 'Meliodas', 'AllMight', 'Roger', 'Yhwach', 'Midoriya',
       // Additional new voices
-      'Goku-SSJ4', 'Goku-UI', 'Rengoku', 'Beerus', 
+      'Goku-SSJ4', 'Goku-UI', 'Rengoku', 'Beerus', 'Lecht', 'zabuza', 'Ranpo', 
       'Goku-SSJG', 'Goku-SSJB', 'Gogeta', 'Vegito-Blue'
     ];
     
@@ -79,9 +79,11 @@ let voiceSystem = {
       'AizenVoCrowCard': 'AizenVoCrowCard',
       'Akai': 'Akai',
       'AllForOneCard': 'AllForOneCard',
+      'AllMight': 'AllMight',
       'AyanokojiCard': 'AyanokojiCard',
       'Beru': 'Beru',
-      'CellCard': 'CellCard',
+      'Bakugo': 'Bakugo',
+      'Cell': 'Cell',
       'Dio': 'Dio',
       'ErenCard': 'ErenCard',
       'Fubuki': 'Fubuki',
@@ -94,28 +96,34 @@ let voiceSystem = {
       'Hawks': 'Hawks',
       'Hinata': 'Hinata',
       'Hisoka': 'Hisoka',
+      'Itachi': 'Itachi',
       'jiraya': 'jiraya',
       // Changed: 'joker': 'joker' to 'Joker': 'Joker'
       'Joker': 'Joker',
       'KaidoCard': 'KaidoCard',
       'KaitoKid': 'KaitoKid',
       'Kanki': 'Kanki',
-      'killua': 'killua',
       'law': 'law',
       'Lelouch': 'Lelouch',
       'LuffyGear5': 'LuffyGear5',
       'madara': 'madara',
       'MeruemCard': 'MeruemCard',
+      'Meliodas': 'Meliodas',
+      'Midoriya': 'Midoriya',
       'naruto': 'naruto',
       'NietroCard': 'NietroCard',
       'obito': 'obito',
       'QG14': 'QG14',
       'queen': 'queen',
-      'SakamotoCard': 'SakamotoCard',
+      'Ranpo': 'Ranpo',
+      'Riboku': 'Riboku',
+      'Sakamoto': 'Sakamoto',
+      'Sanji': 'Sanji',
       'shikamaru': 'shikamaru',
       'ShanksCard': 'ShanksCard',
       'SilverCard': 'SilverCard',
       'UmibozoCard': 'UmibozoCard',
+      'Utsuro': 'Utsuro',
       'whitebeard': 'whitebeard',
       'zabuza': 'zabuza',
       'zoro': 'Zoro',
@@ -125,6 +133,7 @@ let voiceSystem = {
       'Neiji': 'Neiji',
       'RockLee': 'RockLee',
       'rocklee': 'RockLee',
+      'Roger': 'Roger',
       // AlocardCard support
       'AlocardCard': 'AlocardCard',
       'alocardcard': 'AlocardCard',
@@ -136,6 +145,8 @@ let voiceSystem = {
       'All-For-One': 'All-For-One',
       'Goku Black': 'Goku Black',
       'Yoriichi': 'Yoriichi',
+      'Yhwach': 'Yhwach',
+      'zabuza': 'zabuza',
       // Additional new voices
       'Goku-SSJ4': 'Goku-SSJ4',
       'Goku-UI': 'Goku-UI',
@@ -144,6 +155,7 @@ let voiceSystem = {
       'Goku-SSJG': 'Goku-SSJG',
       'Goku-SSJB': 'Goku-SSJB',
       'Gogeta': 'Gogeta',
+      'Lecht': 'Lecht',
       'Vegito-Blue': 'Vegito-Blue'
     };
     

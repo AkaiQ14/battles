@@ -8,196 +8,44 @@ let gameData = {};
 // Load game data from localStorage
 function loadGameData() {
   try {
-    // Check if this is a tournament match
-    const currentMatchPlayers = localStorage.getItem('currentMatchPlayers');
-    const currentMatchId = localStorage.getItem('currentMatchId');
-    const tournamentRounds = localStorage.getItem('tournamentRounds');
-    
-    if (currentMatchPlayers && currentMatchId) {
-      // Tournament mode
-      const players = JSON.parse(currentMatchPlayers);
-      gameData = {
-        player1: { name: players[0] },
-        player2: { name: players[1] },
-        rounds: tournamentRounds ? parseInt(tournamentRounds) : 11,
-        isTournament: true,
-        matchId: currentMatchId
-      };
-      console.log('Loaded tournament game data:', gameData);
-    } else {
-      // Regular challenge mode
-      const setupData = localStorage.getItem('gameSetupProgress');
-      if (setupData) {
-        gameData = JSON.parse(setupData);
-        console.log('Loaded challenge game data:', gameData);
-        
-        // Validate game data structure
-        if (!gameData.player1 && !gameData.player1Name) {
-          console.warn('Player 1 data not found in game setup');
-        }
-        if (!gameData.player2 && !gameData.player2Name) {
-          console.warn('Player 2 data not found in game setup');
-        }
-        if (!gameData.rounds) {
-          console.warn('Rounds not specified, using default value');
-          gameData.rounds = 11;
-        }
-      } else {
-        console.warn('No game setup data found, using defaults');
-        gameData = {
-          player1: { name: 'اللاعب الأول' },
-          player2: { name: 'اللاعب الثاني' },
-          rounds: 11,
-          isTournament: false
-        };
+    const setupData = localStorage.getItem('gameSetupProgress');
+    if (setupData) {
+      gameData = JSON.parse(setupData);
+      console.log('Loaded game data:', gameData);
+      
+      // Validate game data structure
+      if (!gameData.player1 && !gameData.player1Name) {
+        console.warn('Player 1 data not found in game setup');
       }
+      if (!gameData.player2 && !gameData.player2Name) {
+        console.warn('Player 2 data not found in game setup');
+      }
+      if (!gameData.rounds) {
+        console.warn('Rounds not specified, using default value');
+        gameData.rounds = 11;
+      }
+    } else {
+      console.warn('No game setup data found, using defaults');
+      gameData = {
+        player1: { name: 'اللاعب الأول' },
+        player2: { name: 'اللاعب الثاني' },
+        rounds: 11
+      };
     }
   } catch (e) {
     console.error('Error loading game data:', e);
     gameData = {
       player1: { name: 'اللاعب الأول' },
       player2: { name: 'اللاعب الثاني' },
-      rounds: 11,
-      isTournament: false
+      rounds: 11
     };
   }
-}
-
-// Utility function for comprehensive data clearing
-function clearAllGameRelatedData() {
-  console.group('🧹 Comprehensive Game Data Clearing');
-  
-  // List of all keys to remove
-  const keysToRemove = [
-    // Strategic picks and orders
-    'player1StrategicPicks', 'player2StrategicPicks',
-    'player1StrategicOrdered', 'player2StrategicOrdered',
-    
-    // Card arrangements
-    'player1CardArrangement', 'player2CardArrangement',
-    'player1ArrangementCompleted', 'player2ArrangementCompleted',
-    
-    // Abilities
-    'player1Abilities', 'player2Abilities',
-    'player1UsedAbilities', 'player2UsedAbilities',
-    
-    // Game setup and state
-    'gameSetupProgress', 
-    'currentGameId', 
-    'currentMatchId', 
-    'currentMatchPlayers',
-    'usedAbilities', 
-    'abilityRequests', 
-    'currentRound', 
-    'rounds', 
-    'battleStarted', 
-    'gameStatus', 
-    'gameUpdate'
-  ];
-  
-  // Remove specific keys
-  keysToRemove.forEach(key => {
-    const value = localStorage.getItem(key);
-    localStorage.removeItem(key);
-    console.log(`🗑️ Removed key: ${key}, Previous value:`, value);
-  });
-  
-  // Remove any other localStorage keys related to the game
-  Object.keys(localStorage).forEach(key => {
-    const gameRelatedPatterns = [
-      'orderSubmitted_', 
-      'player1', 
-      'player2', 
-      'StrategicPicks', 
-      'CardArrangement', 
-      'ArrangementCompleted'
-    ];
-    
-    if (gameRelatedPatterns.some(pattern => key.includes(pattern))) {
-      const value = localStorage.getItem(key);
-      localStorage.removeItem(key);
-      console.log(`🗑️ Removed additional game-related key: ${key}, Previous value:`, value);
-    }
-  });
-  
-  console.log('✅ All game-related data cleared from localStorage');
-  console.groupEnd();
 }
 
 // Generate player links
-async function generatePlayerLinks() {
-  // Clear all game-related data before generating links
-  clearAllGameRelatedData();
-  
+function generatePlayerLinks() {
   const gameId = sessionStorage.getItem('currentGameId');
   
-  // ✅ طور البطولة - نفس نظام التحدي تماماً
-  if (gameData.isTournament) {
-    console.log('🏆 Generating tournament player links (Challenge Mode Style)...');
-    
-    const matchId = gameData.matchId || localStorage.getItem('currentMatchId') || 'default';
-    const player1Name = gameData.player1.name;
-    const player2Name = gameData.player2.name;
-    
-    console.log('🔍 Tournament Game Data Before Creation:', {
-      player1Name,
-      player2Name,
-      rounds: gameData.rounds
-    });
-    
-    // إنشاء بيانات جديدة تماماً
-    const tournamentGameData = {
-      player1: {
-        name: player1Name,
-        cards: [],  // تأكيد مسح البطاقات
-        abilities: [],  // تأكيد مسح القدرات
-        cardOrder: [],
-        isReady: false
-      },
-      player2: {
-        name: player2Name,
-        cards: [],  // تأكيد مسح البطاقات
-        abilities: [],  // تأكيد مسح القدرات
-        cardOrder: [],
-        isReady: false
-      },
-      rounds: gameData.rounds,
-      isTournament: true,
-      matchId: matchId,
-      status: 'waiting',
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
-    
-    console.log('🔍 Tournament Game Data After Creation:', tournamentGameData);
-    
-    // استخدام setDoc لإعادة الكتابة في كل مرة (تنظيف تلقائي)
-    await GameService.createTournamentGame(matchId, tournamentGameData);
-    
-    console.log('✅ Tournament game created in Firebase');
-    
-    // إنشاء روابط بسيطة (مثل طور التحدي تماماً - بدون base64)
-    let baseUrl = window.location.origin + window.location.pathname;
-    baseUrl = baseUrl.replace('final-setup.html', '');
-    if (!baseUrl.endsWith('/')) {
-      baseUrl += '/';
-    }
-    
-    const player1Link = `${baseUrl}player-cards.html?gameId=${matchId}&player=1`;
-    const player2Link = `${baseUrl}player-cards.html?gameId=${matchId}&player=2`;
-    
-    console.log('✅ Generated simple tournament links:', { 
-      matchId,
-      player1Name, 
-      player2Name,
-      player1Link,
-      player2Link
-    });
-    
-    return { player1Link, player2Link, player1Name, player2Name };
-  }
-  
-  // Regular challenge mode
   if (!gameId) {
     alert('لم يتم العثور على معرف اللعبة');
     return { player1Link: '', player2Link: '', player1Name: '', player2Name: '' };
@@ -229,17 +77,11 @@ async function generatePlayerLinks() {
       player2Name = gameData.player2Name;
     }
     
-    console.log('🔍 Challenge Game Data:', {
-      player1Name,
-      player2Name,
-      rounds: gameData.rounds
-    });
-    
     // Generate proper URLs with gameId
     const player1Link = `${baseUrl}player-cards.html?gameId=${gameId}&player=1`;
     const player2Link = `${baseUrl}player-cards.html?gameId=${gameId}&player=2`;
     
-    console.log('Generated challenge links:', { 
+    console.log('Generated links:', { 
       gameId,
       player1Name, 
       player2Name, 
@@ -256,7 +98,7 @@ async function generatePlayerLinks() {
 }
 
 // Copy player link to clipboard
-async function copyPlayerLink(player) {
+function copyPlayerLink(player) {
   try {
     // Validate player parameter
     if (player !== 'player1' && player !== 'player2') {
@@ -265,31 +107,12 @@ async function copyPlayerLink(player) {
       return;
     }
     
-    // Clear previous game data to ensure fresh links
-    localStorage.removeItem(`${player}StrategicOrdered`);
-    localStorage.removeItem(`${player}StrategicPicks`);
-    localStorage.removeItem(`${player}CardArrangement`);
-    localStorage.removeItem(`${player}ArrangementCompleted`);
-    
-    // Show loading state
-    const button = document.querySelector(`.${player}-btn`);
-    if (button) {
-      const originalText = button.textContent;
-      // Remove "جاري التحضير" text
-      button.disabled = true;
-    }
-    
-    const { player1Link, player2Link, player1Name, player2Name } = await generatePlayerLinks();
+    const { player1Link, player2Link, player1Name, player2Name } = generatePlayerLinks();
     
     const link = player === 'player1' ? player1Link : player2Link;
     const playerName = player === 'player1' ? player1Name : player2Name;
     
     console.log(`Copying link for ${player} (${playerName}):`, link);
-    
-    // Re-enable button
-    if (button) {
-      button.disabled = false;
-    }
     
     // Check if clipboard API is available
     if (!navigator.clipboard) {
@@ -319,7 +142,7 @@ async function copyPlayerLink(player) {
     });
   } catch (e) {
     console.error('Error in copyPlayerLink:', e);
-    alert('حدث خطأ في نسخ الرابط: ' + e.message);
+    alert('حدث خطأ في نسخ الرابط');
   }
 }
 
@@ -380,29 +203,28 @@ function validateLinks(player1Link, player2Link) {
 // Start battle (redirect to battle page)
 async function startBattle() {
   try {
-    // ✅ التحقق من نوع اللعبة: بطولة أم تحدي عادي
-    const currentMatchId = localStorage.getItem('currentMatchId');
+    console.log('startBattle function called'); // Added debug log
+    
     const gameId = sessionStorage.getItem('currentGameId');
     
-    if (currentMatchId) {
-      // 🏆 طور البطولة - استخدام localStorage
-      console.log('🏆 Starting tournament battle...');
-      await startTournamentBattle();
-      return;
-    }
-    
     if (!gameId) {
+      console.error('No game ID found'); // More specific error logging
       alert('لم يتم العثور على معرف اللعبة');
       return;
     }
     
-    // 🎮 طور التحدي العادي - استخدام Firebase
-    console.log('🎮 Starting regular challenge battle...');
+    console.log('Fetching game data for gameId:', gameId); // Added debug log
+    
+    // Get game data from Firebase
     const gameData = await GameService.getGame(gameId);
+    
+    console.log('Game data retrieved:', gameData); // Added debug log
     
     // Check if both players have completed their arrangements
     const player1Ready = gameData.player1.isReady;
     const player2Ready = gameData.player2.isReady;
+    
+    console.log('Player readiness:', { player1Ready, player2Ready }); // Added debug log
     
     if (!player1Ready || !player2Ready) {
       alert('يجب أن يكمل كلا اللاعبين ترتيب بطاقاتهم أولاً');
@@ -432,8 +254,7 @@ async function startBattle() {
         abilities: gameData.player2.abilities || [],
         selectedCards: player2Cards
       },
-      rounds: gameData.rounds || 11,
-      advancedMode: gameData.advancedMode || false
+      rounds: gameData.rounds || 11
     };
     
     localStorage.setItem('gameSetupProgress', JSON.stringify(gameSetupProgress));
@@ -501,142 +322,67 @@ async function startBattle() {
       window.location.href = 'card.html';
     }, 1500);
   } catch (e) {
-    console.error('Error starting battle:', e);
+    console.error('Detailed error in startBattle:', e);
     alert('حدث خطأ في بدء المعركة: ' + e.message);
   }
 }
 
-// 🏆 Start tournament battle (using localStorage instead of Firebase)
-async function startTournamentBattle() {
-  try {
-    console.log('🏆 Starting tournament battle from localStorage...');
-    
-    // Get tournament data from localStorage
-    const currentMatchPlayers = JSON.parse(localStorage.getItem('currentMatchPlayers') || '[]');
-    const tournamentRounds = parseInt(localStorage.getItem('tournamentRounds') || '11');
-    
-    // Get card orders from localStorage
-    const player1Order = JSON.parse(localStorage.getItem('player1StrategicOrdered') || '[]');
-    const player2Order = JSON.parse(localStorage.getItem('player2StrategicOrdered') || '[]');
-    
-    // Validate data
-    if (currentMatchPlayers.length < 2) {
-      alert('بيانات اللاعبين غير صحيحة');
-      return;
-    }
-    
-    if (player1Order.length === 0 || player2Order.length === 0) {
-      alert('يجب أن يكمل كلا اللاعبين ترتيب بطاقاتهم أولاً');
-      return;
-    }
-    
-    // Get abilities
-    const player1Abilities = JSON.parse(localStorage.getItem('player1Abilities') || '[]');
-    const player2Abilities = JSON.parse(localStorage.getItem('player2Abilities') || '[]');
-    
-    // Prepare game setup data
-    const gameSetupProgress = {
-      player1: {
-        name: currentMatchPlayers[0],
-        abilities: player1Abilities,
-        selectedCards: player1Order
-      },
-      player2: {
-        name: currentMatchPlayers[1],
-        abilities: player2Abilities,
-        selectedCards: player2Order
-      },
-      rounds: tournamentRounds,
-      advancedMode: false
-    };
-    
-    // Save to localStorage for card.html
-    localStorage.setItem('gameSetupProgress', JSON.stringify(gameSetupProgress));
-    
-    // Save player names
-    localStorage.setItem('player1', currentMatchPlayers[0]);
-    localStorage.setItem('player2', currentMatchPlayers[1]);
-    localStorage.setItem('totalRounds', tournamentRounds.toString());
-    
-    // Ensure abilities are saved
-    localStorage.setItem('player1Abilities', JSON.stringify(player1Abilities));
-    localStorage.setItem('player2Abilities', JSON.stringify(player2Abilities));
-    
-    // Ensure card orders are saved
-    localStorage.setItem('player1StrategicOrdered', JSON.stringify(player1Order));
-    localStorage.setItem('player2StrategicOrdered', JSON.stringify(player2Order));
-    
-    // Reset round counter
-    localStorage.setItem('currentRound', '0');
-    
-    // Clear used abilities
-    localStorage.removeItem('player1UsedAbilities');
-    localStorage.removeItem('player2UsedAbilities');
-    localStorage.removeItem('usedAbilities');
-    localStorage.removeItem('abilityRequests');
-    
-    // Reset ability usage
-    const resetAbilities = (abilities) => {
-      return abilities.map(ability => {
-        if (typeof ability === 'object' && ability.used !== undefined) {
-          return { ...ability, used: false };
-        }
-        return ability;
-      });
-    };
-    
-    localStorage.setItem('player1Abilities', JSON.stringify(resetAbilities(player1Abilities)));
-    localStorage.setItem('player2Abilities', JSON.stringify(resetAbilities(player2Abilities)));
-    
-    // Set battle started flag
-    localStorage.setItem('battleStarted', 'true');
-    
-    console.log('✅ Tournament battle data prepared:', {
-      player1: currentMatchPlayers[0],
-      player2: currentMatchPlayers[1],
-      rounds: tournamentRounds,
-      player1Cards: player1Order.length,
-      player2Cards: player2Order.length
-    });
-    
-    // Show success message
-    showToast('🏆 بدء المعركة...', 'success');
-    
-    // Redirect to battle page
-    setTimeout(() => {
-      window.location.href = 'card.html';
-    }, 1000);
-    
-  } catch (e) {
-    console.error('❌ Error starting tournament battle:', e);
-    alert('حدث خطأ في بدء المعركة: ' + e.message);
-  }
-}
-
-// Check player completion status (Unified system)
+// Check player completion status
 async function checkPlayerStatus() {
   try {
     const gameId = sessionStorage.getItem('currentGameId');
-    const matchId = localStorage.getItem('currentMatchId');
     
-    // ✅ نظام موحد: matchId أو gameId
-    const firebaseId = matchId || gameId;
-    
-    if (!firebaseId) {
-      console.log('⚠️ No firebaseId found, using localStorage fallback');
+    if (!gameId) {
+      console.log('No game ID found, using localStorage fallback');
+      // Fallback to localStorage check
       checkPlayerStatusLocalStorage();
       return;
     }
     
     // Get game data from Firebase
-    console.log('📡 Checking player status from Firebase:', firebaseId);
-    const gameData = await GameService.getGame(firebaseId);
+    const gameData = await GameService.getGame(gameId);
     
-    // Update UI using unified function
-    updatePlayerStatus(gameData);
+    const player1Ready = gameData.player1.isReady;
+    const player2Ready = gameData.player2.isReady;
     
+    // Update player 1 status message
+    const player1StatusMessage = document.getElementById('player1StatusMessage');
+    if (player1StatusMessage) {
+      if (player1Ready) {
+        player1StatusMessage.classList.add('show');
+      } else {
+        player1StatusMessage.classList.remove('show');
+      }
+    }
+    
+    // Update player 2 status message
+    const player2StatusMessage = document.getElementById('player2StatusMessage');
+    if (player2StatusMessage) {
+      if (player2Ready) {
+        player2StatusMessage.classList.add('show');
+      } else {
+        player2StatusMessage.classList.remove('show');
+      }
+    }
+    
+    // Update battle button
+    const battleBtn = document.getElementById('battleBtn');
+    if (battleBtn) {
+      if (player1Ready && player2Ready) {
+        battleBtn.disabled = false;
+      } else {
+        battleBtn.disabled = true;
+      }
+    }
+    
+    console.log('Player status check (Firebase):', { 
+      player1Ready, 
+      player2Ready,
+      player1Cards: gameData.player1.cardOrder?.length || 0,
+      player2Cards: gameData.player2.cardOrder?.length || 0
+    });
   } catch (e) {
-    console.error('❌ Error checking player status from Firebase:', e);
+    console.error('Error checking player status:', e);
     // Fallback to localStorage check
     checkPlayerStatusLocalStorage();
   }
@@ -645,15 +391,14 @@ async function checkPlayerStatus() {
 // Fallback function for localStorage check
 function checkPlayerStatusLocalStorage() {
   try {
-    // ✅ النظام الموحد: نستخدم نفس المفاتيح للبطولة والتحدي العادي
-    // بعد التوحيد، كلا الطورين يستخدمان player1StrategicOrdered و player2StrategicOrdered
+    // Check for actual submitted orders from player-cards.html
     const player1Order = localStorage.getItem('player1StrategicOrdered');
     const player2Order = localStorage.getItem('player2StrategicOrdered');
-
+    
     // Parse orders to check if they're valid
     let player1Completed = false;
     let player2Completed = false;
-
+    
     // Check if player 1 has submitted their order
     if (player1Order) {
       try {
@@ -663,7 +408,7 @@ function checkPlayerStatusLocalStorage() {
         console.warn('Invalid player1 order data');
       }
     }
-
+    
     // Check if player 2 has submitted their order
     if (player2Order) {
       try {
@@ -673,7 +418,7 @@ function checkPlayerStatusLocalStorage() {
         console.warn('Invalid player2 order data');
       }
     }
-
+    
     // Update player 1 status message
     const player1StatusMessage = document.getElementById('player1StatusMessage');
     if (player1StatusMessage) {
@@ -683,7 +428,7 @@ function checkPlayerStatusLocalStorage() {
         player1StatusMessage.classList.remove('show');
       }
     }
-
+    
     // Update player 2 status message
     const player2StatusMessage = document.getElementById('player2StatusMessage');
     if (player2StatusMessage) {
@@ -693,7 +438,7 @@ function checkPlayerStatusLocalStorage() {
         player2StatusMessage.classList.remove('show');
       }
     }
-
+    
     // Update battle button
     const battleBtn = document.getElementById('battleBtn');
     if (battleBtn) {
@@ -703,9 +448,9 @@ function checkPlayerStatusLocalStorage() {
         battleBtn.disabled = true;
       }
     }
-
-    console.log('Player status check (localStorage):', {
-      player1Completed,
+    
+    console.log('Player status check (localStorage):', { 
+      player1Completed, 
       player2Completed,
       player1Order: !!player1Order,
       player2Order: !!player2Order
@@ -740,7 +485,12 @@ function updatePlayerNames() {
   if (player1NameSpan) player1NameSpan.textContent = player1Name;
   if (player2NameSpan) player2NameSpan.textContent = player2Name;
   
-  // Status messages no longer need player names
+  // Update status message names
+  const player1StatusName = document.getElementById('player1StatusName');
+  const player2StatusName = document.getElementById('player2StatusName');
+  
+  if (player1StatusName) player1StatusName.textContent = player1Name;
+  if (player2StatusName) player2StatusName.textContent = player2Name;
   
   // Update ability panel names
   const player1AbilitiesName = document.getElementById('player1AbilitiesName');
@@ -753,109 +503,42 @@ function updatePlayerNames() {
   console.log('Updated player names:', { player1Name, player2Name });
 }
 
-// تعديل دالة loadAbilities للتأكد من استعادة القدرات
+// Load and display abilities for both players
 function loadAbilities() {
   try {
-    console.group('🔍 تحميل القدرات - استعادة شاملة');
+    // Load player 1 abilities
+    const player1Abilities = JSON.parse(localStorage.getItem('player1Abilities') || '[]');
+    const player1AbilitiesList = document.getElementById('player1AbilitiesList');
     
-    // محاولة جلب القدرات من مصادر مختلفة
-    const restoreAbilities = () => {
-      const restoreSources = [
-        { 
-          name: 'gameSetupBackup (sessionStorage)', 
-          getData: () => {
-            const backup = sessionStorage.getItem('gameSetupBackup');
-            return backup ? JSON.parse(backup) : null;
-          }
-        },
-        { 
-          name: 'gameSetupBackup (localStorage)', 
-          getData: () => {
-            const backup = localStorage.getItem('gameSetupBackup');
-            return backup ? JSON.parse(backup) : null;
-          }
-        },
-        { 
-          name: 'gameSetupProgress', 
-          getData: () => {
-            const progress = localStorage.getItem('gameSetupProgress');
-            return progress ? JSON.parse(progress) : null;
-          }
-        }
-      ];
-      
-      // محاولة استعادة القدرات من المصادر
-      for (const source of restoreSources) {
-        try {
-          const data = source.getData();
-          
-          if (data) {
-            console.log(`محاولة استعادة القدرات من: ${source.name}`);
-            
-            // التحقق من وجود قدرات للاعبين
-            const player1Abilities = data.player1?.abilities || data.player1Abilities || [];
-            const player2Abilities = data.player2?.abilities || data.player2Abilities || [];
-            
-            if (player1Abilities.length > 0 || player2Abilities.length > 0) {
-              console.log('✅ تم العثور على قدرات:', {
-                player1: player1Abilities.length,
-                player2: player2Abilities.length
-              });
-              
-              return { player1Abilities, player2Abilities };
-            }
-          }
-        } catch (e) {
-          console.warn(`خطأ في استعادة القدرات من ${source.name}:`, e);
-        }
-      }
-      
-      console.warn('❌ لم يتم العثور على قدرات');
-      return null;
-    };
-    
-    // محاولة استعادة القدرات
-    const restoredAbilities = restoreAbilities();
-    
-    if (restoredAbilities) {
-      // حفظ القدرات في localStorage
-      localStorage.setItem('player1Abilities', JSON.stringify(restoredAbilities.player1Abilities));
-      localStorage.setItem('player2Abilities', JSON.stringify(restoredAbilities.player2Abilities));
-      
-      // عرض القدرات
-      const player1AbilitiesList = document.getElementById('player1AbilitiesList');
-      const player2AbilitiesList = document.getElementById('player2AbilitiesList');
-      
-      if (player1AbilitiesList) {
-        player1AbilitiesList.innerHTML = '';
-        restoredAbilities.player1Abilities.forEach(ability => {
-          const abilityText = typeof ability === 'string' ? ability : (ability.text || ability);
-          const abilityDiv = document.createElement('div');
-          abilityDiv.className = 'ability-item';
-          abilityDiv.textContent = abilityText;
-          player1AbilitiesList.appendChild(abilityDiv);
-        });
-      }
-      
-      if (player2AbilitiesList) {
-        player2AbilitiesList.innerHTML = '';
-        restoredAbilities.player2Abilities.forEach(ability => {
-          const abilityText = typeof ability === 'string' ? ability : (ability.text || ability);
-          const abilityDiv = document.createElement('div');
-          abilityDiv.className = 'ability-item';
-          abilityDiv.textContent = abilityText;
-          player2AbilitiesList.appendChild(abilityDiv);
-        });
-      }
-      
-      console.log('✅ تم عرض القدرات بنجاح');
-    } else {
-      console.warn('⚠️ لم يتم العثور على قدرات للعرض');
+    if (player1AbilitiesList) {
+      player1AbilitiesList.innerHTML = '';
+      player1Abilities.forEach(ability => {
+        const abilityText = typeof ability === 'string' ? ability : (ability.text || ability);
+        const abilityDiv = document.createElement('div');
+        abilityDiv.className = 'ability-item';
+        abilityDiv.textContent = abilityText;
+        player1AbilitiesList.appendChild(abilityDiv);
+      });
     }
+    
+    // Load player 2 abilities
+    const player2Abilities = JSON.parse(localStorage.getItem('player2Abilities') || '[]');
+    const player2AbilitiesList = document.getElementById('player2AbilitiesList');
+    
+    if (player2AbilitiesList) {
+      player2AbilitiesList.innerHTML = '';
+      player2Abilities.forEach(ability => {
+        const abilityText = typeof ability === 'string' ? ability : (ability.text || ability);
+        const abilityDiv = document.createElement('div');
+        abilityDiv.className = 'ability-item';
+        abilityDiv.textContent = abilityText;
+        player2AbilitiesList.appendChild(abilityDiv);
+      });
+    }
+    
+    console.log('Loaded abilities:', { player1: player1Abilities, player2: player2Abilities });
   } catch (e) {
-    console.error('خطأ في تحميل القدرات:', e);
-  } finally {
-    console.groupEnd();
+    console.error('Error loading abilities:', e);
   }
 }
 
@@ -872,100 +555,27 @@ function resetBattleStatus() {
 // Clear old data when starting fresh
 function clearOldData() {
   try {
-    // ✅ تنظيف شامل للبيانات القديمة لمنع التداخل
-    console.log('🧹 Clearing old tournament data...');
+    // Clear old strategic data if it exists
+    const player1Order = localStorage.getItem('player1StrategicOrdered');
+    const player2Order = localStorage.getItem('player2StrategicOrdered');
     
-    // مسح بيانات الترتيب المرسلة
-    localStorage.removeItem('player1StrategicOrdered');
-    localStorage.removeItem('player2StrategicOrdered');
-    
-    // مسح بيانات اللاعبين المؤقتة
-    localStorage.removeItem('player1Order');
-    localStorage.removeItem('player2Order');
-    localStorage.removeItem('player1CardArrangement');
-    localStorage.removeItem('player2CardArrangement');
-    localStorage.removeItem('player1ArrangementCompleted');
-    localStorage.removeItem('player2ArrangementCompleted');
-    
-    // مسح إشعارات التسليم القديمة
-    Object.keys(localStorage).forEach(key => {
-      if (key.startsWith('orderSubmitted_')) {
-        localStorage.removeItem(key);
-      }
-    });
-    
-    // ✅ إعادة تعيين الـ cache للروابط
-    cachedLinks = null;
-    
-    console.log('✅ Old data cleared successfully');
+    // Only clear if the data seems to be from a previous game
+    if (player1Order || player2Order) {
+      console.log('Clearing old strategic data...');
+      localStorage.removeItem('player1StrategicOrdered');
+      localStorage.removeItem('player2StrategicOrdered');
+      localStorage.removeItem('player1StrategicPicks');
+      localStorage.removeItem('player2StrategicPicks');
+    }
   } catch (e) {
-    console.error('❌ Error clearing old data:', e);
+    console.error('Error clearing old data:', e);
   }
 }
 
-// دالة شاملة لاستعادة البيانات مع حماية أكثر
-function restoreGameData() {
-  console.group('🔍 استعادة بيانات اللعبة');
-  
-  // مصادر استعادة البيانات بترتيب أولوية
-  const restoreSources = [
-    { 
-      name: 'sessionStorage', 
-      getData: () => sessionStorage.getItem('gameSetupBackup'),
-      priority: 1 
-    },
-    { 
-      name: 'localStorage', 
-      getData: () => localStorage.getItem('gameSetupBackup'),
-      priority: 2 
-    },
-    { 
-      name: 'gameSetupProgress', 
-      getData: () => localStorage.getItem('gameSetupProgress'),
-      priority: 3 
-    }
-  ];
-  
-  // محاولة استعادة البيانات من المصادر المختلفة
-  for (const source of restoreSources) {
-    try {
-      const data = source.getData();
-      if (data) {
-        const parsedData = JSON.parse(data);
-        
-        // التحقق من صحة البيانات
-        if (parsedData && 
-            (parsedData.player1 || parsedData.player1Name) && 
-            (parsedData.player2 || parsedData.player2Name)) {
-          
-          console.log(`✅ استعادة البيانات من ${source.name}:`, parsedData);
-          
-          // حفظ البيانات في جميع المصادر للتأكيد
-          sessionStorage.setItem('gameSetupBackup', JSON.stringify(parsedData));
-          localStorage.setItem('gameSetupBackup', JSON.stringify(parsedData));
-          localStorage.setItem('gameSetupProgress', JSON.stringify(parsedData));
-          
-          console.groupEnd();
-          return parsedData;
-        }
-      }
-    } catch (e) {
-      console.warn(`خطأ في تحليل بيانات من ${source.name}:`, e);
-    }
-  }
-  
-  console.warn('❌ لم يتم العثور على بيانات صالحة للاستعادة');
-  console.groupEnd();
-  return null;
-}
-
-// تعديل دالة init للاستفادة من restoreGameData
+// Initialize page
 async function init() {
   try {
     console.log('Initializing final-setup page...');
-    
-    // محاولة استعادة البيانات
-    const restoredData = restoreGameData();
     
     // Clear old data first
     clearOldData();
@@ -973,81 +583,45 @@ async function init() {
     // Reset battle status for new game setup
     resetBattleStatus();
     
-    // محاولة استعادة البيانات المحفوظة
-    if (restoredData) {
-      // استعادة البيانات المحفوظة
-      gameData = restoredData;
-      console.log('✅ تمت استعادة بيانات اللعبة', gameData);
-    } else {
-      // إذا لم يتم العثور على بيانات محفوظة، قم بتحميل البيانات
-      loadGameData();
-    }
-    
-    // تحديث أسماء اللاعبين
+    loadGameData();
     updatePlayerNames();
-    
-    // تحميل القدرات
     loadAbilities();
-    
-    // التحقق من حالة اللاعبين
     await checkPlayerStatus();
     
-    // إعداد الاستماع المباشر
+    // Setup real-time listening
     setupRealTimeListening();
     
-    // حفظ البيانات للاستعادة في حالة التحديث
-    sessionStorage.setItem('gameSetupBackup', JSON.stringify(gameData));
-    localStorage.setItem('gameSetupBackup', JSON.stringify(gameData));
+    // Add explicit event listener for battle start button
+    const battleBtn = document.getElementById('battleBtn');
+    if (battleBtn) {
+      battleBtn.addEventListener('click', startBattle);
+      console.log('Battle start button event listener added');
+    } else {
+      console.warn('Battle start button not found');
+    }
     
     console.log('Final-setup page initialized successfully');
   } catch (e) {
     console.error('Error initializing page:', e);
-    
-    // محاولة استعادة البيانات في حالة الخطأ
-    const restoredData = restoreGameData();
-    if (restoredData) {
-      gameData = restoredData;
-      console.log('✅ تمت استعادة بيانات اللعبة بعد الخطأ', gameData);
-    }
   }
 }
 
 // Setup real-time listening for Firebase
 function setupRealTimeListening() {
   const gameId = sessionStorage.getItem('currentGameId');
-  const matchId = localStorage.getItem('currentMatchId');
   
-  // ✅ نظام موحد: matchId أو gameId
-  const firebaseId = matchId || gameId;
-  
-  if (firebaseId) {
-    console.log(`📡 Setting up Firebase listener for game:`, firebaseId);
-    GameService.listenToGame(firebaseId, (gameData) => {
-      console.log('📡 Received game data from Firebase:', gameData);
+  if (gameId) {
+    // Listen to Firebase changes
+    GameService.listenToGame(gameId, (gameData) => {
       updatePlayerStatus(gameData);
     });
-  } else {
-    console.warn('⚠️ No firebaseId found, cannot setup listener');
   }
 }
 
-// تعديل دالة updatePlayerStatus لتغيير نص الزر
+// Update player status from Firebase data
 function updatePlayerStatus(gameData) {
-  const player1Ready = gameData.player1?.isReady || false;
-  const player2Ready = gameData.player2?.isReady || false;
-  const player1Cards = gameData.player1?.cardOrder || [];
-  const player2Cards = gameData.player2?.cardOrder || [];
-  
-  // ✅ حفظ البطاقات المرتبة في localStorage للاستخدام في المعركة
-  if (player1Cards.length > 0) {
-    localStorage.setItem('player1StrategicOrdered', JSON.stringify(player1Cards));
-    console.log('✅ Player 1 cards saved:', player1Cards.length);
-  }
-  
-  if (player2Cards.length > 0) {
-    localStorage.setItem('player2StrategicOrdered', JSON.stringify(player2Cards));
-    console.log('✅ Player 2 cards saved:', player2Cards.length);
-  }
+  const player1Ready = gameData.player1.isReady;
+  const player2Ready = gameData.player2.isReady;
   
   // Update player 1 status message
   const player1StatusMessage = document.getElementById('player1StatusMessage');
@@ -1077,117 +651,21 @@ function updatePlayerStatus(gameData) {
       battleBtn.textContent = 'بدء المعركة';
     } else {
       battleBtn.disabled = true;
-      battleBtn.textContent = 'انتظار تسليم اللاعبين';
+      battleBtn.textContent = 'انتظر اكمال اللاعبين';
     }
   }
   
-  console.log('✅ Player status updated:', { 
-    player1Ready, 
-    player2Ready,
-    player1Cards: player1Cards.length,
-    player2Cards: player2Cards.length
-  });
-}
-
-// ✅ Update tournament player status from Firebase data
-function updateTournamentPlayerStatus(gameData) {
-  console.log('🏆 Updating tournament player status from Firebase:', gameData);
-  
-  const player1Ready = gameData.player1?.isReady || false;
-  const player2Ready = gameData.player2?.isReady || false;
-  const player1Cards = gameData.player1?.cardOrder || [];
-  const player2Cards = gameData.player2?.cardOrder || [];
-  
-  // ✅ حفظ الترتيب في localStorage للاستخدام في المعركة
-  if (player1Cards.length > 0) {
-    localStorage.setItem('player1StrategicOrdered', JSON.stringify(player1Cards));
-    console.log('✅ تم حفظ ترتيب اللاعب 1 من Firebase:', player1Cards.length, 'بطاقة');
-  }
-  
-  if (player2Cards.length > 0) {
-    localStorage.setItem('player2StrategicOrdered', JSON.stringify(player2Cards));
-    console.log('✅ تم حفظ ترتيب اللاعب 2 من Firebase:', player2Cards.length, 'بطاقة');
-  }
-  
-  // Update player 1 status message
-  const player1StatusMessage = document.getElementById('player1StatusMessage');
-  if (player1StatusMessage) {
-    if (player1Ready) {
-      player1StatusMessage.classList.add('show');
-    } else {
-      player1StatusMessage.classList.remove('show');
-    }
-  }
-  
-  // Update player 2 status message
-  const player2StatusMessage = document.getElementById('player2StatusMessage');
-  if (player2StatusMessage) {
-    if (player2Ready) {
-      player2StatusMessage.classList.add('show');
-    } else {
-      player2StatusMessage.classList.remove('show');
-    }
-  }
-  
-  // Update battle button
-  const battleBtn = document.getElementById('battleBtn');
-  if (battleBtn) {
-    if (player1Ready && player2Ready) {
-      battleBtn.disabled = false;
-      battleBtn.textContent = 'بدء المعركة';
-    } else {
-      battleBtn.disabled = true;
-      battleBtn.textContent = 'انتظار اكمال اللاعبين';
-    }
-  }
-  
-  console.log('🏆 Tournament status updated:', { 
-    player1Ready, 
-    player2Ready,
-    player1Cards: player1Cards.length,
-    player2Cards: player2Cards.length
-  });
+  console.log('Player status updated:', { player1Ready, player2Ready });
 }
 
 // Listen for storage changes to update status in real-time
 window.addEventListener('storage', function(e) {
-  // التحقق من الترتيب المباشر
   if (e.key === 'player1StrategicOrdered' || e.key === 'player2StrategicOrdered' ||
       e.key === 'player1StrategicPicks' || e.key === 'player2StrategicPicks') {
-    console.log(`📦 Storage change detected: ${e.key}, updating status...`);
+    console.log(`Storage change detected: ${e.key}, updating status...`);
     checkPlayerStatus();
   }
-  
-  // ✅ الاستماع للإشعارات من player-cards.html
-  if (e.key && e.key.startsWith('orderSubmitted_')) {
-    console.log(`🎉 Order submission notification detected: ${e.key}`);
-    try {
-      const notification = JSON.parse(e.newValue || '{}');
-      console.log('Notification details:', notification);
-      
-      // تحديث الحالة فوراً
-      setTimeout(() => {
-        checkPlayerStatus();
-      }, 300);
-    } catch (err) {
-      console.error('Error parsing notification:', err);
-    }
-  }
 });
-
-// ✅ استماع للأحداث المخصصة من player-cards.html (يعمل في نفس النافذة)
-window.addEventListener('orderSubmitted', function(e) {
-  console.log('🎉 Order submitted event received:', e.detail);
-  // تحديث الحالة فوراً
-  setTimeout(() => {
-    checkPlayerStatus();
-  }, 500);
-});
-
-// ✅ فحص دوري للحالة كل 2 ثانية (للتأكد من التحديث)
-setInterval(() => {
-  checkPlayerStatus();
-}, 2000);
 
 // Start when page loads
 document.addEventListener('DOMContentLoaded', init);
@@ -1209,9 +687,8 @@ function openPlayerViewPages() {
     const baseUrl = window.location.origin + window.location.pathname.replace('final-setup.html', '');
     
     // Generate player view URLs
-    // ❌ تم إزالة الإشارات لصفحة عرض التحدي
-    const player1Url = '';
-    const player2Url = '';
+    const player1Url = `${baseUrl}player-view.html?player=1&gameId=${gameId}`;
+    const player2Url = `${baseUrl}player-view.html?player=2&gameId=${gameId}`;
     
     console.log('Opening player view pages:', { player1Url, player2Url });
     
@@ -1293,28 +770,3 @@ function showToast(message, type = 'info') {
 window.copyPlayerLink = copyPlayerLink;
 window.startBattle = startBattle;
 window.saveProgress = saveProgress;
-
-// ✅ Setup battle button event listener (for module scope compatibility)
-document.addEventListener('DOMContentLoaded', () => {
-  const battleBtn = document.getElementById('battleBtn');
-  if (battleBtn) {
-    // Remove inline onclick and add proper event listener
-    battleBtn.removeAttribute('onclick');
-    battleBtn.addEventListener('click', async () => {
-      await startBattle();
-    });
-    console.log('✅ Battle button event listener attached');
-  }
-});
-
-// إضافة استماع لحدث قبل التحميل للاحتفاظ بالبيانات
-window.addEventListener('beforeunload', () => {
-  try {
-    // حفظ البيانات قبل إعادة التحميل
-    sessionStorage.setItem('gameSetupBackup', JSON.stringify(gameData));
-    localStorage.setItem('gameSetupBackup', JSON.stringify(gameData));
-    console.log('✅ حفظ البيانات قبل إعادة التحميل');
-  } catch (e) {
-    console.error('خطأ في حفظ البيانات قبل إعادة التحميل:', e);
-  }
-});
