@@ -36,6 +36,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Function to clear all previous game data
 function clearAllPreviousGameData() {
+  console.log('🧹 Clearing all previous game data comprehensively');
+  
   // Clear game ended flags
   localStorage.removeItem('gameEnded');
   localStorage.removeItem('gameEndedTimestamp');
@@ -70,9 +72,30 @@ function clearAllPreviousGameData() {
   
   // Clear card selection data
   localStorage.removeItem('gameCardSelection');
+  localStorage.removeItem('gameCardsData');
+  localStorage.removeItem('gameCardsGenerated');
   
   // Clear session data
   localStorage.removeItem('currentGameSessionId');
+  localStorage.removeItem('currentGameId');
+  localStorage.removeItem('currentMatchId');
+  
+  // Clear player order and picks
+  localStorage.removeItem('player1Order');
+  localStorage.removeItem('player2Order');
+  localStorage.removeItem('player1Picks');
+  localStorage.removeItem('player2Picks');
+  
+  // Reset global variables if they exist
+  if (window.gameCardsGenerated !== undefined) {
+    window.gameCardsGenerated = false;
+  }
+  if (window.gameCardsData !== undefined) {
+    window.gameCardsData = {
+      player1Cards: [],
+      player2Cards: []
+    };
+  }
   
   console.log('✅ All previous game data cleared for new game (including abilities)');
 }
