@@ -37,7 +37,7 @@ let voiceSystem = {
       // Removed: 'Goku UI', 
       'Hashirama', 'Hawks', 'Hinata', 'Hisoka', 'jiraya', 'Riboku', 'Lelouch', 'Utsuro', 'Kyurak',
       // Changed: 'joker' to 'Joker'
-      'Joker', 'KaidoCard', 'KaitoKid', 'Kanki',
+      'Joker', 'KaidoCard', 'KaitoKid', 'Kanki', 'Shigaraki', 'Roselle-Gustav',
       'law', 'Lelouch', 'LuffyGear5', 'madara', 'MeruemCard', 'naruto', 'Neiji', 'NietroCard', 'obito',
       'QG14', 'queen', 'Sakamoto', 'shikamaru', 'ShanksCard', 'SilverCard', 'smith', 'UmibozoCard',
       // Removed: 'Vegetto', 
@@ -45,7 +45,7 @@ let voiceSystem = {
       // New voice files added
       'All-For-One', 'Goku Black', 'Yoriichi', 'Sanji', 'Bakugo', 'Itachi', 'Meliodas', 'AllMight', 'Roger', 'Yhwach', 'Midoriya',
       // Additional new voices
-      'Goku-SSJ4', 'Goku-UI', 'Rengoku', 'Beerus', 'Lecht', 'zabuza', 'Ranpo', 
+      'Goku-SSJ4', 'Goku-UI', 'Rengoku', 'Beerus', 'Lecht', 'zabuza', 'Ranpo', 'Urahara',
       'Goku-SSJG', 'Goku-SSJB', 'Gogeta', 'Vegito-Blue'
     ];
     
@@ -118,13 +118,17 @@ let voiceSystem = {
       'queen': 'queen',
       'Ranpo': 'Ranpo',
       'Riboku': 'Riboku',
+      'Roselle-Gustav': 'Roselle-Gustav',
       'Sakamoto': 'Sakamoto',
       'Sanji': 'Sanji',
       'shikamaru': 'shikamaru',
       'ShanksCard': 'ShanksCard',
       'SilverCard': 'SilverCard',
+      'Shigaraki': 'Shigaraki',
+      'smith': 'smith',
       'UmibozoCard': 'UmibozoCard',
       'Utsuro': 'Utsuro',
+      'Urahara': 'Urahara',
       'whitebeard': 'whitebeard',
       'zabuza': 'zabuza',
       'zoro': 'Zoro',
