@@ -107,7 +107,7 @@ let voiceSystem = {
       'law': 'law',
       'Lelouch': 'Lelouch',
       'LuffyGear5': 'LuffyGear5',
-      'madara': 'Madara',
+      'madara': 'madara',
       'MeruemCard': 'MeruemCard',
       'Meliodas': 'Meliodas',
       'Midoriya': 'Midoriya',
