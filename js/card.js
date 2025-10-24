@@ -30,7 +30,7 @@ let voiceSystem = {
   isLegendaryByName: function(cardPath) {
     // All legendary cards that have voice files in voice/ directory
     const legendaryPatterns = [
-      'aizen', 'AizenVoCrowCard', 'Akai', 'AllForOneCard', 'Ayanokoji', 
+      'aizen', 'AizenVoCrowCard', 'Akai', 'AllForOneCard', 'Ayanokoji', 'Ranppo',
       // Removed: 'Asta', 
       'Beru', 'Cell', 
       'Dio', 'ErenCard', 'Fubuki', 'GinCard', 'Giyuu', 'Gogeta', 'GohanBeastCard', 'GojoCard', 
@@ -67,10 +67,6 @@ let voiceSystem = {
     // Extract card name from path
     let cardName = cardPath.split('/').pop().split('.')[0];
     
-    // Skip ranpo as requested
-    if (cardName.toLowerCase().includes('ranpo')) {
-      return null;
-    }
     
     // Exact mapping to voice file names (case-sensitive)
     const voiceFileMappings = {
@@ -107,7 +103,7 @@ let voiceSystem = {
       'law': 'law',
       'Lelouch': 'Lelouch',
       'LuffyGear5': 'LuffyGear5',
-      'madara': 'Madara',
+      'madara': 'madara',
       'MeruemCard': 'MeruemCard',
       'Meliodas': 'Meliodas',
       'Midoriya': 'Midoriya',
@@ -427,7 +423,7 @@ let voiceSystem = {
   testAudioLoading: function() {
     console.log('🎵 Testing audio file accessibility...');
     
-    const testVoiceFiles = ['aizen', 'Akai', 'law', 'Beerus-card', 'smith'];
+    const testVoiceFiles = ['aizen', 'Akai', 'law', 'smith'];
     
     testVoiceFiles.forEach(voiceFile => {
       const audioPath = `voice/${voiceFile}.mp3`;

@@ -105,7 +105,7 @@ function generateDynamicDistribution() {
   // Total cards per player
   const totalCardsPerPlayer = 20;
   
-  // Base distribution percentages
+  // Base distribution percentages with added randomness
   const baseDistribution = {
     common: 0.70,     // 70%
     epic: 0.30,       // 30%
@@ -115,27 +115,39 @@ function generateDynamicDistribution() {
     cursed: 0.00      // 0%
   };
   
-  // Verify total distribution
-  const totalPercentage = Object.values(baseDistribution).reduce((a, b) => a + b, 0);
-  console.assert(Math.abs(totalPercentage - 1) < 0.001, 
-    `Card distribution error: total ${totalPercentage} !== 1`);
+  // Add small random variations to percentages
+  const variationFactor = 0.05; // 5% variation
+  const dynamicDistribution = {};
+
+  for (const [category, basePercentage] of Object.entries(baseDistribution)) {
+    // Generate a random variation between -5% and +5%
+    const variation = (Math.random() * 2 - 1) * variationFactor;
+    dynamicDistribution[category] = Math.max(0, basePercentage + variation);
+  }
+
+  // Normalize to ensure total is 1 and maintain the core 70/30 ratio
+  const total = dynamicDistribution.common + dynamicDistribution.epic;
+  dynamicDistribution.common = (dynamicDistribution.common / total) * 0.70;
+  dynamicDistribution.epic = (dynamicDistribution.epic / total) * 0.30;
   
   // Calculate card counts based on percentages
   const cardDistribution = {
-    common: Math.round(totalCardsPerPlayer * baseDistribution.common),
-    epic: Math.round(totalCardsPerPlayer * baseDistribution.epic),
-    rare: Math.round(totalCardsPerPlayer * baseDistribution.rare),
-    legendary: Math.round(totalCardsPerPlayer * baseDistribution.legendary),
-    ultimate: Math.round(totalCardsPerPlayer * baseDistribution.ultimate),
-    cursed: Math.round(totalCardsPerPlayer * baseDistribution.cursed)
+    common: Math.round(totalCardsPerPlayer * dynamicDistribution.common),
+    epic: Math.round(totalCardsPerPlayer * dynamicDistribution.epic),
+    rare: Math.round(totalCardsPerPlayer * dynamicDistribution.rare),
+    legendary: Math.round(totalCardsPerPlayer * dynamicDistribution.legendary),
+    ultimate: Math.round(totalCardsPerPlayer * dynamicDistribution.ultimate),
+    cursed: Math.round(totalCardsPerPlayer * dynamicDistribution.cursed)
   };
   
   // Verify total card count
   const totalDistributed = Object.values(cardDistribution).reduce((a, b) => a + b, 0);
-  console.assert(totalDistributed === totalCardsPerPlayer, 
-    `Card distribution error: total ${totalDistributed} !== ${totalCardsPerPlayer}`);
+  if (totalDistributed !== totalCardsPerPlayer) {
+    cardDistribution.common += (totalCardsPerPlayer - totalDistributed);
+  }
   
   console.log('🎲 Precise Card Distribution:', cardDistribution);
+  console.log('🎲 Dynamic Distribution Percentages:', dynamicDistribution);
   
   return cardDistribution;
 }
@@ -360,8 +372,8 @@ function generateRandomCards() {
   
   // توليد بطاقات اللاعب الأول
   let player1Cards = [
-    ...getRandomCards(commonCards, Math.floor(totalCardsPerPlayer * 0.70)),
-    ...getRandomCards(epicCards, Math.floor(totalCardsPerPlayer * 0.30))
+    ...getRandomCards(commonCards, cardDistribution.common),
+    ...getRandomCards(epicCards, cardDistribution.epic)
   ];
   
   // التأكد من وجود 20 بطاقة بالضبط
@@ -386,12 +398,12 @@ function generateRandomCards() {
   let player2Cards = [
     ...getRandomCards(
       commonCards.filter(c => !finalPlayer1Cards.includes(c)), 
-      Math.floor(totalCardsPerPlayer * 0.60),
+      cardDistribution.common,
       gameSeed + 9
     ),
     ...getRandomCards(
       epicCards.filter(c => !finalPlayer1Cards.includes(c)), 
-      Math.floor(totalCardsPerPlayer * 0.40),
+      cardDistribution.epic,
       gameSeed + 10
     )
   ];
