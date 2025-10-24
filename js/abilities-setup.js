@@ -99,23 +99,13 @@ function refreshAbilitiesFromStorage() {
 }
 
 function loadExistingData() {
-  // Check if this is a tournament match
-  const currentMatchPlayers = localStorage.getItem('currentMatchPlayers');
-  const currentMatchId = localStorage.getItem('currentMatchId');
+  // Regular challenge mode
+  const savedData = localStorage.getItem('gameSetupProgress');
   
-  if (currentMatchPlayers && currentMatchId) {
-    // Tournament mode
-    console.log('Tournament mode detected in abilities-setup');
-    const players = JSON.parse(currentMatchPlayers);
-    
-    gameState.player1.name = players[0];
-    gameState.player2.name = players[1];
-    
-    // Show home button in tournament mode
-    const homeBtn = document.getElementById('homeBtn');
-    if (homeBtn) {
-      homeBtn.style.display = 'flex';
-    }
+  if (savedData) {
+    const gameSetupData = JSON.parse(savedData);
+    gameState.player1.name = gameSetupData.player1Name;
+    gameState.player2.name = gameSetupData.player2Name;
     
     // Update player names in headers
     const player1Header = document.getElementById('player1Title');
@@ -128,35 +118,8 @@ function loadExistingData() {
       player2Header.textContent = `${gameState.player2.name} - القدرات`;
     }
     
-    // Show tournament indicator
-    showTournamentIndicator();
-    
     // Display all abilities
     displayAllAbilities();
-  } else {
-    // Regular challenge mode
-    const savedData = localStorage.getItem('gameSetupProgress');
-    if (savedData) {
-      const data = JSON.parse(savedData);
-      gameState = { ...gameState, ...data };
-      
-      // Update player names in headers
-      const player1Header = document.getElementById('player1Title');
-      const player2Header = document.getElementById('player2Title');
-      
-      if (gameState.player1.name && player1Header) {
-        player1Header.textContent = `${gameState.player1.name} - القدرات`;
-      }
-      if (gameState.player2.name && player2Header) {
-        player2Header.textContent = `${gameState.player2.name} - القدرات`;
-      }
-      
-      // Display all abilities
-      displayAllAbilities();
-    } else {
-      // Redirect to names page if no data
-      window.location.href = 'names-setup.html';
-    }
   }
 }
 
@@ -497,25 +460,6 @@ function saveProgress() {
 }
 
 async function nextStep() {
-  // Check if this is a tournament match
-  const currentMatchId = localStorage.getItem('currentMatchId');
-  
-  if (currentMatchId) {
-    // Tournament mode - save to localStorage only
-    console.log('Saving tournament abilities...');
-    
-    // حفظ القدرات في localStorage
-    localStorage.setItem('player1Abilities', JSON.stringify(gameState.player1.abilities));
-    localStorage.setItem('player2Abilities', JSON.stringify(gameState.player2.abilities));
-    
-    // حفظ التقدم
-    saveProgress();
-    
-    // الانتقال لصفحة اختيار البطاقات
-    window.location.href = 'cards-setup.html';
-    return;
-  }
-  
   // Regular challenge mode
   const gameId = sessionStorage.getItem('currentGameId');
   

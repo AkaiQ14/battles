@@ -25,13 +25,8 @@ let gameState = {
 document.addEventListener('DOMContentLoaded', function() {
   loadExistingData();
   
-  // Check if this is a tournament match first
-  checkTournamentMode();
-  
-  // If not tournament mode, create cards grid normally
-  if (!localStorage.getItem('currentMatchId')) {
-    createCardsGrid();
-  }
+  // Create cards grid normally
+  createCardsGrid();
   
   updateDisplay();
 });

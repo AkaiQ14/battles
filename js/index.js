@@ -63,7 +63,7 @@ function setupLoginForm() {
         
         // Redirect to game-mode.html after 2 seconds
         setTimeout(() => {
-          window.location.href = 'game-mode.html';
+          window.location.href = 'names-setup.html';
         }, 2000);
       } else {
         // Login failed

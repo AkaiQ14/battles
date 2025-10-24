@@ -4053,41 +4053,13 @@ function navigateToPlayerPage(playerParam, playerName) {
   }
 }
 
-// Tournament game end handler
+// Remove tournament game end handler
 function handleTournamentGameEnd(winner) {
-  console.log('Handling tournament game end...');
-  
-  // Save the winner for the tournament
-  localStorage.setItem('matchWinner', winner);
-  
-  // Update leaderboard
-  updateTournamentLeaderboard(winner);
-  
-  // Clean up tournament data
-  localStorage.removeItem('tournamentRounds');
-  localStorage.removeItem('currentMatchPlayers');
-  localStorage.removeItem('currentMatchId');
-  
-  // Redirect to tournament bracket
-  setTimeout(() => {
-    window.location.href = 'tournament-bracket.html';
-  }, 2000);
+  console.log('Tournament game end removed');
 }
 
 function updateTournamentLeaderboard(winner) {
-  const currentMatchPlayers = JSON.parse(localStorage.getItem('currentMatchPlayers') || '[]');
-  const loser = currentMatchPlayers.find(player => player !== winner);
-  
-  let leaderboard = JSON.parse(localStorage.getItem('leaderboard') || '{}');
-  
-  if (!leaderboard[winner]) leaderboard[winner] = {wins: 0, losses: 0};
-  if (!leaderboard[loser]) leaderboard[loser] = {wins: 0, losses: 0};
-  
-  leaderboard[winner].wins++;
-  leaderboard[loser].losses++;
-  
-  localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
-  console.log('Tournament leaderboard updated:', leaderboard);
+  console.log('Tournament leaderboard update removed');
 }
 
 // Make functions available globally
