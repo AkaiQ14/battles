@@ -141,6 +141,7 @@ class CardManager {
         'images/Obito.webm',
         'images/Ouki.webm',
         'images/PrinceHata.webm',
+        'images/Ran.png',
         'images/Ranppo.webm',
         'images/Rengoku.webm',
         'images/Riboku.webm',
@@ -620,8 +621,8 @@ class CardManager {
 
     // Dynamic card distribution with updated percentages
     const baseDistribution = {
-      common: 0.60,      // 60%
-      epic: 0.40,        // 40%
+      common: 0.40,      // 40%
+      epic: 0.60,        // 60%
       rare: 0.00,        // 0%
       legendary: 0.00,   // 0%
       ultimate: 0.00,    // 0%
@@ -646,8 +647,8 @@ class CardManager {
 
     // Convert to card counts
     const cardDistribution = {
-      common: Math.floor(totalCards * 0.60),     // 60%
-      epic: Math.floor(totalCards * 0.40),       // 40%
+      common: Math.floor(totalCards * 0.40),     // 40%
+      epic: Math.floor(totalCards * 0.60),       // 60%
       rare: 0,       // 0%
       legendary: 0,  // 0%
       ultimate: 0,   // 0%

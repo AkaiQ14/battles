@@ -102,8 +102,8 @@ function generateDynamicDistribution() {
   
   // Base distribution percentages with added randomness
   const baseDistribution = {
-    common: 0.60,     // 60%
-    epic: 0.40,       // 40%
+    common: 0.40,     // 40%
+    epic: 0.60,       // 60%
     rare: 0.00,       // 0%
     legendary: 0.00,  // 0%
     ultimate: 0.00,   // 0%
@@ -120,10 +120,10 @@ function generateDynamicDistribution() {
     dynamicDistribution[category] = Math.max(0, basePercentage + variation);
   }
 
-  // Normalize to ensure total is 1 and maintain the core 60/40 ratio
+  // Normalize to ensure total is 1 and maintain the core 65/35 ratio
   const total = dynamicDistribution.common + dynamicDistribution.epic;
-  dynamicDistribution.common = (dynamicDistribution.common / total) * 0.60;
-  dynamicDistribution.epic = (dynamicDistribution.epic / total) * 0.40;
+  dynamicDistribution.common = (dynamicDistribution.common / total) * 0.65;
+  dynamicDistribution.epic = (dynamicDistribution.epic / total) * 0.35;
   
   // Calculate card counts based on percentages
   const cardDistribution = {
@@ -357,8 +357,8 @@ function generateRandomCards() {
     
     // Strict validation
     console.assert(
-      Math.abs(typePercentage.common - 65) < 1 && 
-      Math.abs(typePercentage.epic - 35) < 1, 
+      Math.abs(typePercentage.common - 40) < 1 && 
+      Math.abs(typePercentage.epic - 60) < 1, 
       'Card distribution does not match expected percentages'
     );
     
@@ -838,8 +838,8 @@ function initializeTournamentCards() {
     
     // حساب عدد البطاقات من كل فئة
     const cardDistribution = {
-      common: Math.floor(cardsPerPlayer * 0.70),     // 70%
-      epic: Math.floor(cardsPerPlayer * 0.30)        // 30%
+      common: Math.floor(cardsPerPlayer * 0.40),     // 40%
+      epic: Math.floor(cardsPerPlayer * 0.60)        // 60%
     };
     
     // تعديل التوزيع للتأكد من وصول العدد الكلي إلى 20
