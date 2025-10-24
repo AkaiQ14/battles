@@ -102,8 +102,8 @@ function generateDynamicDistribution() {
   
   // Base distribution percentages with added randomness
   const baseDistribution = {
-    common: 0.65,     // 65%
-    epic: 0.35,       // 35%
+    common: 0.60,     // 60%
+    epic: 0.40,       // 40%
     rare: 0.00,       // 0%
     legendary: 0.00,  // 0%
     ultimate: 0.00,   // 0%
@@ -120,10 +120,10 @@ function generateDynamicDistribution() {
     dynamicDistribution[category] = Math.max(0, basePercentage + variation);
   }
 
-  // Normalize to ensure total is 1 and maintain the core 65/35 ratio
+  // Normalize to ensure total is 1 and maintain the core 60/40 ratio
   const total = dynamicDistribution.common + dynamicDistribution.epic;
-  dynamicDistribution.common = (dynamicDistribution.common / total) * 0.65;
-  dynamicDistribution.epic = (dynamicDistribution.epic / total) * 0.35;
+  dynamicDistribution.common = (dynamicDistribution.common / total) * 0.60;
+  dynamicDistribution.epic = (dynamicDistribution.epic / total) * 0.40;
   
   // Calculate card counts based on percentages
   const cardDistribution = {
