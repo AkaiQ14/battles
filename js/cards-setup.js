@@ -15,7 +15,7 @@ let gameState = {
   currentPlayer: 'player1',
   player1: { name: '', selectedCards: [] },
   player2: { name: '', selectedCards: [] },
-  rounds: localStorage.getItem('roundsCount') ? parseInt(localStorage.getItem('roundsCount')) : 11,
+  rounds: 11, // Default value, but will be overridden by localStorage
   availableCards: [],
   player1Cards: [],
   player2Cards: []
@@ -35,6 +35,9 @@ function loadExistingData() {
   const savedData = localStorage.getItem('gameSetupProgress');
   const storedRounds = localStorage.getItem('roundsCount');
   
+  // Always prioritize rounds from localStorage
+  gameState.rounds = storedRounds ? parseInt(storedRounds) : 11;
+  
   if (savedData) {
     const data = JSON.parse(savedData);
     gameState = { ...gameState, ...data };
@@ -47,7 +50,7 @@ function loadExistingData() {
       gameState.player2.name = data.player2Name;
     }
     
-    // Always use storedRounds if available
+    // Ensure rounds are set from localStorage
     gameState.rounds = storedRounds ? parseInt(storedRounds) : 11;
     
     // Initialize card selection based on rounds
@@ -59,7 +62,7 @@ function loadExistingData() {
       gameState.currentPlayer = 'player2';
     }
     
-    // Load saved card selection if available
+    // Rest of the existing logic remains the same
     const savedCardSelection = localStorage.getItem('gameCardSelection');
     if (savedCardSelection) {
       const cardData = JSON.parse(savedCardSelection);
