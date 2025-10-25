@@ -30,7 +30,7 @@ let voiceSystem = {
   isLegendaryByName: function(cardPath) {
     // All legendary cards that have voice files in voice/ directory
     const legendaryPatterns = [
-      'aizen', 'AizenVoCrowCard', 'Akai', 'AllForOneCard', 'Ayanokoji', 'Ranppo',
+      'aizen', 'AizenVoCrowCard', 'Akai', 'AllForOneCard', 'Ayanokoji', 'Ranppo', 'Todo',
       // Removed: 'Asta', 
       'Beru', 'Cell', 
       'Dio', 'ErenCard', 'Fubuki', 'GinCard', 'Giyuu', 'Gogeta', 'Gohan Beast', 'GojoCard', 
@@ -122,6 +122,7 @@ let voiceSystem = {
       'SilverCard': 'SilverCard',
       'Shigaraki': 'Shigaraki',
       'smith': 'smith',
+      'Todo': 'Todo',
       'UmibozoCard': 'UmibozoCard',
       'Utsuro': 'Utsuro',
       'Urahara': 'Urahara',
