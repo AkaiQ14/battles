@@ -119,11 +119,11 @@ function generateDynamicDistribution() {
   // Base distribution percentages with added randomness
   const baseDistribution = {
     common: 0.40,     // 40%
-    epic: 0.60,       // 60%
-    rare: 0.00,       // 0%
-    legendary: 0.00,  // 0%
-    ultimate: 0.00,   // 0%
-    cursed: 0.00      // 0%
+    epic: 0.35,       // 35%
+    rare: 0.10,       // 10%
+    legendary: 0.10,  // 10%
+    ultimate: 0.03,   // 3%
+    cursed: 0.02      // 2%
   };
   
   // Add small random variations to percentages
@@ -136,10 +136,11 @@ function generateDynamicDistribution() {
     dynamicDistribution[category] = Math.max(0, basePercentage + variation);
   }
 
-  // Normalize to ensure total is 1 and maintain the core 65/35 ratio
-  const total = dynamicDistribution.common + dynamicDistribution.epic;
-  dynamicDistribution.common = (dynamicDistribution.common / total) * 0.65;
-  dynamicDistribution.epic = (dynamicDistribution.epic / total) * 0.35;
+  // Normalize to ensure total is 1 and maintain the core distribution
+  const total = Object.values(dynamicDistribution).reduce((a, b) => a + b, 0);
+  for (const category in dynamicDistribution) {
+    dynamicDistribution[category] = (dynamicDistribution[category] / total);
+  }
   
   // Calculate card counts based on percentages
   const cardDistribution = {
@@ -218,14 +219,18 @@ function validateCardDistribution(player1Cards, player2Cards) {
   
   // فئات الكروت
   const cardCategories = [
-    'common', 'epic'
+    'common', 'epic', 'rare', 'legendary', 'ultimate', 'cursed'
   ];
   
   // دالة لحساب توزيع الكروت
   const calculateDistribution = (cards) => {
     const allAvailableCards = {
       common: window.cardManager.getAllCardsByCategory('common'),
-      epic: window.cardManager.getAllCardsByCategory('epic')
+      epic: window.cardManager.getAllCardsByCategory('epic'),
+      rare: window.cardManager.getAllCardsByCategory('rare') || [],
+      legendary: window.cardManager.getAllCardsByCategory('legendary') || [],
+      ultimate: window.cardManager.getAllCardsByCategory('ultimate') || [],
+      cursed: window.cardManager.getAllCardsByCategory('cursed') || []
     };
     
     const typeCount = {};
@@ -252,12 +257,12 @@ function validateCardDistribution(player1Cards, player2Cards) {
   
   // التوزيع المتوقع من generateDynamicDistribution()
   const expectedDistribution = {
-    common: 65,
+    common: 40,
     epic: 35,
-    rare: 0,
-    legendary: 0,
-    ultimate: 0,
-    cursed: 0
+    rare: 10,
+    legendary: 10,
+    ultimate: 3,
+    cursed: 2
   };
   
   // التحقق من التوزيع
@@ -338,6 +343,10 @@ function generateRandomCards() {
   // جلب جميع الكروت من الفئات المختلفة
   const commonCards = window.cardManager.getAllCardsByCategory('common');
   const epicCards = window.cardManager.getAllCardsByCategory('epic');
+  const rareCards = window.cardManager.getAllCardsByCategory('rare') || [];
+  const legendaryCards = window.cardManager.getAllCardsByCategory('legendary') || [];
+  const ultimateCards = window.cardManager.getAllCardsByCategory('ultimate') || [];
+  const cursedCards = window.cardManager.getAllCardsByCategory('cursed') || [];
   
   // العدد الإجمالي للبطاقات لكل لاعب
   const totalCardsPerPlayer = 20;
@@ -352,7 +361,11 @@ function generateRandomCards() {
   const verifyCardTypes = (cards) => {
     const allAvailableCards = {
       common: window.cardManager.getAllCardsByCategory('common'),
-      epic: window.cardManager.getAllCardsByCategory('epic')
+      epic: window.cardManager.getAllCardsByCategory('epic'),
+      rare: window.cardManager.getAllCardsByCategory('rare') || [],
+      legendary: window.cardManager.getAllCardsByCategory('legendary') || [],
+      ultimate: window.cardManager.getAllCardsByCategory('ultimate') || [],
+      cursed: window.cardManager.getAllCardsByCategory('cursed') || []
     };
     
     const typeCount = {};
@@ -371,27 +384,28 @@ function generateRandomCards() {
       percentages: typePercentage
     });
     
-    // Strict validation
-    console.assert(
-      Math.abs(typePercentage.common - 40) < 1 && 
-      Math.abs(typePercentage.epic - 60) < 1, 
-      'Card distribution does not match expected percentages'
-    );
-    
     return typeCount;
   };
   
   // توليد بطاقات اللاعب الأول
   let player1Cards = [
     ...getRandomCards(commonCards, cardDistribution.common),
-    ...getRandomCards(epicCards, cardDistribution.epic)
+    ...getRandomCards(epicCards, cardDistribution.epic),
+    ...getRandomCards(rareCards, cardDistribution.rare),
+    ...getRandomCards(legendaryCards, cardDistribution.legendary),
+    ...getRandomCards(ultimateCards, cardDistribution.ultimate),
+    ...getRandomCards(cursedCards, cardDistribution.cursed)
   ];
   
   // التأكد من وجود 20 بطاقة بالضبط
   while (player1Cards.length < totalCardsPerPlayer) {
     const allAvailableCards = [
       ...commonCards, 
-      ...epicCards
+      ...epicCards,
+      ...rareCards,
+      ...legendaryCards,
+      ...ultimateCards,
+      ...cursedCards
     ];
     
     const extraCards = getRandomCards(
@@ -416,6 +430,26 @@ function generateRandomCards() {
       epicCards.filter(c => !finalPlayer1Cards.includes(c)), 
       cardDistribution.epic,
       gameSeed + 10
+    ),
+    ...getRandomCards(
+      rareCards.filter(c => !finalPlayer1Cards.includes(c)), 
+      cardDistribution.rare,
+      gameSeed + 11
+    ),
+    ...getRandomCards(
+      legendaryCards.filter(c => !finalPlayer1Cards.includes(c)), 
+      cardDistribution.legendary,
+      gameSeed + 12
+    ),
+    ...getRandomCards(
+      ultimateCards.filter(c => !finalPlayer1Cards.includes(c)), 
+      cardDistribution.ultimate,
+      gameSeed + 13
+    ),
+    ...getRandomCards(
+      cursedCards.filter(c => !finalPlayer1Cards.includes(c)), 
+      cardDistribution.cursed,
+      gameSeed + 14
     )
   ];
   
@@ -423,7 +457,11 @@ function generateRandomCards() {
   while (player2Cards.length < totalCardsPerPlayer) {
     const allAvailableCards = [
       ...commonCards, 
-      ...epicCards
+      ...epicCards,
+      ...rareCards,
+      ...legendaryCards,
+      ...ultimateCards,
+      ...cursedCards
     ];
     
     const extraCards = getRandomCards(
@@ -844,10 +882,18 @@ function initializeTournamentCards() {
     // جمع جميع البطاقات من جميع الفئات
     const commonCards = window.cardManager.cardDatabase.common || [];
     const epicCards = window.cardManager.cardDatabase.epic || [];
+    const rareCards = window.cardManager.getAllCardsByCategory('rare') || [];
+    const legendaryCards = window.cardManager.getAllCardsByCategory('legendary') || [];
+    const ultimateCards = window.cardManager.getAllCardsByCategory('ultimate') || [];
+    const cursedCards = window.cardManager.getAllCardsByCategory('cursed') || [];
     
     console.log('Card counts:', {
       common: commonCards.length,
-      epic: epicCards.length
+      epic: epicCards.length,
+      rare: rareCards.length,
+      legendary: legendaryCards.length,
+      ultimate: ultimateCards.length,
+      cursed: cursedCards.length
     });
     
     // إنشاء مجموعة البطاقات مع نسب متنوعة
@@ -856,7 +902,11 @@ function initializeTournamentCards() {
     // حساب عدد البطاقات من كل فئة
     const cardDistribution = {
       common: Math.floor(cardsPerPlayer * 0.40),     // 40%
-      epic: Math.floor(cardsPerPlayer * 0.60)        // 60%
+      epic: Math.floor(cardsPerPlayer * 0.35),       // 35%
+      rare: Math.floor(cardsPerPlayer * 0.10),       // 10%
+      legendary: Math.floor(cardsPerPlayer * 0.10),  // 10%
+      ultimate: Math.floor(cardsPerPlayer * 0.03),   // 3%
+      cursed: Math.floor(cardsPerPlayer * 0.02)      // 2%
     };
     
     // تعديل التوزيع للتأكد من وصول العدد الكلي إلى 20
@@ -868,14 +918,22 @@ function initializeTournamentCards() {
     // بناء بطاقات اللاعب الأول
     let player1Cards = [
       ...getRandomCards(commonCards, cardDistribution.common),
-      ...getRandomCards(epicCards, cardDistribution.epic)
+      ...getRandomCards(epicCards, cardDistribution.epic),
+      ...getRandomCards(rareCards, cardDistribution.rare),
+      ...getRandomCards(legendaryCards, cardDistribution.legendary),
+      ...getRandomCards(ultimateCards, cardDistribution.ultimate),
+      ...getRandomCards(cursedCards, cardDistribution.cursed)
     ];
     
     // إذا لم نصل للعدد المطلوب، نكمل من البطاقات المتاحة
     while (player1Cards.length < cardsPerPlayer) {
       const allCards = [
         ...commonCards, 
-        ...epicCards
+        ...epicCards,
+        ...rareCards,
+        ...legendaryCards,
+        ...ultimateCards,
+        ...cursedCards
       ];
       const extra = getRandomCards(
         allCards.filter(c => !player1Cards.includes(c)), 
@@ -895,6 +953,22 @@ function initializeTournamentCards() {
       ...getRandomCards(
         epicCards.filter(c => !player1Cards.includes(c)), 
         cardDistribution.epic
+      ),
+      ...getRandomCards(
+        rareCards.filter(c => !player1Cards.includes(c)), 
+        cardDistribution.rare
+      ),
+      ...getRandomCards(
+        legendaryCards.filter(c => !player1Cards.includes(c)), 
+        cardDistribution.legendary
+      ),
+      ...getRandomCards(
+        ultimateCards.filter(c => !player1Cards.includes(c)), 
+        cardDistribution.ultimate
+      ),
+      ...getRandomCards(
+        cursedCards.filter(c => !player1Cards.includes(c)), 
+        cardDistribution.cursed
       )
     ];
     
@@ -902,7 +976,11 @@ function initializeTournamentCards() {
     while (player2Cards.length < cardsPerPlayer) {
       const allCards = [
         ...commonCards, 
-        ...epicCards
+        ...epicCards,
+        ...rareCards,
+        ...legendaryCards,
+        ...ultimateCards,
+        ...cursedCards
       ];
       const extra = getRandomCards(
         allCards.filter(c => 
