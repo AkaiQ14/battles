@@ -342,6 +342,16 @@ async function loadGameData() {
     console.log('Loaded data:', { playerName, picks: picks.length, myAbilities: myAbilities.length, rounds });
     
     // عرض البيانات
+    // ✅ التحقق من وجود ترتيب محفوظ مسبقاً
+    const savedOrder = JSON.parse(localStorage.getItem(ORDER_LOCAL_KEY) || "[]");
+    if (savedOrder && savedOrder.length === picks.length) {
+      console.log("✅ تم العثور على ترتيب محفوظ - سيتم عرضه بدلاً من ترتيب Firebase");
+      submittedOrder = savedOrder.slice();
+      hideOpponentPanel();
+      renderCards(submittedOrder, submittedOrder);
+      return; // نوقف التحميل من Firebase هنا
+    }
+
     renderCards(picks);
     renderAbilities(myAbilities);
     
@@ -2793,3 +2803,27 @@ window.openBattleView = openBattleView;
 window.loadTournamentCards = loadTournamentCards;
 window.submitTournamentPicks = submitTournamentPicks;
 
+
+
+// ✅ إعادة تحميل ترتيب الكروت بعد تحديث الصفحة
+document.addEventListener("DOMContentLoaded", () => {
+  try {
+    // نمنع التحميل المكرر إذا كانت الدالة تعمل بالفعل
+    if (typeof loadPlayerCards === "function") {
+      console.log("🔁 إعادة تحميل ترتيب الكروت من localStorage بعد التحديث...");
+      loadPlayerCards();
+
+      // في حال لم يكن cardManager جاهزاً بعد، نعيد المحاولة بعد قليل
+      setTimeout(() => {
+        if (typeof window.cardManager === "undefined") {
+          console.warn("⚠️ cardManager لم يجهز بعد — إعادة المحاولة...");
+          loadPlayerCards();
+        }
+      }, 1000);
+    } else {
+      console.warn("⚠️ الدالة loadPlayerCards غير متوفرة حالياً.");
+    }
+  } catch (e) {
+    console.error("❌ خطأ أثناء إعادة تحميل ترتيب الكروت:", e);
+  }
+});

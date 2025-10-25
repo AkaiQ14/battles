@@ -391,9 +391,12 @@ async function checkPlayerStatus() {
 // Fallback function for localStorage check
 function checkPlayerStatusLocalStorage() {
   try {
+    // Get the current game ID
+    const gameId = sessionStorage.getItem('currentGameId') || 'default';
+
     // Check for actual submitted orders from player-cards.html
-    const player1Order = localStorage.getItem('player1StrategicOrdered');
-    const player2Order = localStorage.getItem('player2StrategicOrdered');
+    const player1Order = localStorage.getItem(`${gameId}_player1_order`);
+    const player2Order = localStorage.getItem(`${gameId}_player2_order`);
     
     // Parse orders to check if they're valid
     let player1Completed = false;
@@ -660,8 +663,12 @@ function updatePlayerStatus(gameData) {
 
 // Listen for storage changes to update status in real-time
 window.addEventListener('storage', function(e) {
-  if (e.key === 'player1StrategicOrdered' || e.key === 'player2StrategicOrdered' ||
-      e.key === 'player1StrategicPicks' || e.key === 'player2StrategicPicks') {
+  const gameId = sessionStorage.getItem('currentGameId') || 'default';
+  
+  if (e.key === `${gameId}_player1_order` || 
+      e.key === `${gameId}_player2_order` ||
+      e.key === `${gameId}_player1_picks` || 
+      e.key === `${gameId}_player2_picks`) {
     console.log(`Storage change detected: ${e.key}, updating status...`);
     checkPlayerStatus();
   }
