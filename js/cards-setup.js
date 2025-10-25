@@ -15,7 +15,7 @@ let gameState = {
   currentPlayer: 'player1',
   player1: { name: '', selectedCards: [] },
   player2: { name: '', selectedCards: [] },
-  rounds: 11,
+  rounds: localStorage.getItem('roundsCount') ? parseInt(localStorage.getItem('roundsCount')) : 11,
   availableCards: [],
   player1Cards: [],
   player2Cards: []
@@ -47,8 +47,8 @@ function loadExistingData() {
       gameState.player2.name = data.player2Name;
     }
     
-    // Get rounds from setup data or localStorage
-    gameState.rounds = storedRounds ? parseInt(storedRounds) : (data.rounds || 11);
+    // Always use storedRounds if available
+    gameState.rounds = storedRounds ? parseInt(storedRounds) : 11;
     
     // Initialize card selection based on rounds
     const cardsNeeded = gameState.rounds;
@@ -461,7 +461,7 @@ function createCardsGrid() {
   
   // Use available cards for current player
   const cardsToShow = gameState.availableCards || [];
-  const totalRounds = gameState.rounds || 11; // Default to 11 if not set
+  const totalRounds = localStorage.getItem('roundsCount') ? parseInt(localStorage.getItem('roundsCount')) : 11;
   
   console.log('Cards to show:', cardsToShow.length, 'Total rounds:', totalRounds);
   
@@ -513,7 +513,7 @@ function selectCard(cardNumber) {
   } else {
     // Select card if less than required cards selected
     const storedRounds = localStorage.getItem('roundsCount');
-    const cardsNeeded = storedRounds ? parseInt(storedRounds) : (gameState.rounds || 11);
+    const cardsNeeded = storedRounds ? parseInt(storedRounds) : 11;
     
     if (currentPlayerData.selectedCards.length < cardsNeeded) {
       currentPlayerData.selectedCards.push(cardNumber);
@@ -530,7 +530,7 @@ function selectCard(cardNumber) {
 function selectRandomCards() {
   const currentPlayerData = gameState[gameState.currentPlayer];
   const storedRounds = localStorage.getItem('roundsCount');
-  const cardsNeeded = storedRounds ? parseInt(storedRounds) : (gameState.rounds || 11);
+  const cardsNeeded = storedRounds ? parseInt(storedRounds) : 11;
   
   // Check if we have available cards
   if (!gameState.availableCards || gameState.availableCards.length === 0) {
@@ -588,7 +588,7 @@ async function continueToNextPlayer() {
   const gameId = sessionStorage.getItem('currentGameId');
   const currentPlayerData = gameState[gameState.currentPlayer];
   const storedRounds = localStorage.getItem('roundsCount');
-  const cardsNeeded = storedRounds ? parseInt(storedRounds) : (gameState.rounds || 11);
+  const cardsNeeded = storedRounds ? parseInt(storedRounds) : 11;
   
   // Check if this is a tournament match
   const currentMatchId = localStorage.getItem('currentMatchId');
@@ -743,7 +743,7 @@ function updateDisplay() {
   }
   
   const storedRounds = localStorage.getItem('roundsCount');
-  const cardsNeeded = storedRounds ? parseInt(storedRounds) : (gameState.rounds || 11); // Default to 11 if not set
+  const cardsNeeded = storedRounds ? parseInt(storedRounds) : 11;
   const selectedCount = currentPlayerData.selectedCards.length;
   
   // Update the player name
