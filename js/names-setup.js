@@ -126,11 +126,44 @@ function setupEventListeners() {
   
   player1Input.addEventListener('input', validateForm);
   player2Input.addEventListener('input', validateForm);
+  
+  // Ensure rounds are saved immediately on page load
+  const initialRounds = roundsSelect.value;
+  localStorage.setItem('roundsCount', initialRounds);
+  gameState.rounds = parseInt(initialRounds);
+  
   roundsSelect.addEventListener('change', function() {
     const selectedRounds = parseInt(this.value);
+    
+    // Save to localStorage with multiple methods for reliability
+    try {
+      localStorage.setItem('roundsCount', selectedRounds.toString());
+      sessionStorage.setItem('roundsCount', selectedRounds.toString());
+      
+      // Fallback for browsers with limited localStorage
+      window.roundsCount = selectedRounds;
+    } catch (error) {
+      console.warn('Error saving rounds to storage:', error);
+    }
+    
     gameState.rounds = selectedRounds;
     gameState.challenge = selectedRounds; // التحدي يساوي عدد الجولات
     validateForm();
+  });
+  
+  // Ensure rounds are saved when next button is clicked
+  nextBtn.addEventListener('click', function() {
+    const selectedRounds = parseInt(roundsSelect.value);
+    
+    try {
+      localStorage.setItem('roundsCount', selectedRounds.toString());
+      sessionStorage.setItem('roundsCount', selectedRounds.toString());
+      
+      // Fallback for browsers with limited localStorage
+      window.roundsCount = selectedRounds;
+    } catch (error) {
+      console.warn('Error saving rounds to storage:', error);
+    }
   });
   
   advancedModeWrapper.addEventListener('click', function() {

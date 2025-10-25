@@ -33,10 +33,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function loadExistingData() {
   const savedData = localStorage.getItem('gameSetupProgress');
-  const storedRounds = localStorage.getItem('roundsCount');
   
-  // Always prioritize rounds from localStorage
-  gameState.rounds = storedRounds ? parseInt(storedRounds) : 11;
+  // Multiple methods to retrieve rounds
+  const storedRounds = 
+    localStorage.getItem('roundsCount') || 
+    sessionStorage.getItem('roundsCount') || 
+    window.roundsCount || 
+    (savedData ? JSON.parse(savedData).rounds : null) || 
+    11;
+  
+  // Always prioritize rounds from storage
+  gameState.rounds = parseInt(storedRounds);
   
   if (savedData) {
     const data = JSON.parse(savedData);
@@ -50,8 +57,8 @@ function loadExistingData() {
       gameState.player2.name = data.player2Name;
     }
     
-    // Ensure rounds are set from localStorage
-    gameState.rounds = storedRounds ? parseInt(storedRounds) : 11;
+    // Ensure rounds are set from storage
+    gameState.rounds = parseInt(storedRounds);
     
     // Initialize card selection based on rounds
     const cardsNeeded = gameState.rounds;
@@ -80,11 +87,28 @@ function loadExistingData() {
       generateRandomCards();
     }
   } else {
-    // Load rounds from localStorage or default
-    gameState.rounds = storedRounds ? parseInt(storedRounds) : 11;
+    // Load rounds from storage or default
+    gameState.rounds = parseInt(storedRounds);
     
     generateRandomCards();
   }
+  
+  console.log('Rounds loaded:', gameState.rounds, {
+    localStorage: localStorage.getItem('roundsCount'),
+    sessionStorage: sessionStorage.getItem('roundsCount'),
+    windowRounds: window.roundsCount
+  });
+}
+
+function getRounds() {
+  // Multiple methods to retrieve rounds
+  const storedRounds = 
+    localStorage.getItem('roundsCount') || 
+    sessionStorage.getItem('roundsCount') || 
+    window.roundsCount || 
+    11;
+  
+  return parseInt(storedRounds);
 }
 
 // Dynamic card distribution with precise percentage allocation
@@ -464,7 +488,7 @@ function createCardsGrid() {
   
   // Use available cards for current player
   const cardsToShow = gameState.availableCards || [];
-  const totalRounds = localStorage.getItem('roundsCount') ? parseInt(localStorage.getItem('roundsCount')) : 11;
+  const totalRounds = getRounds();
   
   console.log('Cards to show:', cardsToShow.length, 'Total rounds:', totalRounds);
   
@@ -515,8 +539,7 @@ function selectCard(cardNumber) {
     cardDiv.classList.remove('selected');
   } else {
     // Select card if less than required cards selected
-    const storedRounds = localStorage.getItem('roundsCount');
-    const cardsNeeded = storedRounds ? parseInt(storedRounds) : 11;
+    const cardsNeeded = getRounds();
     
     if (currentPlayerData.selectedCards.length < cardsNeeded) {
       currentPlayerData.selectedCards.push(cardNumber);
@@ -532,8 +555,7 @@ function selectCard(cardNumber) {
 // Select random cards function
 function selectRandomCards() {
   const currentPlayerData = gameState[gameState.currentPlayer];
-  const storedRounds = localStorage.getItem('roundsCount');
-  const cardsNeeded = storedRounds ? parseInt(storedRounds) : 11;
+  const cardsNeeded = getRounds();
   
   // Check if we have available cards
   if (!gameState.availableCards || gameState.availableCards.length === 0) {
@@ -590,8 +612,7 @@ function selectRandomCards() {
 async function continueToNextPlayer() {
   const gameId = sessionStorage.getItem('currentGameId');
   const currentPlayerData = gameState[gameState.currentPlayer];
-  const storedRounds = localStorage.getItem('roundsCount');
-  const cardsNeeded = storedRounds ? parseInt(storedRounds) : 11;
+  const cardsNeeded = getRounds();
   
   // Check if this is a tournament match
   const currentMatchId = localStorage.getItem('currentMatchId');
@@ -745,8 +766,7 @@ function updateDisplay() {
     }
   }
   
-  const storedRounds = localStorage.getItem('roundsCount');
-  const cardsNeeded = storedRounds ? parseInt(storedRounds) : 11;
+  const cardsNeeded = getRounds();
   const selectedCount = currentPlayerData.selectedCards.length;
   
   // Update the player name
