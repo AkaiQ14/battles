@@ -201,6 +201,7 @@ class CardManager {
          'images/Gojo.webm',
          'images/Urahara.webm',
          'images/Nezuko.png',
+         'images/Rukia.png'
       ].filter((card, index, self) => 
         self.indexOf(card) === index
       )
@@ -600,7 +601,8 @@ class CardManager {
         'images/Kenjaku.png',
         'images/Kokushibo.png',
         'images/Konohamaru.png',
-        'images/Luffy-Nightmare.png'
+        'images/Luffy-Nightmare.png',
+        'images/Kaneki.png'
       ].filter((card, index, self) => 
         self.indexOf(card) === index
       )
