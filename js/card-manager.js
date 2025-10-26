@@ -603,7 +603,8 @@ class CardManager {
         'images/Kokushibo.png',
         'images/Konohamaru.png',
         'images/Luffy-Nightmare.png',
-        'images/Kaneki.png'
+        'images/Kaneki.png',
+        'images/susano.png'
       ].filter((card, index, self) => 
         self.indexOf(card) === index
       )
