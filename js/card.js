@@ -43,7 +43,7 @@ let voiceSystem = {
       // Removed: 'Vegetto', 
       'whitebeard', 'zoro', 'Zenitsu', 'ZenoCard', 'RockLee', 'AlocardCard', 'alocard', 'alucard', 'AloCard', // إضافة جميع الأسماء المحتملة
       // New voice files added
-      'All-For-One', 'Goku Black', 'Yoriichi', 'Sanji', 'Bakugo', 'Itachi', 'Meliodas', 'AllMight', 'Roger', 'Yhwach', 'Midoriya',
+      'All-For-One', 'Goku Black', 'Yoriichi', 'Sonji', 'Bakugo', 'Itachi', 'Meliodas', 'AllMight', 'Roger', 'Yhwach', 'Midoriya',
       // Additional new voices
       'Goku-SSJ4', 'Goku-UI', 'Rengoku', 'Beerus', 'Lecht', 'zabuza', 'Ranpo', 'Urahara',
       'Goku-SSJG', 'Goku-SSJB', 'Gogeta', 'Vegito-Blue'
@@ -116,7 +116,7 @@ let voiceSystem = {
       'Riboku': 'Riboku',
       'Roselle-Gustav': 'Roselle-Gustav',
       'Sakamoto': 'Sakamoto',
-      'Sanji': 'Sanji',
+      'Sonji': 'Sonji',
       'shikamaru': 'shikamaru',
       'ShanksCard': 'ShanksCard',
       'SilverCard': 'SilverCard',
