@@ -79,7 +79,7 @@ class CardManager {
         'images/Rayleigh.png',
         'images/Reborn.png',
         'images/Sakura.png',
-        'images/Sasuke.png',
+        'images/Sasuke.webm',
         'images/Senjumaru.png',
         'images/ShouHeiKun.png',
         'images/Teach.png',
