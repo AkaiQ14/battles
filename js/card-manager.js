@@ -148,7 +148,7 @@ class CardManager {
         'images/Rimuru-Tempest.webm',
         'images/Roger.webm',
         'images/SSJ2.webm',
-        'images/Sanji.webm',
+        'images/Sonji.webm',
         'images/Sakamoto.webm',
         'images/Smiley.webm',
         'images/Sung-Jinwoo.webm',
