@@ -205,7 +205,8 @@ class CardManager {
          'images/Furuya.png',
          'images/Haibara.png',
          'images/foboki.webm',
-         'images/Rimuru Tempest.webm'
+         'images/Rimuru Tempest.webm',
+         'images/Vangeance.png',
       ].filter((card, index, self) => 
         self.indexOf(card) === index
       )
@@ -585,7 +586,6 @@ class CardManager {
         'images/Ulquiorra.png',
         'images/Undine.png',
         'images/Uraume.png',
-        'images/Vangeance.png',
         'images/Yuki.png',
         'images/Yuno.png',
         'images/Youpi.png',
