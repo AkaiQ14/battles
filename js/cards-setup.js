@@ -901,12 +901,12 @@ function initializeTournamentCards() {
     
     // حساب عدد البطاقات من كل فئة
     const cardDistribution = {
-      common: Math.floor(cardsPerPlayer * 0.40),     // 40%
-      epic: Math.floor(cardsPerPlayer * 0.35),       // 35%
-      rare: Math.floor(cardsPerPlayer * 0.10),       // 10%
-      legendary: Math.floor(cardsPerPlayer * 0.10),  // 10%
-      ultimate: Math.floor(cardsPerPlayer * 0.03),   // 3%
-      cursed: Math.floor(cardsPerPlayer * 0.02)      // 2%
+      common: Math.floor(cardsPerPlayer * 0.60),     // 60%
+      epic: Math.floor(cardsPerPlayer * 0.40),       // 40%
+      rare: 0,       // 0%
+      legendary: 0,  // 0%
+      ultimate: 0,   // 0%
+      cursed: 0      // 2%
     };
     
     // تعديل التوزيع للتأكد من وصول العدد الكلي إلى 20
