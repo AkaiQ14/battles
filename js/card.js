@@ -30,23 +30,23 @@ let voiceSystem = {
   isLegendaryByName: function(cardPath) {
     // All legendary cards that have voice files in voice/ directory
     const legendaryPatterns = [
-      'aizen', 'AizenVoCrowCard', 'Akai', 'AllForOneCard', 'Ayanokoji', 'Ranppo', 'Todo',
+      'aizen', 'AizenVoCrowCard', 'Akai', 'AllForOne', 'Ayanokoji', 'Ranppo', 'Todo',
       // Removed: 'Asta', 
-      'Beru', 'Cell', 'Sasuke',
-      'Dio', 'ErenCard', 'foboki', 'GinCard', 'Giyuu', 'Gogeta', 'Gohan Beast', 'GojoCard', 
+      'Beru', 'Cell', 'Sasuke', 'Vermoth', 'Ouki', 'Kakashi',
+      'Dio', 'ErenCard', 'foboki', 'Gin', 'Giyuu', 'Gogeta', 'Gohan Beast', 'GojoCard', 
       // Removed: 'Goku UI', 
       'Hashirama', 'Hawks', 'Hinata', 'Hisoka', 'jiraya', 'Riboku', 'Lelouch', 'Utsuro', 'Kyurak',
       // Changed: 'joker' to 'Joker'
       'Joker', 'Kaido', 'KaitoKid', 'Kanki', 'Shigaraki', 'Roselle-Gustav',
-      'law', 'Lelouch', 'LuffyGear5', 'madara', 'MeruemCard', 'naruto', 'Neiji', 'NietroCard', 'obito',
+      'law', 'Lelouch', 'LuffyGear5', 'madara', 'Meruem', 'naruto', 'Neiji', 'NietroCard', 'obito',
       'QG14', 'queen', 'Sakamoto', 'shikamaru', 'ShanksCard', 'SilverCard', 'smith', 'UmibozoCard',
       // Removed: 'Vegetto', 
-      'whitebeard', 'zoro', 'Zenitsu', 'ZenoCard', 'RockLee', 'AlocardCard', 'alocard', 'alucard', 'AloCard', // إضافة جميع الأسماء المحتملة
+      'whitebeard', 'zoro', 'Zenitsu', 'Zeno', 'RockLee', 'AlocardCard', 'alocard', 'alucard', 'AloCard', // إضافة جميع الأسماء المحتملة
       // New voice files added
       'All-For-One', 'Goku Black', 'Yoriichi', 'Sonji', 'Bakugo', 'Itachi', 'Meliodas', 'AllMight', 'Roger', 'Yhwach', 'Midoriya',
       // Additional new voices
       'Goku-SSJ4', 'Goku-UI', 'Rengoku', 'Beerus', 'Lecht', 'zabuza', 'Ranpo', 'Urahara',
-      'Goku-SSJG', 'Goku-SSJB', 'Gogeta', 'Vegito-Blue'
+      'Goku-SSJG', 'Goku-SSJB', 'Gogeta', 'Vegito-Blue', 'Giyuu'
     ];
     
     const cardName = cardPath.split('/').pop().split('.')[0].toLowerCase();
@@ -74,7 +74,7 @@ let voiceSystem = {
       'aizen': 'aizen',
       'AizenVoCrowCard': 'AizenVoCrowCard',
       'Akai': 'Akai',
-      'AllForOneCard': 'AllForOneCard',
+      'AllForOne': 'AllForOne',
       'AllMight': 'AllMight',
       'Ayanokoji': 'Ayanokoji',
       'Beru': 'Beru',
@@ -83,7 +83,7 @@ let voiceSystem = {
       'Dio': 'Dio',
       'ErenCard': 'ErenCard',
       'foboki': 'foboki',
-      'GinCard': 'GinCard',
+      'Gin': 'Gin',
       'Giyuu': 'Giyuu',
       'Gogeta': 'Gogeta',
       'Gohan Beast': 'Gohan Beast',
@@ -104,16 +104,18 @@ let voiceSystem = {
       'Lelouch': 'Lelouch',
       'LuffyGear5': 'LuffyGear5',
       'madara': 'madara',
-      'MeruemCard': 'MeruemCard',
+      'Meruem': 'Meruem',
       'Meliodas': 'Meliodas',
       'Midoriya': 'Midoriya',
       'naruto': 'naruto',
       'NietroCard': 'NietroCard',
       'obito': 'obito',
       'QG14': 'QG14',
+      'Ouki': 'Ouki',
       'queen': 'queen',
       'Ranppo': 'Ranppo',
       'Riboku': 'Riboku',
+      'Kakashi': 'Kakashi',
       'Roselle-Gustav': 'Roselle-Gustav',
       'Sakamoto': 'Sakamoto',
       'Sonji': 'Sonji',
@@ -132,7 +134,7 @@ let voiceSystem = {
       'zoro': 'Zoro',
       'Zoro': 'Zoro',
       'Zenitsu': 'Zenitsu',
-      'ZenoCard': 'ZenoCard',
+      'Zeno': 'Zeno',
       'Neiji': 'Neiji',
       'RockLee': 'RockLee',
       'rocklee': 'RockLee',
@@ -158,8 +160,10 @@ let voiceSystem = {
       'Goku-SSJG': 'Goku-SSJG',
       'Goku-SSJB': 'Goku-SSJB',
       'Gogeta': 'Gogeta',
+      'Giyuu': 'Giyuu',
       'Lecht': 'Lecht',
-      'Vegito-Blue': 'Vegito-Blue'
+      'Vegito-Blue': 'Vegito-Blue',
+      'Vermoth': 'Vermoth'
     };
     
     // Check for exact match first
