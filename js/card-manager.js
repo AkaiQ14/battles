@@ -201,7 +201,7 @@ class CardManager {
          'images/Gojo.webm',
          'images/Urahara.webm',
          'images/Nezuko.png',
-         'images/Rukia.png',
+         'images/Rukia.webm',
          'images/Furuya.png',
          'images/Haibara.png',
          'images/foboki.webm'
@@ -627,8 +627,8 @@ class CardManager {
 
     // Dynamic card distribution with updated percentages
     const baseDistribution = {
-      common: 0.40,      // 40%
-      epic: 0.60,        // 60%
+      common: 0.60,      // 60%
+      epic: 0.40,        // 40%
       rare: 0.00,        // 0%
       legendary: 0.00,   // 0%
       ultimate: 0.00,    // 0%
@@ -653,8 +653,8 @@ class CardManager {
 
     // Convert to card counts
     const cardDistribution = {
-      common: Math.floor(totalCards * 0.40),     // 40%
-      epic: Math.floor(totalCards * 0.60),       // 60%
+      common: Math.floor(totalCards * 0.60),     // 60%
+      epic: Math.floor(totalCards * 0.40),       // 40%
       rare: 0,       // 0%
       legendary: 0,  // 0%
       ultimate: 0,   // 0%
