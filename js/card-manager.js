@@ -208,6 +208,10 @@ class CardManager {
          'images/RimuruTempest.webm',
          'images/Vangeance.png',
          'images/Golden-Great-Ape.webp',
+         'images/Gon.png',
+         'images/Akoi.png',
+         'images/Fuegoleon.png',
+         'images/Asta.png',
       ].filter((card, index, self) => 
         self.indexOf(card) === index
       )
@@ -287,7 +291,6 @@ class CardManager {
         'images/Ginta.png',
         'images/Glacier.png',
         'images/GoHouMei.png',
-        'images/Gon.png',
         'images/Gordon.png',
         'images/Gotenks.png',
         'images/GranTorino.png',
@@ -522,7 +525,6 @@ class CardManager {
         'images/Basil.png',
         'images/Anilaza.png',
         'images/Monaka.png',
-        'images/Asta.png',
         'images/Akiko-Yosano.png',
         'images/Best-Jeanist.png',
         'images/Baki.png',
