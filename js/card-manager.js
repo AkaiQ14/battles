@@ -226,6 +226,7 @@ class CardManager {
          'images/Todoroki.png',
          'images/Ace.webm',
          'images/Unahanaa.webm',
+         'images/Lloyd-Fronter.webm'
       ].filter((card, index, self) => 
         self.indexOf(card) === index
       )
