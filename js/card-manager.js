@@ -207,12 +207,26 @@ class CardManager {
          'images/foboki.webm',
          'images/RimuruTempest.webm',
          'images/Vangeance.png',
-         'images/Golden-Great-Ape.webp',
+         'images/Golden-Great-Ape.png',
          'images/Gon.png',
          'images/Akoi.png',
          'images/Fuegoleon.png',
          'images/Asta.png',
-         'images/Shinobu.png'
+         'images/Shinobu.png',
+         'images/X.webm',
+         'images/Shadow.webm',
+         'images/Musashi.webm',
+         'images/Muzan.webm',
+         'images/Shanks.webm',
+         'images/Akaza.png',
+         'images/Killerbee.png',
+         'images/LuffyGear2.png',
+         'images/LuffyGear4BoundMan.png',
+         'images/LuffyGear4SnakeMan.png',
+         'images/LuffyGear4TankMan.png',
+         'images/Todoroki.png',
+         'images/Ace.webm',
+         'images/Unahanaa.webm',
       ].filter((card, index, self) => 
         self.indexOf(card) === index
       )
@@ -614,7 +628,12 @@ class CardManager {
         'images/Violet.png',
         'images/Goku-Base.webp',
         'images/Goku-Kid.webp',
-        'images/Goku-Great-Ape.webp',
+        'images/Goku-Great-Ape.png',
+        'images/Luffy-Gear3.png',
+        'images/Luffy-Timeskip.png',
+        'images/Luffy-PreTimeskip.png',
+        'images/Nanika.png',
+        'images/Rika.png',
       ].filter((card, index, self) => 
         self.indexOf(card) === index
       )

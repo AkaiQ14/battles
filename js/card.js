@@ -46,7 +46,7 @@ let voiceSystem = {
       'All-For-One', 'Goku Black', 'Yoriichi', 'Sonji', 'Bakugo', 'Itachi', 'Meliodas', 'AllMight', 'Roger', 'Yhwach', 'Midoriya',
       // Additional new voices
       'Goku-SSJ4', 'Goku-UI', 'Rengoku', 'Beerus', 'Lecht', 'zabuza', 'Ranpo', 'Urahara',
-      'Goku-SSJG', 'Goku-SSJB', 'Gogeta', 'Vegito-Blue', 'Giyuu'
+      'Goku-SSJG', 'Goku-SSJB', 'Gogeta', 'Vegito-Blue', 'Giyuu', 'X', 'Shadow', 'Unahanaa'
     ];
     
     const cardName = cardPath.split('/').pop().split('.')[0].toLowerCase();
@@ -147,12 +147,15 @@ let voiceSystem = {
       'alocard': 'AlocardCard',
       'AloCard': 'AlocardCard',
       'alucard': 'AlocardCard',
+      'Unahanaa': 'Unahanaa',
       // New voice files added
       'All-For-One': 'All-For-One',
       'Goku Black': 'Goku Black',
       'Yoriichi': 'Yoriichi',
       'Yhwach': 'Yhwach',
       'zabuza': 'zabuza',
+      'X': 'X',
+      'Shadow': 'Shadow',
       // Additional new voices
       'Goku-SSJ4': 'Goku-SSJ4',
       'Goku-UI': 'Goku-UI',
