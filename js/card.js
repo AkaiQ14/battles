@@ -35,7 +35,7 @@ let voiceSystem = {
       'Beru', 'Cell', 'Sasuke', 'Vermoth', 'Ouki', 'Kakashi', 'Rukia',
       'Dio', 'ErenCard', 'foboki', 'Gin', 'Giyuu', 'Gogeta', 'Gohan Beast', 'GojoCard', 
       // Removed: 'Goku UI', 
-      'Hashirama', 'Hawks', 'Hinata', 'Hisoka', 'jiraya', 'Riboku', 'Lelouch', 'Utsuro', 'Kyurak',
+      'Hashirama', 'Hawks', 'Hinata', 'Hisoka', 'jiraya', 'Riboku', 'Lelouch', 'Utsuro', 'Kyurak', 'Shinobu',
       // Changed: 'joker' to 'Joker'
       'Joker', 'Kaido', 'KaitoKid', 'Kanki', 'Shigaraki', 'Roselle-Gustav',
       'law', 'Lelouch', 'LuffyGear5', 'madara', 'Meruem', 'naruto', 'Neiji', 'NietroCard', 'obito',
@@ -45,7 +45,7 @@ let voiceSystem = {
       // New voice files added
       'All-For-One', 'Goku Black', 'Yoriichi', 'Sonji', 'Bakugo', 'Itachi', 'Meliodas', 'AllMight', 'Roger', 'Yhwach', 'Midoriya',
       // Additional new voices
-      'Goku-SSJ4', 'Goku-UI', 'Rengoku', 'Beerus', 'Lecht', 'zabuza', 'Ranpo', 'Urahara',
+      'Goku-SSJ4', 'Goku-UI', 'Rengoku', 'Beerus', 'Lecht', 'zabuza', 'Ranpo', 'Urahara', 'Hiroto',
       'Goku-SSJG', 'Goku-SSJB', 'Gogeta', 'Vegito-Blue', 'Giyuu', 'X', 'Shadow', 'Unahanaa'
     ];
     
@@ -92,6 +92,7 @@ let voiceSystem = {
       'Hawks': 'Hawks',
       'Hinata': 'Hinata',
       'Hisoka': 'Hisoka',
+      'Hiroto': 'Hiroto',
       'Itachi': 'Itachi',
       'jiraya': 'jiraya',
       // Changed: 'joker': 'joker' to 'Joker': 'Joker'
@@ -140,6 +141,7 @@ let voiceSystem = {
       'RockLee': 'RockLee',
       'rocklee': 'RockLee',
       'Roger': 'Roger',
+      'Shinobu': 'Shinobu',
       // AlocardCard support
       'AlocardCard': 'AlocardCard',
       'alocardcard': 'AlocardCard',
