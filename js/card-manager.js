@@ -640,6 +640,21 @@ class CardManager {
         'images/tobit.png',
         'images/Kaze.png',
         'images/Fudo.png',
+        'images/Asuma.png',
+        'images/Benimaru-Shinmon.png',
+        'images/Choji.png',
+        'images/Deidara.png',
+        'images/Hidan.png',
+        'images/Hiruzen.png',
+        'images/Indra.png',
+        'images/Isshin.png',
+        'images/Kisame.png',
+        'images/Levi.png',
+        'images/Mei.png',
+        'images/Pizarro.png',
+        'images/Rob-Lucci.png',
+        'images/Roy-Mustang.png',
+        'images/Sasori.png',
       ].filter((card, index, self) => 
         self.indexOf(card) === index
       )
