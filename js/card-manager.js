@@ -75,11 +75,11 @@ class CardManager {
         'images/Nero.png',
         'images/Orihime.png',
         'images/Oroshimaro.png',
-        'images/Pain.png',
+        'images/Pain.webm',
         'images/Rayleigh.png',
         'images/Reborn.png',
         'images/Sakura.png',
-        'images/Sasuke.webm',
+        'images/Sasuke.png',
         'images/Senjumaru.png',
         'images/ShouHeiKun.png',
         'images/Teach.png',
@@ -188,7 +188,7 @@ class CardManager {
          'images/Azik.webm',
          'images/Giyuu.webm',
          'images/Hisoka.webm',
-         'images/RockLee.webm',
+         'images/RockLee.png',
          'images/Acnologia.png',
          'images/Conan.png',
          'images/Eustass-Kid.png',
@@ -242,14 +242,22 @@ class CardManager {
          'images/Netero.webm',
          'images/Yami.webm',
          'images/vegeta.webm',
-         'images/Jiren.webp',
+         'images/Jiren.png',
          'images/Kaiser.webp',
          'images/MitsuriKanroji.webp',
          'images/Senku.webp',
          'images/Ghostblade.webp',
          'images/Byakuya.png',
-         'images/Goku UI2.webm',
-
+         'images/Gehrman-Sparrow.webm',
+         'images/Goku_SS2.png',
+         'images/Hagorama.png',
+         'images/Julius.webm',
+         'images/Laww.png',
+         'images/Mahoraga.png',
+         'images/Mereoleona.png',
+         'images/Pitou.png',
+         'images/Doflamingo.webm',
+         'images/Tsunami.png',
 
       ].filter((card, index, self) => 
         self.indexOf(card) === index
@@ -622,7 +630,7 @@ class CardManager {
         'images/Temari.png',
         'images/Tokito.png',
         'images/Toppo.png',
-        'images/Ulquiorra.png',
+        'images/Ulquiorraaa.png',
         'images/Undine.png',
         'images/Uraume.png',
         'images/Yuki.png',
@@ -740,6 +748,10 @@ class CardManager {
 'images/Ur.png',
 'images/Utakata.png',
 'images/Yagura.png',
+'images/Gosh.png',
+'images/Kabiyama.png',
+'images/Ryuk.png',
+
         
       ].filter((card, index, self) => 
         self.indexOf(card) === index
@@ -761,12 +773,8 @@ class CardManager {
 
     // Dynamic card distribution with updated percentages
     const baseDistribution = {
-      common: 0.60,      // 60%
-      epic: 0.40,        // 40%
-      rare: 0.00,        // 0%
-      legendary: 0.00,   // 0%
-      ultimate: 0.00,    // 0%
-      cursed: 0.00       // 0%
+      common: 0.90,      // 90%
+      epic: 0.10         // 10%
     };
 
     // Add small random variations to percentages
@@ -787,12 +795,8 @@ class CardManager {
 
     // Convert to card counts
     const cardDistribution = {
-      common: Math.floor(totalCards * 0.60),     // 60%
-      epic: Math.floor(totalCards * 0.40),       // 40%
-      rare: 0,       // 0%
-      legendary: 0,  // 0%
-      ultimate: 0,   // 0%
-      cursed: 0      // 0%
+      common: Math.floor(totalCards * 0.90),     // 90%
+      epic: Math.floor(totalCards * 0.10)        // 10%
     };
 
     // Adjust for rounding errors
@@ -806,12 +810,7 @@ class CardManager {
     // Distribute card selection across available card types
     const cardTypes = [
       { type: this.cardDatabase.common, name: 'common', count: cardDistribution.common },
-      { type: this.cardDatabase.rare, name: 'rare', count: cardDistribution.rare },
-      { type: this.cardDatabase.epic, name: 'epic', count: cardDistribution.epic },
-      { type: this.cardDatabase.legendary, name: 'legendary', count: cardDistribution.legendary },
-      { type: this.cardDatabase.ultimate, name: 'ultimate', count: cardDistribution.ultimate },
-      { type: this.cardDatabase.cursed, name: 'cursed', count: cardDistribution.cursed },
-      { type: this.cardDatabase.mythic, name: 'mythic', count: cardDistribution.mythic }
+      { type: this.cardDatabase.epic, name: 'epic', count: cardDistribution.epic }
     ];
 
     // Shuffle card types to add more randomness
