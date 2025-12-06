@@ -32,7 +32,6 @@ class CardManager {
         'images/Dabi.png',
         'images/Dante.png',
         'images/Dazai.png',
-        'images/Doflamingo.png',
         'images/Endeavor.png',
         'images/Eraserhead.png',
         'images/Eri.png',
