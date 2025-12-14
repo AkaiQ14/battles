@@ -118,8 +118,8 @@ function generateDynamicDistribution() {
   
   // Base distribution percentages with added randomness
   const baseDistribution = {
-    common: 0.90,     // 90%
-    epic: 0.10        // 10%
+    common: 0.80,     // 80%
+    epic: 0.20        // 20%
   };
   
   // Add small random variations to percentages
@@ -245,8 +245,8 @@ function validateCardDistribution(player1Cards, player2Cards) {
   
   // التوزيع المتوقع من generateDynamicDistribution()
   const expectedDistribution = {
-    common: 90,
-    epic: 10
+    common: 80,
+    epic: 20
   };
   
   // التحقق من التوزيع
@@ -837,8 +837,8 @@ function initializeTournamentCards() {
     
     // حساب عدد البطاقات من كل فئة
     const cardDistribution = {
-      common: Math.floor(cardsPerPlayer * 0.90),     // 90%
-      epic: Math.floor(cardsPerPlayer * 0.10)        // 10%
+      common: Math.floor(cardsPerPlayer * 0.80),     // 80%
+      epic: Math.floor(cardsPerPlayer * 0.20)        // 20%
     };
     
     // تعديل التوزيع للتأكد من وصول العدد الكلي إلى 20

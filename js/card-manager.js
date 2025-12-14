@@ -772,8 +772,8 @@ class CardManager {
 
     // Dynamic card distribution with updated percentages
     const baseDistribution = {
-      common: 0.90,      // 90%
-      epic: 0.10         // 10%
+      common: 0.80,      // 80%
+      epic: 0.20         // 20%
     };
 
     // Add small random variations to percentages
@@ -794,8 +794,8 @@ class CardManager {
 
     // Convert to card counts
     const cardDistribution = {
-      common: Math.floor(totalCards * 0.90),     // 90%
-      epic: Math.floor(totalCards * 0.10)        // 10%
+      common: Math.floor(totalCards * 0.80),     // 80%
+      epic: Math.floor(totalCards * 0.20)        // 20%
     };
 
     // Adjust for rounding errors
