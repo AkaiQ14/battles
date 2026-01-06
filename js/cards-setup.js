@@ -118,9 +118,9 @@ function generateDynamicDistribution() {
   
   // Base distribution percentages with added randomness
   const baseDistribution = {
-    common: 0.65,     // 65%
-    epic: 0.35        // 35%
-  };
+    common: 0.75,     // 75%
+    epic: 0.25        // 25%
+  };  
   
   // Add small random variations to percentages
   const variationFactor = 0.05; // 5% variation
@@ -245,9 +245,9 @@ function validateCardDistribution(player1Cards, player2Cards) {
   
   // التوزيع المتوقع من generateDynamicDistribution()
   const expectedDistribution = {
-    common: 65,
-    epic: 35
-  };
+    common: 75,
+    epic: 25
+  };  
   
   // التحقق من التوزيع
   const validatePercentages = (distribution, expectedDist) => {

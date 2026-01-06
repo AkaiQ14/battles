@@ -1067,8 +1067,8 @@ class CardManager {
 
     // Dynamic card distribution with updated percentages
     const baseDistribution = {
-      common: 0.65,      // 65%
-      epic: 0.35         // 35%
+      common: 0.75,     // 75%
+      epic: 0.25        // 25%
     };
 
     // Add small random variations to percentages
