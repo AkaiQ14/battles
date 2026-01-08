@@ -45,7 +45,7 @@ let voiceSystem = {
       'QG14', 'queen', 'Sakamoto', 'shikamaru', 'Shanks', 'Silva Zoldyck', 'smith', 'UmibozoCard',
       'Garp', 'Gilgamesh', 'Gintoki', 'Ippo', 'Makima', 'Musashi', 'Muzan', 'PrinceHata', 'Smiley',
       'Sung-Jinwoo', 'Takamura', 'Toji', 'Ulquiorra', 'Walker', 'Yamamoto', 'Yamato', 'Zaraki',
-      'Zenon', 'Escanor', 'Saitama',
+      'Zenon', 'Escanor', 'Saitama', 'Aizeen',
       // Removed: 'Vegetto', 
       'whitebeard', 'zoro', 'Zenitsu', 'Zeno', 'RockLee', 'AlocardCard', 'alocard', 'alucard', 'AloCard', // إضافة جميع الأسماء المحتملة
       // New voice files added
@@ -78,6 +78,7 @@ let voiceSystem = {
     const voiceFileMappings = {
       // Existing mappings...
       'aizen': 'aizen',
+      'Aizeen': 'Aizeen',
       'Azik': 'Azik',
       'AizenVoCrowCard': 'AizenVoCrowCard',
       'Akai': 'Akai',

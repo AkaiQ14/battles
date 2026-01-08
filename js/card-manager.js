@@ -327,7 +327,7 @@ class CardManager {
 'images/The Owl.webm',
 'images/Verso.webm',
 'images/Wolf.webm',
-
+'images/Aizeen.webm',
 
       ].filter((card, index, self) => 
         self.indexOf(card) === index
